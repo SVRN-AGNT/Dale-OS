@@ -47,6 +47,9 @@ The resolver returns canonical paths and rules. It does not replace semantic jud
 | whether the work still matters | `intent-drift-check` |
 | confusing operational UI | `operator-ui-audit` |
 | broad multi-agent work, harness design, or independent falsification | `swarm` |
+| claiming a fix, guard, test, or job is done | `reachability-proof` |
+| loose ends, open PRs, deferrals, or a growing queue | `loop-closure` |
+| work that looks finished, fast, or green on the first try | `false-competence-check` |
 | movement of money | `money-trail` |
 | financial records that may contradict each other | `accounting-integrity` |
 | portfolio return | `performance-truth` |

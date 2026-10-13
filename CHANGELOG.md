@@ -4,6 +4,11 @@
 
 - Added `swarm`, an adaptive multi-agent harness skill with design-before-spawn, staged allocation, independent falsification, adversarial synthesis, authority-migration, and write-topology contracts.
 - Expanded the canonical catalog from 20 to 21 skills while preserving the frozen v0.1.0 20-skill release evidence as historical proof.
+- Added `reachability-proof`: correctness has three legs (right, reached, visible); a guard no gate runs is documentation, and an assertion satisfied by the null case is not a test.
+- Added `loop-closure`: loops move captured → tracked → closed → retired; caps hold by displacement; a full audit is two passes; report net loops.
+- Added `false-competence-check`: thirteen counterfeits of good work, each paired with the single check that tells them apart.
+- Deepened `swarm` references with portable material from field use: authority choke-point audit, value-versus-authority retention, evidence-level ladder, two-lens verification, and an audit-graph topology.
+- Expanded the canonical catalog to 24 skills. Frozen v0.1.0 evidence is unchanged.
 
 ## 0.1.0 — public release
 

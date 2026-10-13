@@ -1,0 +1,3 @@
+interface:
+  display_name: "Reachability Proof"
+  short_description: "Prove fixes and guards are reached, enforced, and loud on failure"

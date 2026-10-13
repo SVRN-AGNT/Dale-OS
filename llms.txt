@@ -25,6 +25,9 @@
 - skills/operator/intent-drift-check/SKILL.md
 - skills/operator/operator-ui-audit/SKILL.md
 - skills/operator/swarm/SKILL.md
+- skills/operator/reachability-proof/SKILL.md
+- skills/operator/loop-closure/SKILL.md
+- skills/operator/false-competence-check/SKILL.md
 
 ## Financial Truth
 - skills/financial-truth/money-trail/SKILL.md

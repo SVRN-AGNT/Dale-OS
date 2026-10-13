@@ -10,8 +10,9 @@ Operator OS governs how an agent works before it governs what code it writes.
 4. Assume a real bug may be systemic until checked.
 5. Respect protected boundaries and expansion triggers.
 6. Verify the diff against the charter.
-7. Verify the claimed state before reporting it.
+7. Verify the claimed state before reporting it: right, reached, and visible on failure (`reachability-proof`), and not a counterfeit of good work (`false-competence-check`).
 8. Write back only confirmed outcomes and durable lessons.
+9. Close and retire what finished; report net loops (`loop-closure`).
 
 ## What it is trying to prevent
 
@@ -22,6 +23,8 @@ Operator OS governs how an agent works before it governs what code it writes.
 - handoff amnesia
 - protected-system bypasses
 - test theater
+- guards nothing reaches, and silence read as health
+- open work that accumulates faster than it closes
 - merge/deploy overclaims
 - confident guesses presented as facts
 

@@ -142,6 +142,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "false-competence-check",
+      "family": "operator",
+      "path": "skills/operator/false-competence-check/SKILL.md",
+      "description": "Check finished-looking agent work against the failure modes that look like competence but are not. Use before declaring a fix done, before opening or approving a PR, when a change was fast and confident, when tests are green on the first try, after a rename, sweep, or cleanup, or when reviewing another agent's \"done\" claim. Do not use as a substitute for the task's own acceptance criteria.",
+      "rule": "**The most expensive mistakes look like good work.** Decisiveness, speed, cleanup, diligence, and confidence each have a counterfeit. The counterfeit passes casual review because it has the shape of the real thing.",
+      "falsify": "Ask: \"Which of these does my diff most resemble, and what single check would prove it is not that?\" If you cannot name the check, you have not ruled it out.",
+      "deterministic_companion": false
+    },
+    {
       "name": "intent-drift-check",
       "family": "operator",
       "path": "skills/operator/intent-drift-check/SKILL.md",
@@ -160,6 +169,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "loop-closure",
+      "family": "operator",
+      "path": "skills/operator/loop-closure/SKILL.md",
+      "description": "Close, retire, and count open loops so agent work finishes instead of accumulating. Use at session start or end, for \"loose ends\", \"full audit\", \"what's unfinished\", backlog or queue hygiene, open PRs and branches piling up, follow-on work spawning from blocked items, capped work tiers filling up, or when an agent fleet opens more work than it finishes. Do not use to plan net-new features or to rank a fresh backlog from scratch.",
+      "rule": "**Capture is not the problem. Retirement is. Report net loops: closed minus opened.** A loop is any named, unfinished work: a queue item, an open PR, a pushed branch with no PR, a deferred finding, a pending sign-off. It has four states: **captured \u2192 tracked \u2192 closed \u2192 retired**. Agents are excellent at the first and weak at the last three, so queues grow monotonically until the file that bounds attention becomes too expensive to read.",
+      "falsify": "Count before and after. If the session's audit produced more open items than it closed, it did not close anything. If a capped tier holds completed items, its cap has silently shrunk. If an item's only open reason is a gate nobody was told about, it is not tracked, it is lost.",
+      "deterministic_companion": false
+    },
+    {
       "name": "operator-ui-audit",
       "family": "operator",
       "path": "skills/operator/operator-ui-audit/SKILL.md",
@@ -175,6 +193,15 @@
       "description": "Classify and stop unsafe work at protected architectural, financial, security, data, design-system, or governance boundaries. Use when a requested change touches locked code, invariants, guards, schemas, migrations, production, financial writers, or another surface that requires separate authority.",
       "rule": "**Stopping can be the successful action.**",
       "falsify": "Try to identify a path that satisfies the objective without crossing the protected boundary. If none exists, stop and surface the exact authority required.",
+      "deterministic_companion": false
+    },
+    {
+      "name": "reachability-proof",
+      "family": "operator",
+      "path": "skills/operator/reachability-proof/SKILL.md",
+      "description": "Prove that a fix, guard, test, job, or check is reached by the path that matters, enforced by a gate that actually runs, and loud when it stops working. Use before claiming a fix, regression test, CI guard, ratchet, scheduled job, hook, or monitor is done; when a check board is empty or stale; when tests are green but the feature may be dead; or when a checker reports \"0 findings\". Do not use for exploratory prototypes where no correctness claim is being made.",
+      "rule": "**A guard nothing reaches is not a guard. Silence is not evidence of health.** Correctness is three legs, not one: the code is right, the code is **reached** by the path that matters, and its failure would be **visible**. Ship any one without the other two and you have shipped an illusion.",
+      "falsify": "Try to make the claim fail. Remove the call site and see whether anything goes red. Delete the fix and see whether the test fails. Make the checker's input empty and see whether it still passes. Confirm the CI run you are citing exists and matches the current head commit. If none of these can be done, the leg is unproven; say so.",
       "deterministic_companion": false
     },
     {
