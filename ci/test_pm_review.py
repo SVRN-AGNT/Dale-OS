@@ -55,6 +55,11 @@ check("verified CLEAR succeeds", pm.interpret(ruling(), HEAD)["conclusion"] == "
 for out in ["", "not json", json.dumps({"verdict": "APPROVE"}), ruling(verdict="COMPLETE"), "[]"]:
     r = pm.interpret(out, HEAD)
     check(f"no ruling from {out[:20]!r}", not r["ruled"] and r["conclusion"] == "action_required" and "not a CLEAR" in r["body"])
+for key in ("verified", "blocking", "required_actions"):
+    for bad in ["x", {"read the diff": 1}, 3, None]:
+        r = pm.interpret(ruling(**{key: bad}), HEAD)
+        check(f"{key}={bad!r} is no ruling", not r["ruled"] and r["conclusion"] == "action_required" and "not a CLEAR" in r["body"])
+check("verified=[] CLEAR is not counted", not pm.interpret(ruling(verified=[]), HEAD)["ruled"])
 check("CLEAR with blocking is CORRECT", pm.interpret(ruling(blocking=[{"file": "a", "line": 1, "evidence": "x", "problem": "p", "failure": "f"}]))["verdict"] == "CORRECT")
 check("CLEAR that checked nothing is not counted", not pm.interpret(ruling(verified=[]))["ruled"])
 check("HOLD blocks", pm.interpret(ruling(verdict="HOLD", verified=[]))["conclusion"] == "failure")
@@ -128,6 +133,35 @@ check("a replayed HANDOFF for a superseded head is refused", stale.get("review")
 check("a replayed web comment is refused",
       resolve_with(handoff(f"HANDOFF: {HEAD}", id=9, issue_url="https://api.github.com/repos/o/r/issues/12",
                            performed_via_github_app=None), []).get("review") == "false")
+
+
+def post_with(final_message: str) -> list:
+    """Run cmd_post on a review that produced final_message; return the API calls it made."""
+    calls = []
+    saved = (pm._api, dict(os.environ))
+    pm._api = lambda method, path, body=None: calls.append((method, path, body))
+    os.environ.update(PR_NUMBER="12", REVIEW="true", HAS_KEY="true", HEAD_SHA=HEAD, BASE_SHA=OTHER, HANDOFF_ID="99",
+                      FINAL_MESSAGE=final_message, REVIEW_RESULT="success", GITHUB_SERVER_URL="https://x",
+                      GITHUB_REPOSITORY="o/r", GITHUB_RUN_ID="1")
+    try:
+        pm.cmd_post()
+    finally:
+        pm._api = saved[0]
+        os.environ.clear()
+        os.environ.update(saved[1])
+    return calls
+
+
+def posted_check(calls: list) -> dict:
+    return next(body for method, path, body in calls if path == "/check-runs")
+
+
+check("a verified CLEAR posts a success check", posted_check(post_with(ruling()))["conclusion"] == "success")
+for bad in ["x", {"read the diff": 1}]:
+    calls = post_with(ruling(verified=bad))
+    check(f"verified={bad!r} cannot post a success check or a CLEAR comment",
+          posted_check(calls)["conclusion"] == "action_required"
+          and not any(path.endswith("/comments") and body["body"].startswith("PM REVIEW — CLEAR") for _, path, body in calls))
 
 if errors:
     print("PM REVIEW TEST FAILED")
