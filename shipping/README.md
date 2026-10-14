@@ -93,6 +93,7 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 13. **Red tells someone.** A red scheduled or trunk run opens one issue, which closes itself when the run is green again.
 14. **Every model job has caps:** a spend budget, a process timeout, a job timeout and a concurrency group.
 15. **A release is frozen at one commit.** Merges keep landing while a promotion runs, and the receipt is generated from git rather than written by hand.
+16. **Builders do not refresh the base just to stay current.** Freshness is the Controller's job. A Builder merges the base into its branch only to fix a conflict, to pick up code it needs, or once before a held PR's final `HANDOFF:`, because nothing else refreshes a PR that a person lands. Each refresh is a new head, so the full PR gate runs again. In the reference repo, heads that only merged in the base used 30% of PR CI minutes over 200 runs (973 of 3,279 billed minutes on 13 and 14 October 2026).
 
 ### What stays human
 
