@@ -1,0 +1,32 @@
+# Second-vendor PM on this repository's own PRs: every Claude `HANDOFF:` gets an
+# OpenAI review with no person relaying it. Uses the local copy of the shared
+# workflow, so the ref is this commit. Other repositories pin a Dale-OS sha.
+name: pm-review
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      comment_id:
+        description: Id of an existing HANDOFF comment to review
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  pm:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.comment.body, 'HANDOFF:')
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      checks: write
+    uses: ./.github/workflows/ci-pm-review.yml
+    with:
+      ref: ${{ github.sha }}
+      comment_id: ${{ github.event.comment.id || inputs.comment_id }}
+    secrets:
+      openai_api_key: ${{ secrets.OPENAI_API_KEY }}
