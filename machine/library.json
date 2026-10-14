@@ -48,7 +48,7 @@
               "call": "A2.3",
               "name": "merge-authority",
               "path": "skills/operator/merge-authority/SKILL.md",
-              "tagline": "Green on H authorises H, never a descendant. Merged is not deployed."
+              "tagline": "Evidence authorises only the tree it judged."
             }
           ]
         },
@@ -170,7 +170,7 @@
               "call": "O2.2",
               "name": "completion-contract",
               "path": "skills/operator/completion-contract/SKILL.md",
-              "tagline": "A model saying \"done\" is not completion."
+              "tagline": "\"Done\" is a verdict, not a report."
             }
           ]
         },

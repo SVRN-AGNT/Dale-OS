@@ -1,49 +1,52 @@
 ---
 name: completion-contract
-description: Decide whether an autonomous or long-running agent task is actually complete, using explicit obligations instead of the worker's word. Use when designing or running an agent loop, autorun, overnight job, or multi-iteration task; when an agent reports "done", "all set", or "finished"; when a loop keeps running without retiring anything; or when retries are exhausted. Do not use to verify one specific fix or guard (use reachability-proof) or to audit a backlog (use loop-closure).
+description: Decide whether an autonomous or long-running agent run is actually finished, using obligations set in advance instead of the agent's own account. Use when designing or running an agent loop, scheduled job, or multi-step autonomous task; when a run reports "done" or "all set"; when a loop keeps iterating without finishing anything; or when retries run out. Do not use to prove one fix is reached (use reachability-proof), to clear a backlog (use loop-closure), or to judge whether one piece of work is genuine (use false-competence-check).
 ---
 
 # Completion Contract
 
 ## Rule
 
-**A model saying "done" is not completion. The worker cannot certify its own run closed.**
+**"Done" is a verdict, not a report. The agent that did the work does not deliver it.**
 
-Long autonomous runs fail in a predictable way: the worker grows confident before the work is finished, and its own summary becomes the evidence. Completion has to be adjudicated by something other than the worker, against obligations written down before the work started.
+Long autonomous runs drift toward confidence before the work is finished, and the agent's own summary quietly becomes the evidence. Finishing has to be judged against a list agreed before the run started, by something other than the worker.
 
 ## Workflow
 
-1. **Write the obligations first.** Before the run starts, list what "complete" requires, for example: verification actually executed · attributable failures resolved or truthfully classified · branch, PR, and head verified live · runtime proof where the task needs it · integration state reconciled · records written back · every spawned finding retired, routed, or explicitly handed to a person.
-2. **Make every obligation explicit.** Each must be answered `true`. An unanswered obligation fails. An obligation can be waived only by an explicit declaration made up front, such as "no runtime proof required", never by silence.
-3. **Separate the worker from the judge.** The worker produces a completion packet with evidence. A different leg (a reviewer, a checker, a person) issues the verdict. The worker has no path to the complete state at all.
-4. **Use a closed verdict set.** For example: continue · final-verify · complete · needs-person · blocked · stalled · retryable-failure · cancelled. Prose rides alongside as rationale and never becomes a state. An unrecognised verdict is a failure, never a guess and never "complete".
-5. **Prefer machine sources over narrative.** Where a system can answer (PR state, check results, mergeability), the judge reads the system. The worker's description of that state does not satisfy the obligation.
-6. **Bound retries and latch exhaustion.** When the retry budget runs out the run goes to stalled, never complete, and a later success does not clear the latch.
-7. **Detect no-progress.** Fingerprint each iteration from the objective, the outstanding obligations, and the evidence. Reordering is not progress; retiring an obligation is. A short cycle that retires nothing is oscillation, so stop it.
-8. **Make side states explicit.** Needs-person, blocked, and stalled are named states that need an outside act to leave. A leg that "helpfully" resumes one has authorised itself past the gate that parked it.
+1. **Agree the finish line up front.** Before the run, write what finished means for this job. Typical items: the checks actually ran · failures caused by the work are fixed or honestly labelled · the current state of the branch or output was looked up, not remembered · proof from the running system where the job needs it · related records updated · anything new the run discovered is closed, handed on, or flagged for a person.
+2. **Every item needs an explicit yes.** A missing answer counts as no. An item may be dropped only by saying so at the start ("no runtime proof needed for this job"), never by leaving it out.
+3. **Keep the judge separate from the worker.** The worker hands in its evidence; something else decides. In order of strength:
+   1. a deterministic check or script;
+   2. a separate reviewer that sees only the evidence, not the worker's reasoning (weaker, and say so);
+   3. a person.
+
+   A single agent working alone can only reach "ready for review", never "finished".
+4. **Decide from a fixed set of outcomes.** For example: keep going · ready for review · finished · needs a person · blocked · stuck · failed, can retry · cancelled. Explanations ride alongside; they are never an outcome. Anything outside the set is treated as a failure, never as finished.
+5. **Read systems, not stories.** Where a system can answer (did the checks pass, is it merged, does the file exist), the judge asks the system. The worker's description does not count.
+6. **Cap retries and make running out stick.** When retries are used up the run is stuck, not finished. A later lucky pass does not undo that.
+7. **Notice when nothing changes.** Compare each round by what is still open and what evidence exists. Shuffling the order is not progress; closing an item is. Rounds that close nothing mean the run is stuck.
+8. **Parked runs stay parked.** "Needs a person", "blocked" and "stuck" are left only by an outside act. A worker that resumes one on its own has skipped the gate.
 
 ## Anti-patterns
 
-- The worker's final message used as the completion record.
-- "All tests pass" when no test ran this session.
-- A loop that ends because it ran out of turns, reported as finished.
-- Follow-up findings dropped silently because they were outside the original task.
+- The worker's last message used as the record of completion.
+- "Tests pass" when none ran in this run.
+- A run that stopped because it hit its turn limit, reported as finished.
+- Discoveries outside the original task dropped without a word.
 
 ## Relationship
 
-`reachability-proof` proves one guard or fix is real. `loop-closure` retires open work across a backlog. `completion-contract` decides when one run may close. `swarm` designs the workers; this decides when they are done.
+`reachability-proof` proves one fix or guard is real. `false-competence-check` tests whether a result is genuine. `loop-closure` clears a backlog. `completion-contract` decides when one run may end. `swarm` designs the workers; this decides when they are done.
 
 ## Falsify it
 
-Delete one obligation's evidence from a completion packet and submit it. If the run still closes, the contract is narrative. Then feed the judge an unknown verdict string and confirm it fails rather than completes.
+Remove the evidence for one item and submit the rest. If the run still ends as finished, the contract is only words. Give the judge an outcome outside the fixed set and confirm it fails instead of finishing.
 
 ## Stop conditions
 
-- An obligation cannot be checked by anyone other than the worker.
+- No judge other than the worker is available: end at "ready for review" or "needs a person".
 - The run needs an action only a person can authorise.
-
-Report the run as not complete, name the unmet obligation, and park it in a named side state.
 
 ## Output
 
-VERDICT · OBLIGATIONS (each true / false / waived-explicitly) · EVIDENCE SOURCE (machine or narrative) · RETRIES USED · PROGRESS FINGERPRINT · SPAWNED FINDINGS AND THEIR ROUTE.
+OUTCOME · FINISH LINE (each item: yes / no / dropped up front) · JUDGE (script / separate reviewer / person) · EVIDENCE SOURCE (system or narrative) · RETRIES USED · PROGRESS SINCE LAST ROUND · DISCOVERIES AND WHERE THEY WENT.

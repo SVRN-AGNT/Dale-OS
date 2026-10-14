@@ -15,18 +15,18 @@
     "Never trade away accounting, provenance, authority, or safety invariants merely to reduce token cost."
   ],
   "routing": {
-    "principle": "Route by seat, express the seat as a capability tier, and treat the concrete model ID as today's perishable answer.",
+    "principle": "Decide which job needs which capability, and treat the concrete model name as a perishable detail recorded in one place.",
     "layers": {
-      "seat": "the job in the workflow, such as lead loop, code or audit worker, design or copy worker; durable",
-      "tier": "the capability class that seat needs, such as fast, reasoning, frontier; durable",
+      "role": "the job inside a workflow, for example routing, coding, review, writing; durable",
+      "tier": "the capability that job needs, using the economical, balanced and frontier tiers above; durable",
       "model_id": "the concrete model serving that tier today; perishable"
     },
     "rules": [
-      "Write every reference outside the pin in tier or family-relative form. A sentence that becomes false when a provider ships a new version number is written in the wrong form.",
-      "Pin concrete model IDs in exactly one place per deployment, with the date they were verified. A second copy of the pin is a second place to go stale.",
-      "Refresh the pin from a live authority such as the provider's model listing, never from memory. Never construct or guess a model ID; a plausible-looking ID is not a real one.",
-      "When a model family is renamed, retired, or added, re-pin the tier and leave the seat routing unchanged.",
-      "Spend a premium tier on purpose for named seats, not by default for whole categories of work."
+      "Assign each role a default tier. The escalation rules above still apply: a role may be raised to frontier only when the cheaper tier fails or the consequence warrants it, and the receipt records why.",
+      "Refer to models by tier everywhere except the pin. Text that becomes wrong the day a provider releases a new version is written in the wrong form.",
+      "Keep the tier-to-model mapping in a single place per deployment, dated with when it was last checked. Copies drift.",
+      "Update the mapping from the provider's live model list, never from memory, and never by guessing a model name that looks plausible.",
+      "When a provider renames, retires or adds a model, change the mapping and leave role assignments alone."
     ]
   },
   "benchmark_exception": {
@@ -41,7 +41,9 @@
     "output_tokens_when_available",
     "estimated_or_reported_cost_usd_when_available",
     "escalation_reason_when_frontier",
-    "evidence_reused_or_recomputed"
+    "evidence_reused_or_recomputed",
+    "tier",
+    "model_mapping_checked_on"
   ],
   "recommended_runtime_controls": {
     "workflow_cost_ceiling_env": "DALE_OS_MAX_MODEL_COST_USD",

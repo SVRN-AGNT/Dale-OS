@@ -52,7 +52,7 @@
 {"id":"confuse-verify-before-cite","prompt":"This revenue number came from a vendor estimate. Label how certain it is.","forbidden_skill":"verify-before-cite"}
 {"id":"activate-memory-promotion","prompt":"Session is wrapping up. Save everything we learned today to long-term memory so the next agent knows it.","expected_skill":"memory-promotion"}
 {"id":"confuse-memory-promotion","prompt":"Record that we chose Postgres over SQLite as an architecture decision, with the alternatives we rejected.","forbidden_skill":"memory-promotion"}
-{"id":"activate-completion-contract","prompt":"Our overnight agent loop ended with the worker saying all tasks are done. Can we mark the run complete and close it out?","expected_skill":"completion-contract"}
-{"id":"confuse-completion-contract","prompt":"Prove the null-check I just added actually runs in CI and fails when it should.","forbidden_skill":"completion-contract"}
-{"id":"activate-merge-authority","prompt":"CI went green an hour ago, then I pushed two more commits. The bot approved the PR and the body says risk: low. Can the automation merge it now and announce it as live?","expected_skill":"merge-authority"}
-{"id":"confuse-merge-authority","prompt":"Review this diff and tell me whether every hunk belongs to the ticket.","forbidden_skill":"merge-authority"}
+{"id":"activate-completion-contract","prompt":"Our overnight agent run stopped and its last message says every task is finished. Before we record the run as complete, what has to be true and who decides?","expected_skill":"completion-contract"}
+{"id":"confuse-completion-contract","prompt":"The agent says the null-check fix is done. Prove the new guard is actually reached in CI and fails when it should.","forbidden_skill":"completion-contract"}
+{"id":"activate-merge-authority","prompt":"Checks passed on the PR an hour ago; since then two commits were pushed and main moved. The bot account approved it and the description says risk: low. Should the automation merge it now?","expected_skill":"merge-authority"}
+{"id":"confuse-merge-authority","prompt":"Is PR 12 merged yet? Check before I mention it in the standup.","forbidden_skill":"merge-authority"}
