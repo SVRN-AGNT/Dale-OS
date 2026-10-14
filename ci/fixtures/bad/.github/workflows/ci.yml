@@ -1,0 +1,11 @@
+name: bad
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+  shared:
+    uses: example/Dale-OS/.github/workflows/ci-red-alert.yml@aaaa

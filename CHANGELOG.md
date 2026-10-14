@@ -2,6 +2,12 @@
 
 ## 0.2.0-dev — development
 
+- Added a shared CI layer under `ci/`: a reusable red-alert workflow that keeps
+  one issue open while a scheduled or trunk run is red, and a zero-dependency
+  workflow checker (`ci/ci_hygiene.py`) for timeouts, permissions, PR
+  concurrency, duplicate push and pull_request runs, and a single pinned ref.
+  `validate.yml` now runs on push to `main` only, which the checker flagged:
+  every PR commit had been tested twice.
 - Added `swarm`, an adaptive multi-agent harness skill with design-before-spawn, staged allocation, independent falsification, adversarial synthesis, authority-migration, and write-topology contracts.
 - Expanded the canonical catalog from 20 to 21 skills while preserving the frozen v0.1.0 20-skill release evidence as historical proof.
 - Added `reachability-proof`: correctness has three legs (right, reached, visible); a guard no gate runs is documentation, and an assertion satisfied by the null case is not a test.

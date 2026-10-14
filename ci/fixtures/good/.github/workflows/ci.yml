@@ -1,0 +1,19 @@
+name: good
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - run: echo hi # a comment with runs-on: in it
+  alert:
+    needs: [test]
+    uses: example/Dale-OS/.github/workflows/ci-red-alert.yml@cccc
