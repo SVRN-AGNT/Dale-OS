@@ -37,6 +37,7 @@ PM_DIR = ".pm-review"
 VERDICTS = ("CLEAR", "CORRECT", "HOLD", "OWNER_GATE")
 CONCLUSION = {"CLEAR": "success", "CORRECT": "failure", "HOLD": "failure", "OWNER_GATE": "action_required"}
 INSTRUCTION_FILE = re.compile(r"^(CLAUDE|AGENTS)(\.local)?\.md$", re.I)
+POSTER = "github-actions[bot]"  # the post job's token; the only author whose rulings count here
 
 # Strict-mode compatible (OpenAI Structured Outputs): every key required, no extras.
 PM_SCHEMA = {
@@ -130,6 +131,24 @@ def held_scope(paths, held_paths: str):
     hit = next((p for p in paths if rx.search(p)), None)
     # The path is PR-controlled and may contain newlines; keep it to one safe line for $GITHUB_OUTPUT.
     return f"matches the repository's held paths ({re.sub(r'[^\x20-\x7e]', '?', hit)[:200]})" if hit else ""
+
+
+def _bot_post(c: dict) -> bool:
+    return (c.get("user") or {}).get("login") == POSTER
+
+
+# The header ruling_comment writes. Only this line names the head a ruling covers; a head quoted further down is evidence.
+RULING_HEADER = re.compile(r"PM REVIEW — [^\n]*\n\n\*\*PR:\*\* #\d+ · \*\*Exact reviewed head:\*\* `([0-9a-f]{40})`")
+
+
+def prior_ruling(pr_comments, head: str):
+    """The id of a real PM ruling already posted for this exact head, or None. A repeat HANDOFF for it is not re-billed."""
+    for c in reversed(list(pr_comments)):
+        m = RULING_HEADER.match(c.get("body") or "")
+        if _bot_post(c) and m and m.group(1) == str(head).lower():
+            return c.get("id")
+    return None
+
 
 
 def fence(s) -> str:
@@ -330,6 +349,12 @@ def cmd_resolve() -> None:
         and named_head(x.get("body"), head) for x in pr_comments
     ):
         return skip(f"the PR carries its own HANDOFF for {head[:8]}")
+
+    earlier = prior_ruling(pr_comments, head)
+    if earlier:
+        return skip(f"already ruled on {head[:8]}",
+                    f"The PM already ruled on `{head}` (comment {earlier}), so this HANDOFF was not reviewed again "
+                    "and nothing was billed. That ruling stands for this head; a push needs a new HANDOFF.", pr_n)
 
     files = _paginate(f"/pulls/{pr_n}/files")
     paths = []
