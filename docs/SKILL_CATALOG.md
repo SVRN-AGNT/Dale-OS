@@ -38,6 +38,7 @@ Every skill, shelved by domain and lane. The machine-readable catalog is [`machi
 
 - `E2.1` **[`systemic-bug-instinct`](../skills/operator/systemic-bug-instinct/SKILL.md)** — The visible bug is a witness, not the crime scene.
 - `E2.2` **[`reachability-proof`](../skills/operator/reachability-proof/SKILL.md)** — A guard nothing reaches is not a guard. Silence is not evidence of health.
+- `E2.3` **[`seam-audit`](../skills/operator/seam-audit/SKILL.md)** — Each side can be right while the system is wrong.
 
 ### E3 Surfaces
 

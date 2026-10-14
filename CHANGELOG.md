@@ -18,6 +18,11 @@
 - Added `merge-authority`: evidence bound to the exact tree that will land (head and base), risk classified from the change rather than the author, policy read from the target branch, and an approver the automation cannot impersonate.
 - Added role → tier → dated model mapping rules to `machine/model-cost-policy.json` (policy, not a skill, per its promotion rule).
 - Expanded the canonical catalog to 29 skills.
+- Added `seam-audit`: the boundary where two representations of one concept meet is a first-class bug surface (definition, shape, projection, preview versus commit, clocks, lifecycle, evidence grade, unknown).
+- `systemic-bug-instinct` now warns that reconciling arithmetic is not proof, and to search for a capability before declaring it missing.
+- `accounting-integrity` now covers aggregates over withheld values and fallback chains.
+- Added cases `a-total-that-dropped-an-account` and `the-capability-nobody-fed`.
+- Expanded the canonical catalog to 30 skills.
 
 ## 0.1.0 — public release
 

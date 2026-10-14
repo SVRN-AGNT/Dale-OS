@@ -12,15 +12,16 @@ description: Diagnose bugs as potentially systemic failures. Use when a defect, 
 ## Workflow
 
 1. Verify the symptom on the current system or trace a causal path that proves it.
-2. State the root mechanism as a falsifiable chain, not a vague category.
-3. Name the failure class: what more general mistake allowed this defect?
-4. Search sibling consumers of the same mechanism. Classify each affected, protected, or unrelated. A narrow mutation request does not waive this read-only diagnostic audit: scope can limit what you change, but it must not prevent you from checking whether the same mechanism exists elsewhere.
-5. Fix at the shared baseline when possible. If fixing one instance only, explain why the mechanism is not systemic. If authority restricts writes to one surface while the mechanism is broader, report the additional affected surfaces instead of silently treating them as out of scope.
-6. Add a regression test, invariant, ratchet, or durable note that would fail if the mechanism returns.
+2. State the root mechanism as a falsifiable chain, not a vague category. Arithmetic that reconciles is not proof: a correct formula fed a wrong input also reconciles.
+3. Before declaring a capability missing, search for it under several names, including routers and orchestrators above the failing code. A capability that exists but is not reached is a different bug from one that was never built.
+4. Name the failure class: what more general mistake allowed this defect?
+5. Search sibling consumers of the same mechanism. Classify each affected, protected, or unrelated. A narrow mutation request does not waive this read-only diagnostic audit: scope can limit what you change, but it must not prevent you from checking whether the same mechanism exists elsewhere.
+6. Fix at the shared baseline when possible. If fixing one instance only, explain why the mechanism is not systemic. If authority restricts writes to one surface while the mechanism is broader, report the additional affected surfaces instead of silently treating them as out of scope.
+7. Add a regression test, invariant, ratchet, or durable note that would fail if the mechanism returns.
 
 ## Falsify it
 
-Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open.
+Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open. Two tripwires mean the diagnosis is not finished: a count that does not match its population, and two paths that should agree but do not.
 
 ## Stop conditions
 
