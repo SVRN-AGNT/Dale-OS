@@ -29,6 +29,8 @@ PYTHON_STEPS = [
     ("validate repository hygiene", [sys.executable, "scripts/validate_hygiene.py"]),
     ("smoke agent control surface", [sys.executable, "scripts/smoke_agent_surface.py"]),
     ("scan public release surface", [sys.executable, "scripts/privacy_scan.py"]),
+    ("test shared CI hygiene checker", [sys.executable, "ci/test_ci_hygiene.py"]),
+    ("check own workflows against the CI floor", [sys.executable, "ci/ci_hygiene.py", ".", "--strict"]),
     ("validate release gate ledger", [sys.executable, "scripts/release_gate.py", "--validate-only"]),
 ]
 

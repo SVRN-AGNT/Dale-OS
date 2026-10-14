@@ -1,0 +1,39 @@
+# Reusable: check the calling repository's workflows against the shared CI floor
+# (ci/ci_hygiene.py). Report-only unless `strict` is true.
+#
+#   hygiene:
+#     uses: <owner>/Dale-OS/.github/workflows/ci-hygiene.yml@<sha>
+#     with:
+#       ref: <sha>   # the same sha, so the checker matches the workflow
+name: ci-hygiene
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Dale-OS ref to take the checker from; pin it to the same sha as `uses:`
+        type: string
+        required: true
+      strict:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: caller
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: Tataku/Dale-OS
+          ref: ${{ inputs.ref }}
+          path: shared
+          persist-credentials: false
+      - run: python3 shared/ci/ci_hygiene.py caller ${{ inputs.strict && '--strict' || '' }}

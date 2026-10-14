@@ -1,0 +1,9 @@
+name: nightly
+on:
+  schedule:
+    - cron: "0 5 * * *"
+permissions:
+  contents: read
+jobs:
+  alert:
+    uses: example/Dale-OS/.github/workflows/ci-red-alert.yml@bbbb
