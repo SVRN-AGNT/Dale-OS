@@ -17,7 +17,9 @@ Verification run: <commands and results, or the check names that are green on th
 Known unknowns: <what was not verified, and why>
 
 Please review for correctness and authority only. Quote the line for any blocking finding.
-Reply CLEAR or a list of blocking findings for head <sha>.
+Reply CLEAR, CORRECT with blocking findings, or HOLD, for head <sha>.
 ```
 
 A reply covers only the head it names. A push after the reply means asking again.
+
+The reviewer answers with one of three rulings: `CLEAR`, `CORRECT` (blocking findings), or `HOLD`. A held PR may be hand-merged only after `CLEAR` on its current head, or after 2 hours with no ruling. `CORRECT` or `HOLD` blocks the merge. Only the owner naming that specific PR waives the wait.

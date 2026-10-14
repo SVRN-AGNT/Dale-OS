@@ -32,7 +32,7 @@ This repository is the canonical source. Skills are modules inside the operating
 
 [`shipping/`](shipping/README.md) packages the review-and-merge pipeline assembled in one day for a private financial repository, around the merge controller it already had. Each change gets a lane from the paths it touches: docs, ordinary, truth, or held. The lane decides who judges it (an independent agent reviewer on every PR, plus a second model from a different vendor on authority work) and who lands it (one Controller for routine work, a person for held scope). Production releases, access grants and the reviewer's blocking power stay with a person.
 
-- [Operating model](shipping/README.md): roles, lanes, the 14 rules that make it hold, and what stays human.
+- [Operating model](shipping/README.md): roles, lanes, the 15 rules that make it hold, and what stays human.
 - [Before and after](shipping/FLOW.md): every stage, with merged versus pending and measured versus expected.
 - [Sourced playbook](shipping/PLAYBOOK.md): Anthropic's own guidance, primary sources only, mapped to each rule.
 - [Adoption guide](shipping/ADOPT.md): twelve steps in four levels, so any repository can join, plus [templates](shipping/templates/).

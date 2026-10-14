@@ -56,9 +56,9 @@ In agent sessions, stay silent while tests are green, print failures first, and 
 
 ### Step 4 · Write the lane map
 
-Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
+Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Put the reviewer's rubric, prompt and scripts, and the lane map itself, in L3, because they judge every later PR. Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
 
-**Done when:** a test feeds the script a docs-only change, an ordinary change, a money change, a workflow change and a rename out of a held path, and each gets the right lane.
+**Done when:** a test feeds the script a docs-only change, an ordinary change, a money change, a workflow change, a change to the reviewer rubric or the lane map, and a rename out of a held path, and each gets the right lane.
 
 ### Step 5 · Add the Agent Reviewer, report-only
 
@@ -91,6 +91,10 @@ Pick exactly one automatic merger: a Controller workflow, or a GitHub merge queu
 
 The lander refuses L3. If no approver exists that the automation cannot impersonate, a person lands L3 changes. The trusted-reviewer list stays empty until a separate identity exists. When the owner delegates merges in writing, the merge commit quotes the delegation and says the merge is unattested.
 
+A hand merge of an L3 PR waits for the second opinion. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
+
+**Done when:** an L3 PR with a fresh push and no new HANDOFF cannot be hand-merged under the written rule, and each hand-merge commit names its path (CLEAR, timeout, or the owner's per-PR waiver).
+
 ### Step 9 · Agents get their own identity before any auto-fix
 
 **Owner:** create a GitHub App for the agents, and a ruleset its token cannot bypass.
@@ -110,7 +114,7 @@ A change that shortens the wait but raises escaped defects is rolled back.
 
 ### Step 11 · The reviewer earns blocking power
 
-The owner decides, using the written bar: at least 30 PRs over at least 2 weeks (at least 5 of them held), at least 80% precision on blocking findings, at least 4 of 5 canaries caught, at least 9 of 10 re-runs agreeing, "could not review" on at most 5% of runs, median cost at most $1, and at most 1 escape. Blocking power is only a veto; an approval never releases held scope. If precision over the latest 20 findings drops below 70%, or 2 canaries are missed, the reviewer returns to report-only automatically.
+The owner decides, using the written bar: at least 30 PRs over at least 2 weeks (at least 5 of them held), at least 80% precision on blocking findings, at least 4 of 5 canaries caught, at least 9 of 10 re-runs agreeing, "could not review" on at most 5% of runs, median cost at most $1 and p95 at most $5, median wall time at most 5 minutes, and at most 1 escape. Blocking power is only a veto; an approval never releases held scope. If precision over the latest 20 findings drops below 70%, or 2 canaries are missed, the reviewer returns to report-only automatically.
 
 ### Step 12 · Releases
 

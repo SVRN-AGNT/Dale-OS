@@ -69,16 +69,17 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 2. **A verdict covers one commit.** It is posted as a check run on the exact head SHA, and a new push revokes it. Anything short of a clean verdict, including "could not review", counts as not reviewed.
 3. **Find, then verify.** A blocking finding must quote the line at head that it is about, or it is dropped. Anthropic's own review tool has the same verification step ([playbook F3](PLAYBOOK.md#f3)).
 4. **Correctness only, and re-review converges.** Nits never block. If a push leaves the diff unchanged, the earlier verdict carries over. In the reference repo this compares `git patch-id --verbatim`, because `--stable` ignores whitespace and the reviewer itself found that gap.
-5. **Shadow first.** A new reviewer reports and does not block until it clears a written bar: at least 30 PRs, at least 80% precision, at least 4 of 5 planted defects caught, at least 9 of 10 re-runs agreeing, low "could not review" rates and cost, and at most 1 escape. Falling below the demotion line returns it to report-only with no decision needed, because that narrows authority.
+5. **Shadow first.** A new reviewer reports and does not block until it clears a written bar: at least 30 PRs, at least 80% precision, at least 4 of 5 planted defects caught, at least 9 of 10 re-runs agreeing, "could not review" on at most 5% of runs, bounded cost and wall time, and at most 1 escape (full bar in [ADOPT step 11](ADOPT.md#step-11--the-reviewer-earns-blocking-power)). Falling below the demotion line returns it to report-only with no decision needed, because that narrows authority.
 6. **Two vendors on authority work.** On L2 and L3 the second opinion comes from a different vendor, so approval is never one model agreeing with itself.
 7. **The review trigger is not the author's choice.** Agent Review runs on every ready PR automatically. The `HANDOFF:` for the second vendor is part of the lane's checklist, not something the author may skip. See the case [the reviewer nobody called](../cases/the-reviewer-nobody-called.md).
 8. **One lander.** Only the Controller merges automatically. No session merges, enables auto-merge or updates branches around it.
 9. **Held scope stops honestly.** If no approver exists that the automation cannot impersonate, held changes stop and a person lands them. When the owner delegates in writing, the merge commit quotes the delegation and says the merge is unattested.
-10. **Limits live in access, not in prompts.** Any agent that pushes gets its own identity with limits the platform enforces. Until then, the auto-fixer stays paused.
-11. **Evidence covers only the tree it judged, and the same tree is never tested twice.** A skip is allowed only when the identical tree is already green.
-12. **Red tells someone.** A red scheduled or trunk run opens one issue, which closes itself when the run is green again.
-13. **Every model job has caps:** a spend budget, a process timeout, a job timeout and a concurrency group.
-14. **A release is frozen at one commit.** Merges keep landing while a promotion runs, and the receipt is generated from git rather than written by hand.
+10. **A hand merge waits for the second opinion.** A held PR may be merged by hand only when its current head has green CI, a passing Agent Review, and a `HANDOFF:` that the second-vendor reviewer has answered `CLEAR` for that head, or that has had no ruling for 2 hours. A `CORRECT` or `HOLD` blocks the merge. A push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket merge approval does not. The merge commit records which path was taken. This came from two held PRs that were merged before the second opinion arrived, which turned it into a check that ran after the merge. (In the reference repo this rule is proposed in an open PR, not yet merged.)
+11. **Limits live in access, not in prompts.** Any agent that pushes gets its own identity with limits the platform enforces. Until then, the auto-fixer stays paused.
+12. **Evidence covers only the tree it judged, and the same tree is never tested twice.** A skip is allowed only when the identical tree is already green.
+13. **Red tells someone.** A red scheduled or trunk run opens one issue, which closes itself when the run is green again.
+14. **Every model job has caps:** a spend budget, a process timeout, a job timeout and a concurrency group.
+15. **A release is frozen at one commit.** Merges keep landing while a promotion runs, and the receipt is generated from git rather than written by hand.
 
 ### What stays human
 
@@ -90,7 +91,7 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 | Make the Agent Reviewer a merge gate | It changes merge authority; it needs measured evidence first |
 | Read production after a deploy | It reads live user data, so it needs a written protocol |
 
-Things the owner no longer does: approve bot runs stuck on "action required", wait while a release suite restarts, hope someone notices a red nightly, or be the only check on whether review happened.
+Things the owner no longer does in the reference repo: approve bot runs stuck on "action required", wait while a release suite restarts, or be the only check on whether review happened. Once the red-run alert is adopted there (pending), a red nightly will open an issue instead of waiting to be noticed.
 
 ## Status on 14 October 2026
 
@@ -112,6 +113,10 @@ These are the states when this page was written. Check the linked PRs for live s
 **Expected, not yet measured end to end:** ready-to-merged time on an un-updated PR from about 13 minutes (the measured median over 22 PRs) down to about 6 to 8 minutes, and about 11 runner-minutes saved per merge from skipping already-tested trees.
 
 **The cost of the day's speed:** held-scope PRs merged by hand carry no Controller attestation, so the next release has to run in full consolidation mode.
+
+## How it relates to the Operating Manual
+
+The owner's [Operating Manual](https://github.com/Tataku/chaz-automation/blob/main/manual/OPERATING-MANUAL.md) covers who decides. This section covers how code moves once a decision is made. The manual lives in a private repository, so the link resolves only for people with access.
 
 ## Where the pieces live
 

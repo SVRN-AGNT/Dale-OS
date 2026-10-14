@@ -1,6 +1,6 @@
 {
   "schema": "dale-os/shipping-lanes/v1",
-  "note": "Example lane map. Copy it and replace the globs with your repository's paths. A script derives each changed path's lane (checking both sides of every rename) from the first entry whose globs match, and the PR takes the highest lane any path reaches (L3 > L2 > L1 > L0). L0 applies only when every changed path is docs. If the list of changed files or this file cannot be read, the PR is L3.",
+  "note": "Example lane map. Copy it as shipping-lanes.json and replace the globs with your repository's paths. Keep the reviewer's rubric, prompt and scripts, and this file itself, in L3: they judge every later PR, so a change to them is a change to the judge. A script gives each changed path (both sides of every rename) the lane of the first entry whose globs match; an entry marked only_if_all_paths_match is skipped unless every changed path matches it. The PR takes the highest lane any path reaches (L3 > L2 > L1 > L0). If the list of changed files or this file cannot be read, the PR is L3.",
   "integration_branch": "main",
   "lanes": [
     {
@@ -9,6 +9,9 @@
       "paths": [
         ".github/workflows/**",
         ".github/CODEOWNERS",
+        "REVIEW.md",
+        "scripts/agent-review/**",
+        "shipping-lanes.json",
         "**/migrations/**",
         "scripts/release/**",
         "scripts/merge/**",
