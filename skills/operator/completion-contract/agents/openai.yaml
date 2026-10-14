@@ -1,0 +1,3 @@
+interface:
+  display_name: "Completion Contract"
+  short_description: "Adjudicate when an agent run is really done"

@@ -124,6 +124,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "completion-contract",
+      "family": "operator",
+      "path": "skills/operator/completion-contract/SKILL.md",
+      "description": "Decide whether an autonomous or long-running agent run is actually finished, using obligations set in advance instead of the agent's own account. Use when designing or running an agent loop, scheduled job, or multi-step autonomous task; when a run reports \"done\" or \"all set\"; when a loop keeps iterating without finishing anything; or when retries run out. Do not use to prove one fix is reached (use reachability-proof), to clear a backlog (use loop-closure), or to judge whether one piece of work is genuine (use false-competence-check).",
+      "rule": "**\"Done\" is a verdict, not a report. The agent that did the work does not deliver it.** Long autonomous runs drift toward confidence before the work is finished, and the agent's own summary quietly becomes the evidence. Finishing has to be judged against a list agreed before the run started, by something other than the worker.",
+      "falsify": "Remove the evidence for one item and submit the rest. If the run still ends as finished, the contract is only words. Give the judge an outcome outside the fixed set and confirm it fails instead of finishing.",
+      "deterministic_companion": false
+    },
+    {
       "name": "diff-scope-audit",
       "family": "operator",
       "path": "skills/operator/diff-scope-audit/SKILL.md",
@@ -184,6 +193,15 @@
       "description": "Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when an agent is about to \"remember\" a lesson, rule, preference, or pattern; at the end of a session or a long autonomous run; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.",
       "rule": "**The inbox can be messy. Memory cannot be. Remember less, better.** Durable memory steers every future session, so a wrong or noisy note is a bug that repeats. Keep four things apart: raw context, verified evidence, durable memory, and authorized action. Most of what an agent notices belongs in the first two.",
       "falsify": "Take the last five notes added and run each through the gate. Count how many fail a check. Then search the store for two notes that disagree, or one that the current code contradicts. Either finding means the gate or the collection is not running.",
+      "deterministic_companion": false
+    },
+    {
+      "name": "merge-authority",
+      "family": "operator",
+      "path": "skills/operator/merge-authority/SKILL.md",
+      "description": "Decide whether an automated merge, promotion, or approval is actually authorised. Use when an agent or bot will merge, auto-merge, promote, or release; when a passing check is being treated as final approval; when an approval or green result is reused after the branch or its base moved; when a change's risk is self-declared; or when an approval comes from an account the automation controls. Do not use to judge what a diff contains (use diff-scope-audit), to check whether something already merged (use verify-before-cite), or to judge a finished-looking result (use false-competence-check).",
+      "rule": "**Evidence authorises only the exact tree it judged. Permission cannot come from the party asking for it.** An automated merge is safe when nothing the requester controls can grant the permission. The usual failure is quiet: a check result from an older tree, a risk level the author typed, a sign-off from an account the bot can drive.",
+      "falsify": "Add a commit after the last passing run and see whether the merge is still allowed. Advance the base without touching the branch and ask the same question. Label a permissions change \"low risk\" and see whether the decision changes. Edit the review policy inside the change and see which version is applied. Any success means the authority can be forged.",
       "deterministic_companion": false
     },
     {

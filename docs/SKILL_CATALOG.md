@@ -17,6 +17,7 @@ Every skill, shelved by domain and lane. The machine-readable catalog is [`machi
 
 - `A2.1` **[`protected-boundary`](../skills/operator/protected-boundary/SKILL.md)** — Stopping can be the successful action.
 - `A2.2` **[`risk-kernel`](../skills/operator/risk-kernel/SKILL.md)** — Instructions are not boundaries. Make the forbidden unexpressible.
+- `A2.3` **[`merge-authority`](../skills/operator/merge-authority/SKILL.md)** — Evidence authorises only the tree it judged.
 
 ### A3 Scope
 
@@ -53,6 +54,7 @@ Every skill, shelved by domain and lane. The machine-readable catalog is [`machi
 ### O2 Loops
 
 - `O2.1` **[`loop-closure`](../skills/operator/loop-closure/SKILL.md)** — Capture is not the problem. Retirement is.
+- `O2.2` **[`completion-contract`](../skills/operator/completion-contract/SKILL.md)** — "Done" is a verdict, not a report.
 
 ### O3 Memory
 

@@ -65,6 +65,8 @@ For coding agents and agentic software work:
 - `risk-kernel` — instructions are not boundaries; make the forbidden unexpressible.
 - `verify-before-cite` — memory is a lead, not a fact; verify work state before citing it.
 - `memory-promotion` — the inbox can be messy, memory cannot be; remember less, better.
+- `completion-contract` — "done" is a verdict, not a report; the worker does not deliver it.
+- `merge-authority` — evidence authorises only the tree it judged; permission cannot come from the party asking.
 
 ### Advanced agentic engineering
 

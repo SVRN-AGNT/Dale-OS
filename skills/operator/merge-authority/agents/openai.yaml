@@ -1,0 +1,3 @@
+interface:
+  display_name: "Merge Authority"
+  short_description: "Decide who may merge, and say what really happened"

@@ -33,6 +33,8 @@
 - skills/operator/risk-kernel/SKILL.md
 - skills/operator/verify-before-cite/SKILL.md
 - skills/operator/memory-promotion/SKILL.md
+- skills/operator/completion-contract/SKILL.md
+- skills/operator/merge-authority/SKILL.md
 
 ## Financial Truth
 - skills/financial-truth/money-trail/SKILL.md
