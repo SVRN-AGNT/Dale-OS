@@ -91,7 +91,7 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | # | Recommendation | From | Status |
 |---|---|---|---|
 | R1 | Run the new reviewer in shadow mode first | F4 | Done: report-only, with a written promotion and demotion bar |
-| R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: a second-vendor CLEAR before ready on every PR (owner rule since 2026-10-07); a held hand merge waits for it, or 2 hours (merged 2026-10-14). Narrowing the scope is pending the owner's decision |
+| R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: a second-vendor CLEAR before ready on every PR (owner rule since 2026-10-07); a held hand merge waits for it, or 2 hours (merged 2026-10-14). On 2026-10-14 the owner kept it on every PR, with a 2-hour timeout for the ready step |
 | R2 | Find, then verify each finding before it can block | F3 | Done |
 | R3 | Correctness only, nits never block, re-review converges | F2, F3 | Done |
 | R4 | Gate merges on the count of blocking findings | F3 | Owner decides, after shadow data meets the bar |

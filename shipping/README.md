@@ -28,7 +28,7 @@ The aim is not to remove people. It is to move them to the steps that need a per
 |---|---|---|---|
 | **Builder** | A Claude session | Writes the change on its own branch, verifies locally, opens a draft PR, marks it ready | Merge, approve itself, edit its own judge |
 | **Agent Reviewer** | A fresh Claude instance in CI | Reads the diff at the exact head commit and posts a typed verdict as a check run, with each blocking finding quoting the line it cites | Push, merge, approve held scope |
-| **Second-vendor reviewer** | A model from a different vendor (here, a ChatGPT "PM" agent) | Gives a second opinion when the Builder posts a `HANDOFF:` comment. In the reference repo that is every PR: the owner's standing rule (2026-10-07) is a CLEAR before the PR is marked ready | Merge |
+| **Second-vendor reviewer** | A model from a different vendor (here, a ChatGPT "PM" agent) | Gives a second opinion when the Builder posts a `HANDOFF:` comment. In the reference repo that is every PR: a CLEAR before the PR is marked ready, or 2 hours with no ruling | Merge |
 | **Controller** | A GitHub workflow (or a merge queue) | The only automatic merger. Merges eligible PRs into the integration branch, one at a time | Merge held scope, promote, deploy |
 | **Owner** | A person | Promotes to production, sets up access once, merges held scope or delegates it in writing, decides when the reviewer may block | Routine merges |
 
@@ -45,7 +45,7 @@ A lane is chosen from the paths a change touches, including both sides of a rena
 
 The lane decides who judges and who lands. It never decides whether the work is correct; the checks and reviewers do that.
 
-**Pending owner decision:** whether the second-vendor CLEAR stays on every lane, gets a timeout like the held-scope rule (rule 10), or narrows to L2 and L3. Until the owner decides, it applies to every lane. In the reference repo the rule is written policy; the Controller does not check for the CLEAR yet.
+**The ready rule (owner decision, 14 October 2026):** A PR is marked ready only after the second-vendor reviewer answers `CLEAR` on a HANDOFF naming its current head, or after 2 hours with no ruling (recorded as "PM timeout"). A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never stands in for a CLEAR. It applies to every lane. In the reference repo it is written policy (being added to the instructions file in an open PR), and the Controller does not check for the CLEAR yet.
 
 ### The flow
 
@@ -73,7 +73,7 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 3. **Find, then verify.** A blocking finding must quote the line at head that it is about, or it is dropped. Anthropic's own review tool has the same verification step ([playbook F3](PLAYBOOK.md#f3)).
 4. **Correctness only, and re-review converges.** Nits never block. If a push leaves the diff unchanged, the earlier verdict carries over. In the reference repo this compares `git patch-id --verbatim`, because `--stable` ignores whitespace and the reviewer itself found that gap.
 5. **Shadow first.** A new reviewer reports and does not block until it clears a written bar: at least 30 PRs, at least 80% precision, at least 4 of 5 planted defects caught, at least 9 of 10 re-runs agreeing, "could not review" on at most 5% of runs, bounded cost and wall time, and at most 1 escape (full bar in [ADOPT step 11](ADOPT.md#step-11--the-reviewer-earns-blocking-power)). Falling below the demotion line returns it to report-only with no decision needed, because that narrows authority.
-6. **Two vendors before ready.** A second opinion from a different vendor clears the change before it is marked ready, so approval is never one model agreeing with itself. In the reference repo this covers every PR; whether to narrow it is the pending decision above.
+6. **Two vendors before ready.** A second opinion from a different vendor clears the change before it is marked ready, so approval is never one model agreeing with itself. It covers every PR, with a 2-hour timeout so a quiet reviewer cannot stall the line (the ready rule above).
 7. **The review trigger is not the author's choice.** Agent Review runs on every ready PR automatically. The `HANDOFF:` for the second vendor is part of every PR's checklist, not something the author may skip. See the case [the reviewer nobody called](../cases/the-reviewer-nobody-called.md).
 8. **One lander.** Only the Controller merges automatically. No session merges, enables auto-merge or updates branches around it.
 9. **Held scope stops honestly.** If no approver exists that the automation cannot impersonate, held changes stop and a person lands them. When the owner delegates in writing, the merge commit quotes the delegation and says the merge is unattested.
