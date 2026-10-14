@@ -58,6 +58,8 @@ In agent sessions, stay silent while tests are green, print failures first, and 
 
 Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Put the reviewer's rubric, prompt and scripts, and the lane map itself, in L3, because they judge every later PR. Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
 
+Make the lane visible: L2 and L3 PRs get a `high-stakes` label and a `[HIGH STAKES]` title prefix, and every agent message that mentions a PR ends with `🔴 HIGH STAKES · #NNNN · <action>` or `🟢 Ordinary · #NNNN`.
+
 **Done when:** a test feeds the script a docs-only change, an ordinary change, a money change, a workflow change, a change to the reviewer rubric or the lane map, and a rename out of a held path, and each gets the right lane.
 
 ### Step 5 · Add the Agent Reviewer, report-only

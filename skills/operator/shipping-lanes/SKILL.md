@@ -13,7 +13,7 @@ A pipeline goes wrong in one of two directions. Either everything waits on one p
 
 ## Workflow
 
-1. **Derive the lane from the change.** Classify by the paths the change touches, including both sides of every rename. Use a fixed vocabulary: docs, ordinary, truth (money, sync, evidence, identity), and held (workflows, access, billing, migrations, merge and release tooling). Never read the lane from the author. If the list of changed files cannot be read, the change is held.
+1. **Derive the lane from the change.** Classify by the paths the change touches, including both sides of every rename. Use a fixed vocabulary: docs, ordinary, truth (money, sync, evidence, identity), and held (workflows, access, billing, migrations, merge and release tooling). Never read the lane from the author. If the list of changed files cannot be read, the change is held. Make the lane visible where people look: a label and title prefix on high-stakes changes, and a fixed marker line at the end of every message that mentions one.
 2. **Give every lane an independent judge.** The reviewer runs in a fresh context and loads its prompt and workflow from the base branch, so the change cannot edit its own judge. It reads the change without running it, and posts a verdict on the exact head commit. "Could not review" counts as not reviewed.
 3. **Make the judge earn trust.** Correctness and stated requirements only. Each blocking finding quotes the line it is about. Re-review converges on an unchanged diff. A new reviewer reports without blocking until it clears a written bar for volume, precision, recall on planted defects, and stability. It loses blocking power automatically when it falls below that bar.
 4. **Add a second vendor where mistakes are costly.** On truth and held lanes, a model from a different vendor clears the change before it is marked ready, so approval is never one model agreeing with itself. Give it a fixed timeout so a quiet reviewer cannot stall the line, and record when the timeout was used. A blocking ruling stops ready, a push restarts the clock, and the first reviewer's approval never replaces the second. Ordinary work does not need it; demanding it everywhere makes the second opinion a rubber stamp.
@@ -49,4 +49,4 @@ Open a docs-only change and a change to merge tooling, and see whether they get 
 
 ## Output
 
-LANE (and the paths that set it) · JUDGES REQUIRED · JUDGES THAT RAN (on which head) · LANDER · HUMAN STEPS REMAINING · MEASURES (measured or expected).
+LANE (and the paths that set it) · MARKER (high stakes or ordinary) · JUDGES REQUIRED · JUDGES THAT RAN (on which head) · LANDER · HUMAN STEPS REMAINING · MEASURES (measured or expected).

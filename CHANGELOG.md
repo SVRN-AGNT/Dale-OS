@@ -33,6 +33,7 @@
 - Added `shipping-lanes`: risk picks the lane, the lane picks the judge and the lander, and the reviewed party never summons its own review. Shelved at A2.4.
 - Added case `the-reviewer-nobody-called`.
 - Corrected `shipping/` and `shipping-lanes`: the second-vendor review clears every PR before ready (the reference repo's standing rule), not only authority work. The held hand-merge rule is merged in the reference repo.
+- Added the high-stakes marker to `shipping/` and `shipping-lanes`: L2/L3 PRs get a `high-stakes` label, a `[HIGH STAKES]` title prefix, and a closing `🔴 HIGH STAKES · #NNNN · <action>` line in every message about them; ordinary PRs get `🟢 Ordinary · #NNNN`.
 - Recorded the owner's decision: ordinary PRs need green CI and a passing Agent Review; truth and held PRs also need a second-vendor CLEAR before ready, or 2 hours with no ruling ("PM timeout"). A blocking ruling stops ready, a push restarts the clock, and Agent Review never replaces a CLEAR.
 - Expanded the canonical catalog to 31 skills.
 

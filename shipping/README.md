@@ -47,6 +47,16 @@ The lane decides who judges and who lands. It never decides whether the work is 
 
 **The ready rule (owner decision, 14 October 2026).** Ordinary work (L0 and L1) needs green CI and a passing Agent Review, and nothing more. Authority work (L2 truth: money, sync, schema, evidence) and held PRs (L3) are marked ready only after the second-vendor reviewer answers `CLEAR` on a HANDOFF naming the current head, or after 2 hours with no ruling (recorded as "PM timeout"). A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never stands in for a CLEAR. This replaced an earlier rule, judged overly cautious by the owner, that required the second vendor on every PR. In the reference repo it is written policy, and the Controller does not check for the CLEAR yet.
 
+### Recognizing a high-stakes PR
+
+The owner set this on 14 October 2026 so a high-stakes PR is recognizable at a glance. L2 and L3 are high stakes; L0 and L1 are ordinary.
+
+- **Every message that mentions a PR ends with one marker line per PR:**
+  - `🔴 HIGH STAKES · #NNNN · <action needed>` for L2 or L3
+  - `🟢 Ordinary · #NNNN` for L0 or L1
+- **A high-stakes PR also carries** a `high-stakes` label and a `[HIGH STAKES]` title prefix, so it stands out in GitHub's own lists.
+- The marker comes from the derived lane, never from the author's opinion.
+
 ### The flow
 
 ```mermaid
