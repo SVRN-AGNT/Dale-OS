@@ -28,7 +28,7 @@ The aim is not to remove people. It is to move them to the steps that need a per
 |---|---|---|---|
 | **Builder** | A Claude session | Writes the change on its own branch, verifies locally, opens a draft PR, marks it ready | Merge, approve itself, edit its own judge |
 | **Agent Reviewer** | A fresh Claude instance in CI | Reads the diff at the exact head commit and posts a typed verdict as a check run, with each blocking finding quoting the line it cites | Push, merge, approve held scope |
-| **Second-vendor reviewer** | A model from a different vendor (here, a ChatGPT "PM" agent) | Gives a second opinion when the Builder posts a `HANDOFF:` comment. In the reference repo that is every PR: the owner's standing rule (2026-10-07) is a CLEAR before the PR is marked ready | Merge |
+| **Second-vendor reviewer** | A model from a different vendor (here, a ChatGPT "PM" agent) | Gives a second opinion on authority work (truth and held lanes) when the Builder posts a `HANDOFF:` comment: a CLEAR before the PR is marked ready, or 2 hours with no ruling | Merge |
 | **Controller** | A GitHub workflow (or a merge queue) | The only automatic merger. Merges eligible PRs into the integration branch, one at a time | Merge held scope, promote, deploy |
 | **Owner** | A person | Promotes to production, sets up access once, merges held scope or delegates it in writing, decides when the reviewer may block | Routine merges |
 
@@ -38,14 +38,24 @@ A lane is chosen from the paths a change touches, including both sides of a rena
 
 | Lane | Typical paths | What it needs to land |
 |---|---|---|
-| **L0 docs** | `docs/**`, `*.md` only | Required checks + Agent Review + second-vendor CLEAR |
-| **L1 ordinary** | Everything not below | Green required checks on the exact tree + Agent Review + second-vendor CLEAR |
-| **L2 truth** | Money, sync, evidence, imports, identity | L1 + the affected tests |
+| **L0 docs** | `docs/**`, `*.md` only | Required checks + a passing Agent Review |
+| **L1 ordinary** | Everything not below | Green required checks on the exact tree + a passing Agent Review |
+| **L2 truth** | Money, sync, evidence, imports, identity | L1 + the affected tests + second-vendor CLEAR (or 2-hour timeout) |
 | **L3 held** | Workflows, access, billing, migrations, merge and release tooling | L2 where it applies, then **a person lands it**. The Controller stops. |
 
 The lane decides who judges and who lands. It never decides whether the work is correct; the checks and reviewers do that.
 
-**Pending owner decision:** whether the second-vendor CLEAR stays on every lane, gets a timeout like the held-scope rule (rule 10), or narrows to L2 and L3. Until the owner decides, it applies to every lane. In the reference repo the rule is written policy; the Controller does not check for the CLEAR yet.
+**The ready rule (owner decision, 14 October 2026).** Ordinary work (L0 and L1) needs green CI and a passing Agent Review, and nothing more. Authority work (L2 truth: money, sync, evidence, imports, identity) and held PRs (L3) are marked ready only after the second-vendor reviewer answers `CLEAR` on a HANDOFF naming the current head, or after 2 hours with no ruling (recorded as "PM timeout"). A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never stands in for a CLEAR. This replaced an earlier rule, judged overly cautious by the owner, that required the second vendor on every PR. It is not yet in the reference repo's written rules: those still require the second vendor on every PR, and the PR that updates them still has to be revised. The Controller does not check for the CLEAR either way.
+
+### Recognizing a high-stakes PR
+
+The owner set this on 14 October 2026 so a high-stakes PR is recognizable at a glance. L2 and L3 are high stakes; L0 and L1 are ordinary.
+
+- **Every message that mentions a PR ends with one marker line per PR:**
+  - `🔴 HIGH STAKES · #NNNN · <action needed>` for L2 or L3
+  - `🟢 Ordinary · #NNNN` for L0 or L1
+- **A high-stakes PR also carries** a `high-stakes` label and a `[HIGH STAKES]` title prefix, so it stands out in GitHub's own lists.
+- The marker comes from the derived lane, never from the author's opinion.
 
 ### The flow
 
@@ -53,12 +63,12 @@ The lane decides who judges and who lands. It never decides whether the work is 
 flowchart LR
   B[Builder session<br/>draft PR] -->|ready| CI[Required checks<br/>on exact head]
   B -->|ready| AR[Agent Reviewer<br/>fresh context]
-  B -->|HANDOFF| PM[Second-vendor<br/>review: CLEAR]
   CI --> L{Lane from<br/>changed paths}
   AR --> L
-  PM --> L
-  L -->|L0 / L1 / L2| C[Controller<br/>sole auto-merger]
-  L -->|L3 held| H[Person lands it<br/>or written delegation]
+  L -->|L0 / L1| C[Controller<br/>sole auto-merger]
+  L -->|L2 / L3| PM[Second-vendor CLEAR<br/>or 2 h timeout]
+  PM -->|L2| C
+  PM -->|L3 held| H[Person lands it<br/>or written delegation]
   C --> I[(Integration<br/>branch)]
   H --> I
   I -->|frozen cut| P[Promotion<br/>owner approves] --> PROD[(Production)]
@@ -73,8 +83,8 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 3. **Find, then verify.** A blocking finding must quote the line at head that it is about, or it is dropped. Anthropic's own review tool has the same verification step ([playbook F3](PLAYBOOK.md#f3)).
 4. **Correctness only, and re-review converges.** Nits never block. If a push leaves the diff unchanged, the earlier verdict carries over. In the reference repo this compares `git patch-id --verbatim`, because `--stable` ignores whitespace and the reviewer itself found that gap.
 5. **Shadow first.** A new reviewer reports and does not block until it clears a written bar: at least 30 PRs, at least 80% precision, at least 4 of 5 planted defects caught, at least 9 of 10 re-runs agreeing, "could not review" on at most 5% of runs, bounded cost and wall time, and at most 1 escape (full bar in [ADOPT step 11](ADOPT.md#step-11--the-reviewer-earns-blocking-power)). Falling below the demotion line returns it to report-only with no decision needed, because that narrows authority.
-6. **Two vendors before ready.** A second opinion from a different vendor clears the change before it is marked ready, so approval is never one model agreeing with itself. In the reference repo this covers every PR; whether to narrow it is the pending decision above.
-7. **The review trigger is not the author's choice.** Agent Review runs on every ready PR automatically. The `HANDOFF:` for the second vendor is part of every PR's checklist, not something the author may skip. See the case [the reviewer nobody called](../cases/the-reviewer-nobody-called.md).
+6. **Two vendors on authority work.** On truth and held lanes, a second opinion from a different vendor clears the change before it is marked ready, so approval is never one model agreeing with itself. A 2-hour timeout keeps a quiet reviewer from stalling the line (the ready rule above). Ordinary work relies on the Agent Review alone.
+7. **The review trigger is not the author's choice.** Agent Review runs on every ready PR automatically. The `HANDOFF:` for the second vendor is part of every truth and held PR's checklist, not something the author may skip. See the case [the reviewer nobody called](../cases/the-reviewer-nobody-called.md).
 8. **One lander.** Only the Controller merges automatically. No session merges, enables auto-merge or updates branches around it.
 9. **Held scope stops honestly.** If no approver exists that the automation cannot impersonate, held changes stop and a person lands them. When the owner delegates in writing, the merge commit quotes the delegation and says the merge is unattested.
 10. **A hand merge waits for the second opinion.** A held PR may be merged by hand only when its current head has green CI, a passing Agent Review, and a `HANDOFF:` that the second-vendor reviewer has answered `CLEAR` for that head, or that has had no ruling for 2 hours. A `CORRECT` or `HOLD` blocks the merge. A push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket merge approval does not. The merge commit records which path was taken. This came from two held PRs that were merged before the second opinion arrived, which turned it into a check that ran after the merge. (In the reference repo this rule was merged on 14 October 2026.)
@@ -109,7 +119,9 @@ These are the states when this page was written. Check the linked PRs for live s
 - The release-notes bot is removed, and each promotion is frozen at one commit.
 - The shared CI layer is in this repository ([Dale-OS #20](https://github.com/Tataku/Dale-OS/pull/20)). Its first run found that this repository tested every PR commit twice.
 
-**Built, not landed:** terse test output for agents (9 lines instead of 2,531), skipping post-merge checks for an already-tested tree, a faster simulator (2.8× on its own, suite-wide saving not measured), promotion receipts generated from git, and adoption of the shared layer in two more repositories.
+**Also merged later that day:** the real-save-path test for the example module, a faster simulator (2.8× on its own; suite-wide saving not measured), and screenshots on UI PRs with a Friday digest issue.
+
+**Built, not landed:** terse test output for agents (9 lines instead of 2,531), skipping post-merge checks for an already-tested tree, promotion receipts generated from git, and adoption of the shared layer in two more repositories.
 
 **Waiting on a one-time setup from the owner:** the agents' own GitHub App and ruleset, a production test account, and one deny rule in settings.
 

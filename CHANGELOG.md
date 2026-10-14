@@ -32,7 +32,9 @@
 - Added the Shipping System under `shipping/`: the operating model for agent review and merge by risk lane (roles, L0–L3 lanes, rules, what stays human), a stage-by-stage before and after with measured versus expected labels, the sourced Anthropic playbook with rollout status, a twelve-step adoption guide, and templates (reviewer rubric, HANDOFF comment, lane map, PR header).
 - Added `shipping-lanes`: risk picks the lane, the lane picks the judge and the lander, and the reviewed party never summons its own review. Shelved at A2.4.
 - Added case `the-reviewer-nobody-called`.
-- Corrected `shipping/` and `shipping-lanes`: the second-vendor review clears every PR before ready (the reference repo's standing rule), not only authority work; narrowing it is a pending owner decision. The held hand-merge rule is merged in the reference repo.
+- Corrected `shipping/` and `shipping-lanes`: the second-vendor review clears every PR before ready (the reference repo's standing rule), not only authority work. The held hand-merge rule is merged in the reference repo.
+- Added the high-stakes marker to `shipping/` and `shipping-lanes`: L2/L3 PRs get a `high-stakes` label, a `[HIGH STAKES]` title prefix, and a closing `🔴 HIGH STAKES · #NNNN · <action>` line in every message about them; ordinary PRs get `🟢 Ordinary · #NNNN`.
+- Recorded the owner's decision: ordinary PRs need green CI and a passing Agent Review; truth and held PRs also need a second-vendor CLEAR before ready, or 2 hours with no ruling ("PM timeout"). A blocking ruling stops ready, a push restarts the clock, and Agent Review never replaces a CLEAR.
 - Expanded the canonical catalog to 31 skills.
 
 ## 0.1.0 — public release

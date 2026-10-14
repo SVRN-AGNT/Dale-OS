@@ -91,7 +91,7 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | # | Recommendation | From | Status |
 |---|---|---|---|
 | R1 | Run the new reviewer in shadow mode first | F4 | Done: report-only, with a written promotion and demotion bar |
-| R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: a second-vendor CLEAR before ready on every PR (owner rule since 2026-10-07); a held hand merge waits for it, or 2 hours (merged 2026-10-14). Narrowing the scope is pending the owner's decision |
+| R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: Agent Review on every PR; a second-vendor CLEAR (or 2 hours with no ruling) before ready on authority and held PRs (owner decision 2026-10-14, replacing an every-PR rule; the reference repo's written rule update is pending); a held hand merge waits for it too (merged) |
 | R2 | Find, then verify each finding before it can block | F3 | Done |
 | R3 | Correctness only, nits never block, re-review converges | F2, F3 | Done |
 | R4 | Gate merges on the count of blocking findings | F3 | Owner decides, after shadow data meets the bar |
@@ -104,8 +104,8 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | R11 | Deterministic promotion gates | F4, F5 | In progress: tooling and the frozen cut merged, receipt built |
 | R12 | Post-deploy production check | F10 | Owner decides: built switched off |
 | R13 | Changelog fragments instead of one shared file | F9 | Not started (by analogy to F9; Anthropic does not describe changelogs) |
-| R14 | Screenshots on UI PRs, driven through the running app | F1, F2, F9 | In progress: capture is 7 of 8 byte-identical across runs |
-| R15 | A weekly digest routine, off the hour, updating one page | F10 | In progress |
+| R14 | Screenshots on UI PRs, driven through the running app | F1, F2, F9 | Done: before and after screenshots on UI PRs (merged 2026-10-14) |
+| R15 | A weekly digest routine, off the hour, updating one page | F10 | Done as a Friday digest issue (merged 2026-10-14) |
 | R16 | Strip the harness as models improve | F7, F8 | Adopted as a principle |
 | R17 | Harness audit after each model upgrade | F8 | Done: procedure written, first run completed |
 
