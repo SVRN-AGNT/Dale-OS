@@ -1,0 +1,199 @@
+# Reusable: the second-vendor PM answers every Claude `HANDOFF:` with no person relaying it.
+#
+# A Claude session posts `HANDOFF:` (through the `claude` app, at byte zero,
+# naming the PR's exact head) on a PR. This workflow reviews that head with
+# OpenAI Codex, read-only, and posts a `PM REVIEW — CLEAR | CORRECT | HOLD |
+# OWNER GATE` comment plus a `PM Review` check on the head (a push revokes it).
+# Logic and rationale: ci/pm_review.py.
+#
+# Caller (one small file per repository; ci/README.md has the full block):
+#
+#   on:
+#     issue_comment: { types: [created] }
+#     workflow_dispatch: { inputs: { comment_id: { type: string, required: true } } }
+#   permissions: { contents: read }
+#   jobs:
+#     pm:
+#       # A dispatch must run from the default branch, or the branch picks its own reviewer.
+#       if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
+#       permissions: { contents: read, issues: write, pull-requests: write, checks: write }
+#       uses: <owner>/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
+#       with:
+#         ref: <sha>   # the same sha, so the script matches the workflow
+#         comment_id: ${{ github.event.comment.id || inputs.comment_id }}
+#       secrets:
+#         openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+#
+# It reviews; it never approves, merges, marks ready or deploys.
+name: ci-pm-review
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Dale-OS ref to take the script from; pin it to the same sha as `uses:`
+        type: string
+        required: true
+      comment_id:
+        description: The HANDOFF comment to answer
+        type: string
+        required: true
+      allowed_authors:
+        description: Comma-separated GitHub logins whose HANDOFFs are reviewed
+        type: string
+        default: Tataku
+      control_issue:
+        description: Issue that may carry HANDOFF mirrors and whose body is the PM contract (0 for none)
+        type: number
+        default: 0
+      contract_path:
+        description: Optional file in the calling repository with the PM contract
+        type: string
+        default: ''
+      held_paths:
+        description: Optional regex of paths the repository holds for a person to merge
+        type: string
+        default: ''
+      model:
+        description: Codex model (empty = Codex default)
+        type: string
+        default: ''
+      effort:
+        description: Codex reasoning effort
+        type: string
+        default: high
+    secrets:
+      openai_api_key:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: PM review
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      checks: read
+    outputs:
+      review: ${{ steps.resolve.outputs.review }}
+      notice: ${{ steps.resolve.outputs.notice }}
+      pr: ${{ steps.resolve.outputs.pr }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      base_sha: ${{ steps.prepare.outputs.base_sha }}
+      handoff_id: ${{ steps.resolve.outputs.handoff_id }}
+      has_key: ${{ steps.cred.outputs.available }}
+      final_message: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - name: Checkout the caller's merged default branch (never the PR)
+        uses: actions/checkout@v4
+        with:
+          # Explicit: a hand-dispatched run on a PR branch must still see the merged
+          # default branch, never the PR's tree (whose AGENTS.md Codex would load).
+          ref: ${{ github.event.repository.default_branch }}
+          path: caller
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout the shared PM script
+        uses: actions/checkout@v4
+        with:
+          repository: Tataku/Dale-OS
+          ref: ${{ inputs.ref }}
+          path: shared
+          persist-credentials: false
+
+      - name: Resolve the HANDOFF and its PR
+        id: resolve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMENT_ID: ${{ inputs.comment_id }}
+          ALLOWED_AUTHORS: ${{ inputs.allowed_authors }}
+          CONTROL_ISSUE: ${{ inputs.control_issue }}
+          HELD_PATHS: ${{ inputs.held_paths }}
+        run: python3 shared/ci/pm_review.py resolve
+
+      - name: Check provider credential
+        id: cred
+        if: steps.resolve.outputs.review == 'true'
+        env:
+          HAS_KEY: ${{ secrets.openai_api_key != '' }}
+        run: echo "available=${HAS_KEY}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch the PR as objects (no checkout)
+        if: steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        working-directory: caller
+        env:
+          TOKEN: ${{ github.token }}
+          PR: ${{ steps.resolve.outputs.pr }}
+          HEAD: ${{ steps.resolve.outputs.head_sha }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+        run: |
+          AUTH=$(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)
+          git -c http.extraheader="AUTHORIZATION: basic ${AUTH}" fetch --no-tags origin \
+            "+refs/pull/${PR}/head:refs/remotes/pr/head" "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          test "$(git rev-parse refs/remotes/pr/head)" = "$HEAD"
+
+      - name: Write the PM's inputs
+        id: prepare
+        if: steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        env:
+          CALLER_DIR: caller
+          PR_NUMBER: ${{ steps.resolve.outputs.pr }}
+          HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+          BASE_REF: ${{ steps.resolve.outputs.base_ref }}
+          HELD: ${{ steps.resolve.outputs.held }}
+          CONTRACT_PATH: ${{ inputs.contract_path }}
+        run: python3 shared/ci/pm_review.py prepare
+
+      # LAST STEP OF THE JOB: drop-sudo is irreversible for the runner, and
+      # nothing may run after the model in a job that holds a token.
+      - name: PM ruling (OpenAI Codex, read-only)
+        id: codex
+        if: steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.openai_api_key }}
+          working-directory: ${{ github.workspace }}/caller
+          prompt-file: ${{ github.workspace }}/caller/.pm-review/prompt.md
+          output-schema-file: ${{ github.workspace }}/caller/.pm-review/schema.json
+          permission-profile: ':read-only'
+          safety-strategy: drop-sudo
+          model: ${{ inputs.model }}
+          effort: ${{ inputs.effort }}
+
+  post:
+    name: Post the PM ruling
+    needs: review
+    if: always() && needs.review.outputs.pr != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      checks: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Tataku/Dale-OS
+          ref: ${{ inputs.ref }}
+          path: shared
+          sparse-checkout: ci
+          persist-credentials: false
+      - name: Post
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.review.outputs.pr }}
+          REVIEW: ${{ needs.review.outputs.review }}
+          NOTICE: ${{ needs.review.outputs.notice }}
+          HAS_KEY: ${{ needs.review.outputs.has_key }}
+          HEAD_SHA: ${{ needs.review.outputs.head_sha }}
+          BASE_SHA: ${{ needs.review.outputs.base_sha }}
+          HANDOFF_ID: ${{ needs.review.outputs.handoff_id }}
+          FINAL_MESSAGE: ${{ needs.review.outputs.final_message }}
+          REVIEW_RESULT: ${{ needs.review.result }}
+        run: python3 shared/ci/pm_review.py post

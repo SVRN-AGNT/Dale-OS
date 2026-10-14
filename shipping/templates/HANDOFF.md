@@ -2,6 +2,8 @@
 
 Post this as a PR comment on every L2 (truth) or L3 (held) PR, after the Agent Review verdict is in, and mark the PR ready only after a `CLEAR` on its current head, or after 2 hours with no ruling (record it as "PM timeout"). An Agent Review approval never stands in for a CLEAR. The second reviewer is a model from a different vendor. Its reply is evidence for a person or the lander; it never merges anything.
 
+The reply is automatic where the repository runs the shared PM caller ([`ci/README.md`](../../ci/README.md#the-pm-caller)). The comment must be posted through the `claude` app, start with `HANDOFF:` at byte zero, and name the current head as a full 40-character sha, or the PM skips it.
+
 ```text
 HANDOFF: second-vendor review requested
 
