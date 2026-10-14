@@ -75,11 +75,11 @@ Build the reviewer as a workflow that has all of these properties. The reference
 
 **Done when:** the reviewer has posted verdicts on real PRs, and a contract test fails if the merger starts reading the verdict before the owner decides it may.
 
-### Step 6 · Second-vendor review before ready
+### Step 6 · Second-vendor review on authority lanes
 
-On every PR, the Builder posts a `HANDOFF:` comment after the Agent Review verdict, and marks the PR ready only after a `CLEAR` on its current head, or 2 hours with no ruling (recorded as "PM timeout"), using [`templates/HANDOFF.md`](templates/HANDOFF.md). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
+On every L2 and L3 PR, the Builder posts a `HANDOFF:` comment after the Agent Review verdict, and marks the PR ready only after a `CLEAR` on its current head, or 2 hours with no ruling (recorded as "PM timeout"), using [`templates/HANDOFF.md`](templates/HANDOFF.md). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
 
-A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never replaces a CLEAR. The timeout keeps a quiet reviewer from stalling every PR. An owner may later narrow the lanes this covers; write that decision down and base it on measured data.
+A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never replaces a CLEAR. The timeout keeps a quiet reviewer from stalling the line. Ordinary L0 and L1 work needs only green CI and a passing Agent Review. The reference repo first required the second vendor on every PR, and the owner dropped that as overly cautious.
 
 ## Level 3 · Autonomous landing
 
@@ -128,7 +128,7 @@ As of 14 October 2026:
 
 | Repository | Level reached | Next step |
 |---|---|---|
-| ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor on every PR with a 2-hour timeout | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
+| ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor on authority and held PRs with a 2-hour timeout | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
 | Dale-OS (public) | 1: the layer lives here and passes strict | Lane map; agent review |
 | wallet-alpha-lab (private) | Step 1 open in [#149](https://github.com/Tataku/wallet-alpha-lab/pull/149), green | Merge (it redeploys the same site code) |
 | ACF-Docs (public) | Step 1 open in [#214](https://github.com/Tataku/ACF-Docs/pull/214), green | Merge (it redeploys the same site code) |

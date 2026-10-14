@@ -33,7 +33,7 @@
 - Added `shipping-lanes`: risk picks the lane, the lane picks the judge and the lander, and the reviewed party never summons its own review. Shelved at A2.4.
 - Added case `the-reviewer-nobody-called`.
 - Corrected `shipping/` and `shipping-lanes`: the second-vendor review clears every PR before ready (the reference repo's standing rule), not only authority work; narrowing it is a pending owner decision. The held hand-merge rule is merged in the reference repo.
-- Recorded the owner's decision: the second-vendor CLEAR stays on every PR, with a 2-hour timeout before ready ("PM timeout"); a blocking ruling stops ready, a push restarts the clock, and Agent Review never replaces a CLEAR.
+- Recorded the owner's decision: ordinary PRs need green CI and a passing Agent Review; truth and held PRs also need a second-vendor CLEAR before ready, or 2 hours with no ruling ("PM timeout"). A blocking ruling stops ready, a push restarts the clock, and Agent Review never replaces a CLEAR.
 - Expanded the canonical catalog to 31 skills.
 
 ## 0.1.0 — public release
