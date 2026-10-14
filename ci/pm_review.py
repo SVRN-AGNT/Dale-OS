@@ -205,9 +205,14 @@ def interpret(final_message, head_sha: str = "") -> dict:
         return none("The PM returned no parseable ruling.")
     if not isinstance(v, dict) or v.get("verdict") not in VERDICTS:
         return none(f"The PM returned an unknown verdict {json.dumps(v.get('verdict') if isinstance(v, dict) else None)}.")
-    blocking = v.get("blocking") if isinstance(v.get("blocking"), list) else []
-    verified = [s for s in (v.get("verified") or []) if isinstance(s, str) and s.strip()]
-    actions = [s for s in (v.get("required_actions") or []) if isinstance(s, str) and s.strip()]
+    # The schema says these are arrays; the parser must not trust that. A string iterates as
+    # characters and an object as its keys, so a malformed reply would otherwise read as checks done.
+    for key in ("verified", "blocking", "required_actions"):
+        if not isinstance(v.get(key), list):
+            return none(f"The PM returned `{key}` as {type(v.get(key)).__name__}, not a list.")
+    blocking = v["blocking"]
+    verified = [s for s in v["verified"] if isinstance(s, str) and s.strip()]
+    actions = [s for s in v["required_actions"] if isinstance(s, str) and s.strip()]
     verdict = v["verdict"]
     if verdict == "CLEAR" and blocking:
         verdict = "CORRECT"  # the findings win over the label
