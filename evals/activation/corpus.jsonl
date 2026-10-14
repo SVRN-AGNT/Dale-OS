@@ -16,6 +16,12 @@
 {"id":"confuse-operator-ui","prompt":"Make this marketing hero visually bolder.","forbidden_skill":"operator-ui-audit"}
 {"id":"activate-swarm","prompt":"SWARM this architecture audit: design the smallest adaptive multi-agent harness, use independent falsification, and prune lanes when the evidence converges.","expected_skill":"swarm"}
 {"id":"confuse-swarm","prompt":"Rename this local variable and update the one test that references it.","forbidden_skill":"swarm"}
+{"id":"activate-reachability-proof","prompt":"I added a regression test and a CI guard for this bug. Before we call it done, prove the fix is reached from the real entry point, the guard runs in a gate, and a silent failure would be visible.","expected_skill":"reachability-proof"}
+{"id":"confuse-reachability-proof","prompt":"Sketch three throwaway prototypes of this settings screen so we can pick a direction.","forbidden_skill":"reachability-proof"}
+{"id":"activate-loop-closure","prompt":"We have dozens of open PRs, stale branches, and deferred follow-ups. Run a full loose-ends audit and tell me the net loops closed versus opened.","expected_skill":"loop-closure"}
+{"id":"confuse-loop-closure","prompt":"Brainstorm ten new feature ideas for next quarter.","forbidden_skill":"loop-closure"}
+{"id":"activate-false-competence-check","prompt":"The agent says the fix is done: the rename went through, the cleanup sweep passed, and the tests were green on the first try. Check whether this only looks competent.","expected_skill":"false-competence-check"}
+{"id":"confuse-false-competence-check","prompt":"Explain what a merge base is in git.","forbidden_skill":"false-competence-check"}
 {"id":"activate-money-trail","prompt":"Trace these deposits, withdrawals, transfers, fees, and settlements by source, destination, and economic meaning. Do not infer meaning from sign alone.","expected_skill":"money-trail"}
 {"id":"confuse-money-trail","prompt":"Convert $20 to euros using the provided fixed rate.","forbidden_skill":"money-trail"}
 {"id":"activate-accounting-integrity","prompt":"All ledger rows pass schema validation, but shares, cash, basis, dates, and realized P&L may contradict each other. Test whether the records can all be true at once.","expected_skill":"accounting-integrity"}

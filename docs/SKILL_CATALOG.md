@@ -9,6 +9,9 @@
 - **`intent-drift-check`** — Busy is not aligned.
 - **`operator-ui-audit`** — A wrong value in the UI is usually a data problem wearing a costume.
 - **`swarm`** — Design the reasoning system before you spawn the agents.
+- **`reachability-proof`** — A guard nothing reaches is not a guard. Silence is not evidence of health.
+- **`loop-closure`** — Capture is not the problem. Retirement is.
+- **`false-competence-check`** — The most expensive mistakes look like good work.
 - **`money-trail`** — Every dollar gets a passport.
 - **`accounting-integrity`** — Well-formed data can still lie.
 - **`performance-truth`** — Funding is not performance.

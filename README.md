@@ -59,6 +59,9 @@ For coding agents and agentic software work:
 - `intent-drift-check` — busy is not the same as aligned.
 - `operator-ui-audit` — a wrong value in the UI is usually a data problem wearing a costume.
 - `swarm` — design the smallest task-specific multi-agent harness; expand and prune on evidence.
+- `reachability-proof` — a guard nothing reaches is not a guard; silence is not evidence of health.
+- `loop-closure` — capture is not the problem, retirement is; report net loops.
+- `false-competence-check` — the most expensive mistakes look like good work.
 
 ### Advanced agentic engineering
 

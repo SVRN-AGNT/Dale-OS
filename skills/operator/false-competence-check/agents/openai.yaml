@@ -1,0 +1,3 @@
+interface:
+  display_name: "False Competence Check"
+  short_description: "Catch work that looks competent but is not"
