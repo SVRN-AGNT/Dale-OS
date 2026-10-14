@@ -1,12 +1,12 @@
 # HANDOFF comment for the second-vendor reviewer
 
-Post this as a PR comment on every L2 (truth) or L3 (held) PR, after the Agent Review verdict is in. The second reviewer is a model from a different vendor. Its reply is evidence for a person or the lander; it never merges anything.
+Post this as a PR comment on every PR, after the Agent Review verdict is in, and mark the PR ready only after a `CLEAR` on its current head. (Narrowing this to L2 and L3 is an owner decision; in the reference repo it is pending.) The second reviewer is a model from a different vendor. Its reply is evidence for a person or the lander; it never merges anything.
 
 ```text
 HANDOFF: second-vendor review requested
 
 PR: #<number>   Head: <full sha>   Base: <branch> @ <sha>
-Lane: <L2 truth | L3 held>, derived from: <the paths that set the lane>
+Lane: <L0 | L1 | L2 | L3>, derived from: <the paths that set the lane>
 
 Objective: <one sentence on what the change must achieve>
 Scope IN: <what it changes>

@@ -75,9 +75,11 @@ Build the reviewer as a workflow that has all of these properties. The reference
 
 **Done when:** the reviewer has posted verdicts on real PRs, and a contract test fails if the merger starts reading the verdict before the owner decides it may.
 
-### Step 6 · Second-vendor review on authority lanes
+### Step 6 · Second-vendor review before ready
 
-On L2 and L3 PRs, the Builder posts a `HANDOFF:` comment after the Agent Review verdict, using [`templates/HANDOFF.md`](templates/HANDOFF.md). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
+On every PR, the Builder posts a `HANDOFF:` comment after the Agent Review verdict, and marks the PR ready only after a `CLEAR` on its current head, using [`templates/HANDOFF.md`](templates/HANDOFF.md). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
+
+The owner may later narrow this to L2 and L3, or add a timeout for ordinary work. Write that decision down, and base it on measured data from the reviewer. In the reference repo this is pending.
 
 ## Level 3 · Autonomous landing
 
@@ -91,7 +93,7 @@ Pick exactly one automatic merger: a Controller workflow, or a GitHub merge queu
 
 The lander refuses L3. If no approver exists that the automation cannot impersonate, a person lands L3 changes. The trusted-reviewer list stays empty until a separate identity exists. When the owner delegates merges in writing, the merge commit quotes the delegation and says the merge is unattested.
 
-A hand merge of an L3 PR waits for the second opinion. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
+A hand merge of an L3 PR waits for the second opinion. This covers a push after the PR was marked ready, or a reviewer that has gone quiet, which is why the 2-hour timeout exists alongside the ready-time CLEAR. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
 
 **Done when:** an L3 PR with a fresh push and no new HANDOFF cannot be hand-merged under the written rule, and each hand-merge commit names its path (CLEAR, timeout, or the owner's per-PR waiver).
 
@@ -126,7 +128,7 @@ As of 14 October 2026:
 
 | Repository | Level reached | Next step |
 |---|---|---|
-| ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
+| ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor on every PR (narrowing pending) | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
 | Dale-OS (public) | 1: the layer lives here and passes strict | Lane map; agent review |
 | wallet-alpha-lab (private) | Step 1 open in [#149](https://github.com/Tataku/wallet-alpha-lab/pull/149), green | Merge (it redeploys the same site code) |
 | ACF-Docs (public) | Step 1 open in [#214](https://github.com/Tataku/ACF-Docs/pull/214), green | Merge (it redeploys the same site code) |
