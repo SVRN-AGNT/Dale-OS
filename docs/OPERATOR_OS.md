@@ -30,6 +30,7 @@ Operator OS governs how an agent works before it governs what code it writes.
 - memory that grows instead of getting cleaner
 - runs that certify their own completion (`completion-contract`)
 - merges authorised by stale or self-supplied evidence (`merge-authority`)
+- components that each pass alone and fail together (`seam-audit`)
 - merge/deploy overclaims
 - confident guesses presented as facts
 

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Seam Audit"
+  short_description: "Audit where two components meet"

@@ -119,6 +119,12 @@
               "name": "reachability-proof",
               "path": "skills/operator/reachability-proof/SKILL.md",
               "tagline": "A guard nothing reaches is not a guard. Silence is not evidence of health."
+            },
+            {
+              "call": "E2.3",
+              "name": "seam-audit",
+              "path": "skills/operator/seam-audit/SKILL.md",
+              "tagline": "Each side can be right while the system is wrong."
             }
           ]
         },

@@ -10,4 +10,4 @@ Two definitions of the same economic preflight.
 Preview and commit must share one economic truth function.
 
 ## Skills
-`ledger-repair` · `truth-boundary`
+`ledger-repair` · `truth-boundary` · `seam-audit`

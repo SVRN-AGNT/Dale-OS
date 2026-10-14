@@ -56,6 +56,7 @@ The resolver returns canonical paths and rules. It does not replace semantic jud
 | saving a lesson, rule, or preference to durable memory | `memory-promotion` |
 | an agent run or loop reporting that it is done | `completion-contract` |
 | an automated merge, approval, or promotion, or merged versus deployed | `merge-authority` |
+| two components disagree about one concept, or each passes alone but fails together | `seam-audit` |
 | movement of money | `money-trail` |
 | financial records that may contradict each other | `accounting-integrity` |
 | portfolio return | `performance-truth` |

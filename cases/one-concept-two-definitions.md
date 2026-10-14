@@ -10,4 +10,4 @@ Duplicated authority.
 Find the canonical definition, route all consumers through it, and pin the seam.
 
 ## Skills
-`systemic-bug-instinct` · `truth-boundary` · `accounting-integrity`
+`systemic-bug-instinct` · `truth-boundary` · `accounting-integrity` · `seam-audit`

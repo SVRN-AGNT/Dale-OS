@@ -67,6 +67,7 @@ For coding agents and agentic software work:
 - `memory-promotion` — the inbox can be messy, memory cannot be; remember less, better.
 - `completion-contract` — "done" is a verdict, not a report; the worker does not deliver it.
 - `merge-authority` — evidence authorises only the tree it judged; permission cannot come from the party asking.
+- `seam-audit` — each side can be right while the system is wrong; audit the join.
 
 ### Advanced agentic engineering
 

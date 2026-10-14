@@ -241,6 +241,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "seam-audit",
+      "family": "operator",
+      "path": "skills/operator/seam-audit/SKILL.md",
+      "description": "Audit the boundary where two components represent the same concept, because each side can pass its own tests while the combined system is wrong. Use when a value looks coherent but is wrong, when a projection or compatibility view stands in for a full record, when sync or merge involves deletes, when status codes or result shapes cross a boundary, or when \"unknown\" may become zero, false, or success as it crosses between two components. Do not use for a defect inside one component (use systemic-bug-instinct), for grading one claim's certainty (use truth-boundary), or for a financial repair's preview and commit (use ledger-repair).",
+      "rule": "**Each side can be right while the system is wrong. Audit the join, not just the parts.** Most dangerous defects produce values that look coherent. They live where two representations of one idea meet: a reader and a writer, a preview and a commit, a list view and the full record, two devices merging. Local tests pass on both sides because each side is internally consistent.",
+      "falsify": "For each pair, construct one input where the two sides should disagree if the seam were broken, such as a deleted record from another device, a withheld value, or a dry run of a write that should be refused. Run it through both together. If you cannot construct such an input, you have not identified the seam yet.",
+      "deterministic_companion": false
+    },
+    {
       "name": "swarm",
       "family": "operator",
       "path": "skills/operator/swarm/SKILL.md",
@@ -255,7 +264,7 @@
       "path": "skills/operator/systemic-bug-instinct/SKILL.md",
       "description": "Diagnose bugs as potentially systemic failures. Use when a defect, wrong value, stale state, edge-case failure, broken workflow, or misleading UI is found and you need the root mechanism, failure class, blast radius, root fix location, and regression guard.",
       "rule": "**The visible bug is a witness, not the crime scene.**",
-      "falsify": "Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open.",
+      "falsify": "Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open. Two tripwires mean the diagnosis is not finished: a count that does not match its population, and two paths that should agree but do not.",
       "deterministic_companion": false
     },
     {

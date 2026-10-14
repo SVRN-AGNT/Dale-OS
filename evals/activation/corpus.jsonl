@@ -56,3 +56,5 @@
 {"id":"confuse-completion-contract","prompt":"The agent says the null-check fix is done. Prove the new guard is actually reached in CI and fails when it should.","forbidden_skill":"completion-contract"}
 {"id":"activate-merge-authority","prompt":"Checks passed on the PR an hour ago; since then two commits were pushed and main moved. The bot account approved it and the description says risk: low. Should the automation merge it now?","expected_skill":"merge-authority"}
 {"id":"confuse-merge-authority","prompt":"Is PR 12 merged yet? Check before I mention it in the standup.","forbidden_skill":"merge-authority"}
+{"id":"activate-seam-audit","prompt":"I delete a note on my laptop, but after my phone syncs the note comes back. The delete code and the sync code both pass their own tests.","expected_skill":"seam-audit"}
+{"id":"confuse-seam-audit","prompt":"The balance card shows 0 when the broker returned nothing. Should it say unavailable instead?","forbidden_skill":"seam-audit"}

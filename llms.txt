@@ -35,6 +35,7 @@
 - skills/operator/memory-promotion/SKILL.md
 - skills/operator/completion-contract/SKILL.md
 - skills/operator/merge-authority/SKILL.md
+- skills/operator/seam-audit/SKILL.md
 
 ## Financial Truth
 - skills/financial-truth/money-trail/SKILL.md
