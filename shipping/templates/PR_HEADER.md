@@ -7,7 +7,7 @@ STATE: DRAFT | READY | REPAIR | HOLD | DEPENDENCY
 BASE_SHA: <sha the branch was cut from or last updated to>
 DEPENDS_ON: <PR numbers, or none>
 LANE: <L0 | L1 | L2 | L3> (derived by <script>, from <paths>)
-REVIEW: Agent Review <verdict> on <sha>; second vendor <CLEAR | findings | not required>
+REVIEW: Agent Review <verdict> on <sha>; second vendor <CLEAR | CORRECT | HOLD | not required>
 ```
 
 Then use the usual sections: what changed, why, how it was verified, and what is still unknown.
