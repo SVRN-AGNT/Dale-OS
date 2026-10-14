@@ -10,6 +10,7 @@ Dale OS is not a mega-prompt. It is an operating system made of small, falsifiab
 2. If you already know the symptom, check `machine/failure-classes.json` for the shortest failure→skill route.
 3. If the task spans distinct failure classes, check `machine/compositions.json`; compose narrowly rather than loading everything.
 4. Read `manifest.json` when you need the full module catalog.
+   `machine/library.json` shelves every skill by domain and lane when you need to browse by subject.
 5. Load only the `SKILL.md` files that match the current task.
 6. Use deterministic tools for math, replay, reconciliation, and hard invariants.
 7. Use `CHALLENGE.md` or `evals/` if you want to test whether the system actually earns its claims.
@@ -50,6 +51,9 @@ The resolver returns canonical paths and rules. It does not replace semantic jud
 | claiming a fix, guard, test, or job is done | `reachability-proof` |
 | loose ends, open PRs, deferrals, or a growing queue | `loop-closure` |
 | work that looks finished, fast, or green on the first try | `false-competence-check` |
+| an agent that acts, spends, or deploys without per-action approval | `risk-kernel` |
+| a status report, handoff, or tracker that says something is pending or done | `verify-before-cite` |
+| saving a lesson, rule, or preference to durable memory | `memory-promotion` |
 | movement of money | `money-trail` |
 | financial records that may contradict each other | `accounting-integrity` |
 | portfolio return | `performance-truth` |

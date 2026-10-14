@@ -9,6 +9,11 @@
 - Added `false-competence-check`: thirteen counterfeits of good work, each paired with the single check that tells them apart.
 - Deepened `swarm` references with portable material from field use: authority choke-point audit, value-versus-authority retention, evidence-level ladder, two-lens verification, and an audit-graph topology.
 - Expanded the canonical catalog to 24 skills. Frozen v0.1.0 evidence is unchanged.
+- Added `risk-kernel`: autonomous agents are made safe by construction (one door, compiled bounds, removed capabilities, inert self-modification, out-of-band promotion), not by instructions.
+- Added `verify-before-cite`: work state is live-verified against its authority before it is reported, every record of it is reconciled, and the canonical copy is the one corrected.
+- Added `memory-promotion`: a six-check gate for durable agent memory, update-before-add, and garbage collection.
+- Added the library catalog (`machine/library.json`, `docs/LIBRARY.md`): every skill shelved under one domain and lane, with a validator that keeps the catalog complete. Skill paths are unchanged.
+- Expanded the canonical catalog to 27 skills.
 
 ## 0.1.0 — public release
 

@@ -46,3 +46,9 @@
 {"id":"confuse-model-sanity","prompt":"Format this already-validated model output as a table.","forbidden_skill":"model-sanity"}
 {"id":"activate-close-books","prompt":"Before publishing performance, realized P&L, tax analytics, and attribution, decide which underlying books are ready and block only outputs contaminated by unresolved domains.","expected_skill":"close-the-books"}
 {"id":"confuse-close-books","prompt":"Show the current allocation percentages from a complete trusted snapshot.","forbidden_skill":"close-the-books"}
+{"id":"activate-risk-kernel","prompt":"Our trading agent will place orders with no human approving each one. The system prompt tells it never to exceed the position cap or withdraw funds. Is that safe enough?","expected_skill":"risk-kernel"}
+{"id":"confuse-risk-kernel","prompt":"Is buying this stock at today's price a good trade given its earnings?","forbidden_skill":"risk-kernel"}
+{"id":"activate-verify-before-cite","prompt":"Write my status update. The tracker says the auth fix is still waiting on my merge and the export bug is on a branch.","expected_skill":"verify-before-cite"}
+{"id":"confuse-verify-before-cite","prompt":"This revenue number came from a vendor estimate. Label how certain it is.","forbidden_skill":"verify-before-cite"}
+{"id":"activate-memory-promotion","prompt":"Session is wrapping up. Save everything we learned today to long-term memory so the next agent knows it.","expected_skill":"memory-promotion"}
+{"id":"confuse-memory-promotion","prompt":"Add a README section documenting how to install the CLI.","forbidden_skill":"memory-promotion"}

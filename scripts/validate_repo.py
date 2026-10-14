@@ -2,7 +2,7 @@
 from pathlib import Path
 import re, subprocess, sys, json
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_OPERATOR={'execution-charter','systemic-bug-instinct','truth-boundary','latest-authority','diff-scope-audit','protected-boundary','intent-drift-check','operator-ui-audit','swarm','reachability-proof','loop-closure','false-competence-check'}
+EXPECTED_OPERATOR={'execution-charter','systemic-bug-instinct','truth-boundary','latest-authority','diff-scope-audit','protected-boundary','intent-drift-check','operator-ui-audit','swarm','reachability-proof','loop-closure','false-competence-check','risk-kernel','verify-before-cite','memory-promotion'}
 EXPECTED_FINANCE={'money-trail','accounting-integrity','performance-truth','basis-proof','ledger-repair','transfer-neutrality','cash-truth','financial-evidence-grade','tax-character-proof','corporate-action-continuity','model-sanity','close-the-books'}
 EXPECTED_ALL=EXPECTED_OPERATOR|EXPECTED_FINANCE
 EXPECTED_COUNT=len(EXPECTED_ALL)
@@ -137,6 +137,29 @@ r=subprocess.run([sys.executable,str(ROOT/'scripts'/'build_manifest.py')],captur
 if r.returncode: fail('manifest build failed')
 manifest=json.loads((ROOT/'manifest.json').read_text())
 if len(manifest.get('skills',[]))!=EXPECTED_COUNT: fail(f'manifest must contain {EXPECTED_COUNT} skills')
+
+# Library catalog: every skill shelved exactly once, under a unique call number, at its real path.
+try:
+    library=json.loads((ROOT/'machine'/'library.json').read_text())
+    shelved=[]; calls=set()
+    for domain in library.get('domains',[]):
+        for lane in domain.get('lanes',[]):
+            if not lane.get('skills'): fail(f'library lane {lane.get("code")} is empty')
+            for entry in lane.get('skills',[]):
+                shelved.append(entry.get('name'))
+                call=entry.get('call')
+                if not call or not call.startswith(lane.get('code','?')+'.'): fail(f'library call number {call!r} does not match lane {lane.get("code")}')
+                if call in calls: fail(f'library call number {call} is duplicated')
+                calls.add(call)
+                if not (ROOT/str(entry.get('path'))).is_file(): fail(f'library path missing: {entry.get("path")}')
+    dupes=sorted({s for s in shelved if shelved.count(s)>1})
+    if dupes: fail(f'library shelves a skill more than once: {dupes}')
+    if set(shelved)!=EXPECTED_ALL: fail(f'library catalog drift: {sorted(set(shelved) ^ EXPECTED_ALL)}')
+    catalog=(ROOT/'docs'/'SKILL_CATALOG.md').read_text(encoding='utf-8')
+    for name in EXPECTED_ALL:
+        if f'[`{name}`]' not in catalog: fail(f'docs/SKILL_CATALOG.md does not list {name}')
+except (OSError, json.JSONDecodeError) as exc:
+    fail(f'machine/library.json unreadable: {exc}')
 
 if errors:
     print('VALIDATION FAILED')
