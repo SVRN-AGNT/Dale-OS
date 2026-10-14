@@ -7,7 +7,7 @@
 
 **Authority before autonomy. Evidence before confidence. Real fixes to real problems.**
 
-[Install](INSTALL.md) · [Advanced agentic engineering](docs/AGENTIC_ENGINEERING.md) · [Try to break it](CHALLENGE.md) · [Read the proof](PROOF.md) · [Browse the skills](docs/SKILL_CATALOG.md)
+[Install](INSTALL.md) · [Advanced agentic engineering](docs/AGENTIC_ENGINEERING.md) · [Try to break it](CHALLENGE.md) · [Read the proof](PROOF.md) · [Browse the library](docs/LIBRARY.md) · [Skill catalog](docs/SKILL_CATALOG.md)
 
 Dale OS is a portable control plane for AI agents doing consequential software and financial work. It turns recurring failure modes into small falsifiable skills, deterministic checks, narrow compositions, machine-readable receipts, and reproducible evals.
 
@@ -62,6 +62,9 @@ For coding agents and agentic software work:
 - `reachability-proof` — a guard nothing reaches is not a guard; silence is not evidence of health.
 - `loop-closure` — capture is not the problem, retirement is; report net loops.
 - `false-competence-check` — the most expensive mistakes look like good work.
+- `risk-kernel` — instructions are not boundaries; make the forbidden unexpressible.
+- `verify-before-cite` — memory is a lead, not a fact; verify work state before citing it.
+- `memory-promotion` — the inbox can be messy, memory cannot be; remember less, better.
 
 ### Advanced agentic engineering
 

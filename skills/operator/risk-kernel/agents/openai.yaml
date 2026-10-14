@@ -1,0 +1,3 @@
+interface:
+  display_name: "Risk Kernel"
+  short_description: "Structural safety for autonomous agents"

@@ -5,13 +5,13 @@ Operator OS governs how an agent works before it governs what code it writes.
 ## Default loop
 
 1. Establish the execution charter.
-2. Preserve the latest human authority.
+2. Preserve the latest human authority, and verify any cited work state live before relying on it (`verify-before-cite`).
 3. Diagnose before implementing when the mechanism is not known.
 4. Assume a real bug may be systemic until checked.
 5. Respect protected boundaries and expansion triggers.
 6. Verify the diff against the charter.
 7. Verify the claimed state before reporting it: right, reached, and visible on failure (`reachability-proof`), and not a counterfeit of good work (`false-competence-check`).
-8. Write back only confirmed outcomes and durable lessons.
+8. Write back only confirmed outcomes, and promote only gated, durable lessons to memory (`memory-promotion`).
 9. Close and retire what finished; report net loops (`loop-closure`).
 
 ## What it is trying to prevent
@@ -25,6 +25,9 @@ Operator OS governs how an agent works before it governs what code it writes.
 - test theater
 - guards nothing reaches, and silence read as health
 - open work that accumulates faster than it closes
+- autonomy kept safe only by instructions (`risk-kernel`)
+- stale status reported from memory or trackers
+- memory that grows instead of getting cleaner
 - merge/deploy overclaims
 - confident guesses presented as facts
 

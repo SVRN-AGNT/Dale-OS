@@ -9,6 +9,8 @@
 - README.md — human overview
 - PRINCIPLES.md — operating floor
 - machine/failure-classes.json — shortest symptom-to-skill route
+- machine/library.json — every skill shelved by domain and lane, with call numbers
+- docs/LIBRARY.md — the theme and how the shelves work
 - machine/compositions.json — narrow multi-skill recipes and handoff contracts
 - machine/agent-index.json — machine discovery contract
 - manifest.json — machine-readable skill catalog
@@ -28,6 +30,9 @@
 - skills/operator/reachability-proof/SKILL.md
 - skills/operator/loop-closure/SKILL.md
 - skills/operator/false-competence-check/SKILL.md
+- skills/operator/risk-kernel/SKILL.md
+- skills/operator/verify-before-cite/SKILL.md
+- skills/operator/memory-promotion/SKILL.md
 
 ## Financial Truth
 - skills/financial-truth/money-trail/SKILL.md

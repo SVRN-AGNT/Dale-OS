@@ -1,0 +1,3 @@
+interface:
+  display_name: "Verify Before Cite"
+  short_description: "Live-verify work state before reporting it"

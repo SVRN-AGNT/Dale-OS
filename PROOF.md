@@ -22,7 +22,8 @@ Not every rule needs every rung. A rule may never be promoted beyond the evidenc
 
 The current tree is `0.2.0-dev`.
 
-- 24 canonical skills are present, including `swarm` and the post-v0.1 verification and loop skills `reachability-proof`, `loop-closure`, and `false-competence-check`.
+- 27 canonical skills are present, including `swarm`, the post-v0.1 verification and loop skills `reachability-proof`, `loop-closure`, and `false-competence-check`, and the autonomy and state skills `risk-kernel`, `verify-before-cite`, and `memory-promotion`.
+- Every skill is shelved exactly once in the library catalog (`machine/library.json`), and the validator fails on a missing or unknown entry.
 - Every current skill includes an explicit falsification section.
 - Current activation coverage contains one positive route and one confuser per skill.
 - Current behavioral coverage contains one flagship case per skill.

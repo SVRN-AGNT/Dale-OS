@@ -178,6 +178,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "memory-promotion",
+      "family": "operator",
+      "path": "skills/operator/memory-promotion/SKILL.md",
+      "description": "Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when an agent is about to \"remember\" a lesson, rule, preference, or pattern; at the end of a session or a long autonomous run; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.",
+      "rule": "**The inbox can be messy. Memory cannot be. Remember less, better.** Durable memory steers every future session, so a wrong or noisy note is a bug that repeats. Keep four things apart: raw context, verified evidence, durable memory, and authorized action. Most of what an agent notices belongs in the first two.",
+      "falsify": "Take the last five notes added and run each through the gate. Count how many fail a check. Then search the store for two notes that disagree, or one that the current code contradicts. Either finding means the gate or the collection is not running.",
+      "deterministic_companion": false
+    },
+    {
       "name": "operator-ui-audit",
       "family": "operator",
       "path": "skills/operator/operator-ui-audit/SKILL.md",
@@ -205,6 +214,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "risk-kernel",
+      "family": "operator",
+      "path": "skills/operator/risk-kernel/SKILL.md",
+      "description": "Design structural safety for an agent that acts without per-action human approval. Use when an agent will execute, trade, spend, deploy, send, or mutate real state autonomously; when someone proposes prompt instructions or policy text as the safety layer; when an agent can edit its own strategy, limits, or stage; or when reviewing whether a forbidden capability is truly unreachable. Do not use to judge whether an individual action is a good idea.",
+      "rule": "**Instructions are not boundaries. Make the forbidden unexpressible, not discouraged.** Anything written in a prompt is reachable by anything else that reaches the prompt: retrieved text, tool output, a hostile document, the agent's own drift. When an agent acts without a human approving each action, safety has to be a property of the system's construction, not of its instructions. The human control surface moves from approving actions to setting the sandbox and reading the evidence. The pattern is **agent proposes \u2192 kernel disposes \u2192 agent executes.**",
+      "falsify": "Try to reach each forbidden capability from the agent's side: from the prompt, from its writable notes, from its config, from a tool's output. Search the code for any second producer of the executable type, and for any enforcement path that reads agent-writable state. One route found means the boundary is policy, not construction.",
+      "deterministic_companion": false
+    },
+    {
       "name": "swarm",
       "family": "operator",
       "path": "skills/operator/swarm/SKILL.md",
@@ -229,6 +247,15 @@
       "description": "Enforce provenance and uncertainty boundaries. Use when a system mixes observed, authoritative, user-attested, derived, estimated, inferred, reconstructed, or unknown values; when missing data could become zero; or when downstream output may overstate certainty.",
       "rule": "**Null is not failure. False certainty is.**",
       "falsify": "Try to trace every claimed value back to its evidence grade. If any downstream claim is more certain than its weakest required input, downgrade or withhold it.",
+      "deterministic_companion": false
+    },
+    {
+      "name": "verify-before-cite",
+      "family": "operator",
+      "path": "skills/operator/verify-before-cite/SKILL.md",
+      "description": "Live-verify work state before reporting or relying on it, and reconcile every place that state is recorded. Use before a status report, standup, handoff, or \"what's open\" answer; when a tracker, queue, memory note, or prior session says something is pending, merged, shipped, or blocked; after any merge, release, or promotion; or when records in two places disagree. Do not use to judge whether a claim about data or numbers is proven.",
+      "rule": "**Memory is a lead, not a fact. Verify the item against its authority before you cite it, and correct the record where people actually read it.** Work state lives in the systems that change it: the code host, the deploy log, the ledger. Notes, queues, and session memory are copies, and copies go stale silently. The failure is not bad reasoning; it is reporting a confident \"still waiting on your merge\" for something that merged yesterday.",
+      "falsify": "Pick three items from your report and look each one up in its authority now. If any reads differently, the report was built from memory. Then open the canonical record you corrected and check that it now reads the same as the authority. If the correction lives only in your own notes, nothing was reconciled.",
       "deterministic_companion": false
     }
   ],

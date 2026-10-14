@@ -1,0 +1,3 @@
+interface:
+  display_name: "Memory Promotion"
+  short_description: "Gate and garbage-collect agent memory"
