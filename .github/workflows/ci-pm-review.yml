@@ -62,10 +62,6 @@ on:
         description: Codex reasoning effort
         type: string
         default: high
-      daily_cap:
-        description: Spend guard. Paid PM runs allowed per repository per 24 hours (0 = no cap)
-        type: number
-        default: 20
     secrets:
       openai_api_key:
         required: false
@@ -118,7 +114,6 @@ jobs:
           ALLOWED_AUTHORS: ${{ inputs.allowed_authors }}
           CONTROL_ISSUE: ${{ inputs.control_issue }}
           HELD_PATHS: ${{ inputs.held_paths }}
-          DAILY_CAP: ${{ inputs.daily_cap }}
         run: python3 shared/ci/pm_review.py resolve
 
       - name: Check provider credential
