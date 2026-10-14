@@ -6,7 +6,7 @@
     {
       "code": "A",
       "name": "Authority and scope",
-      "question": "Who decides, and what is in bounds.",
+      "question": "Who decides, and what is in bounds?",
       "lanes": [
         {
           "code": "A1",
@@ -16,12 +16,14 @@
             {
               "call": "A1.1",
               "name": "execution-charter",
-              "path": "skills/operator/execution-charter/SKILL.md"
+              "path": "skills/operator/execution-charter/SKILL.md",
+              "tagline": "Give the agent a fence before you give it a shovel."
             },
             {
               "call": "A1.2",
               "name": "latest-authority",
-              "path": "skills/operator/latest-authority/SKILL.md"
+              "path": "skills/operator/latest-authority/SKILL.md",
+              "tagline": "The human answered. Carry it forward."
             }
           ]
         },
@@ -33,12 +35,14 @@
             {
               "call": "A2.1",
               "name": "protected-boundary",
-              "path": "skills/operator/protected-boundary/SKILL.md"
+              "path": "skills/operator/protected-boundary/SKILL.md",
+              "tagline": "Stopping can be the successful action."
             },
             {
               "call": "A2.2",
               "name": "risk-kernel",
-              "path": "skills/operator/risk-kernel/SKILL.md"
+              "path": "skills/operator/risk-kernel/SKILL.md",
+              "tagline": "Instructions are not boundaries. Make the forbidden unexpressible."
             }
           ]
         },
@@ -50,12 +54,14 @@
             {
               "call": "A3.1",
               "name": "diff-scope-audit",
-              "path": "skills/operator/diff-scope-audit/SKILL.md"
+              "path": "skills/operator/diff-scope-audit/SKILL.md",
+              "tagline": "Every hunk owes the charter an explanation."
             },
             {
               "call": "A3.2",
               "name": "intent-drift-check",
-              "path": "skills/operator/intent-drift-check/SKILL.md"
+              "path": "skills/operator/intent-drift-check/SKILL.md",
+              "tagline": "Busy is not aligned."
             }
           ]
         }
@@ -64,7 +70,7 @@
     {
       "code": "E",
       "name": "Evidence and verification",
-      "question": "Is it true, and how do we know.",
+      "question": "Is it true, and how do we know?",
       "lanes": [
         {
           "code": "E1",
@@ -74,17 +80,20 @@
             {
               "call": "E1.1",
               "name": "truth-boundary",
-              "path": "skills/operator/truth-boundary/SKILL.md"
+              "path": "skills/operator/truth-boundary/SKILL.md",
+              "tagline": "Null is not failure. False certainty is."
             },
             {
               "call": "E1.2",
               "name": "false-competence-check",
-              "path": "skills/operator/false-competence-check/SKILL.md"
+              "path": "skills/operator/false-competence-check/SKILL.md",
+              "tagline": "The most expensive mistakes look like good work."
             },
             {
               "call": "E1.3",
               "name": "verify-before-cite",
-              "path": "skills/operator/verify-before-cite/SKILL.md"
+              "path": "skills/operator/verify-before-cite/SKILL.md",
+              "tagline": "Memory is a lead, not a fact."
             }
           ]
         },
@@ -96,12 +105,14 @@
             {
               "call": "E2.1",
               "name": "systemic-bug-instinct",
-              "path": "skills/operator/systemic-bug-instinct/SKILL.md"
+              "path": "skills/operator/systemic-bug-instinct/SKILL.md",
+              "tagline": "The visible bug is a witness, not the crime scene."
             },
             {
               "call": "E2.2",
               "name": "reachability-proof",
-              "path": "skills/operator/reachability-proof/SKILL.md"
+              "path": "skills/operator/reachability-proof/SKILL.md",
+              "tagline": "A guard nothing reaches is not a guard. Silence is not evidence of health."
             }
           ]
         },
@@ -113,7 +124,8 @@
             {
               "call": "E3.1",
               "name": "operator-ui-audit",
-              "path": "skills/operator/operator-ui-audit/SKILL.md"
+              "path": "skills/operator/operator-ui-audit/SKILL.md",
+              "tagline": "A wrong value in the UI is usually a data problem wearing a costume."
             }
           ]
         }
@@ -122,7 +134,7 @@
     {
       "code": "O",
       "name": "Orchestration and memory",
-      "question": "How agents work together and over time.",
+      "question": "How do agents work together and over time?",
       "lanes": [
         {
           "code": "O1",
@@ -132,7 +144,8 @@
             {
               "call": "O1.1",
               "name": "swarm",
-              "path": "skills/operator/swarm/SKILL.md"
+              "path": "skills/operator/swarm/SKILL.md",
+              "tagline": "Design the reasoning system before you spawn the agents."
             }
           ]
         },
@@ -144,7 +157,8 @@
             {
               "call": "O2.1",
               "name": "loop-closure",
-              "path": "skills/operator/loop-closure/SKILL.md"
+              "path": "skills/operator/loop-closure/SKILL.md",
+              "tagline": "Capture is not the problem. Retirement is."
             }
           ]
         },
@@ -156,7 +170,8 @@
             {
               "call": "O3.1",
               "name": "memory-promotion",
-              "path": "skills/operator/memory-promotion/SKILL.md"
+              "path": "skills/operator/memory-promotion/SKILL.md",
+              "tagline": "The inbox can be messy. Memory cannot be."
             }
           ]
         }
@@ -165,7 +180,7 @@
     {
       "code": "F",
       "name": "Financial truth",
-      "question": "Get the money right.",
+      "question": "Is the money right?",
       "lanes": [
         {
           "code": "F1",
@@ -175,17 +190,20 @@
             {
               "call": "F1.1",
               "name": "money-trail",
-              "path": "skills/financial-truth/money-trail/SKILL.md"
+              "path": "skills/financial-truth/money-trail/SKILL.md",
+              "tagline": "Every dollar gets a passport."
             },
             {
               "call": "F1.2",
               "name": "transfer-neutrality",
-              "path": "skills/financial-truth/transfer-neutrality/SKILL.md"
+              "path": "skills/financial-truth/transfer-neutrality/SKILL.md",
+              "tagline": "Money does not teleport."
             },
             {
               "call": "F1.3",
               "name": "cash-truth",
-              "path": "skills/financial-truth/cash-truth/SKILL.md"
+              "path": "skills/financial-truth/cash-truth/SKILL.md",
+              "tagline": "Missing cash is not zero cash."
             }
           ]
         },
@@ -197,17 +215,20 @@
             {
               "call": "F2.1",
               "name": "accounting-integrity",
-              "path": "skills/financial-truth/accounting-integrity/SKILL.md"
+              "path": "skills/financial-truth/accounting-integrity/SKILL.md",
+              "tagline": "Well-formed data can still lie."
             },
             {
               "call": "F2.2",
               "name": "ledger-repair",
-              "path": "skills/financial-truth/ledger-repair/SKILL.md"
+              "path": "skills/financial-truth/ledger-repair/SKILL.md",
+              "tagline": "Preview the economics before changing the books."
             },
             {
               "call": "F2.3",
               "name": "close-the-books",
-              "path": "skills/financial-truth/close-the-books/SKILL.md"
+              "path": "skills/financial-truth/close-the-books/SKILL.md",
+              "tagline": "Do not analyze a book you have not actually closed."
             }
           ]
         },
@@ -219,17 +240,20 @@
             {
               "call": "F3.1",
               "name": "basis-proof",
-              "path": "skills/financial-truth/basis-proof/SKILL.md"
+              "path": "skills/financial-truth/basis-proof/SKILL.md",
+              "tagline": "No basis, no profit."
             },
             {
               "call": "F3.2",
               "name": "corporate-action-continuity",
-              "path": "skills/financial-truth/corporate-action-continuity/SKILL.md"
+              "path": "skills/financial-truth/corporate-action-continuity/SKILL.md",
+              "tagline": "The identity changed. The economics may not have."
             },
             {
               "call": "F3.3",
               "name": "tax-character-proof",
-              "path": "skills/financial-truth/tax-character-proof/SKILL.md"
+              "path": "skills/financial-truth/tax-character-proof/SKILL.md",
+              "tagline": "The distribution happened. Its character may still be unknown."
             }
           ]
         },
@@ -241,17 +265,20 @@
             {
               "call": "F4.1",
               "name": "financial-evidence-grade",
-              "path": "skills/financial-truth/financial-evidence-grade/SKILL.md"
+              "path": "skills/financial-truth/financial-evidence-grade/SKILL.md",
+              "tagline": "An estimate is not an authority."
             },
             {
               "call": "F4.2",
               "name": "performance-truth",
-              "path": "skills/financial-truth/performance-truth/SKILL.md"
+              "path": "skills/financial-truth/performance-truth/SKILL.md",
+              "tagline": "Funding is not performance."
             },
             {
               "call": "F4.3",
               "name": "model-sanity",
-              "path": "skills/financial-truth/model-sanity/SKILL.md"
+              "path": "skills/financial-truth/model-sanity/SKILL.md",
+              "tagline": "A plausible model is not automatically a valid model."
             }
           ]
         }

@@ -12,7 +12,7 @@
 - Added `risk-kernel`: autonomous agents are made safe by construction (one door, compiled bounds, removed capabilities, inert self-modification, out-of-band promotion), not by instructions.
 - Added `verify-before-cite`: work state is live-verified against its authority before it is reported, every record of it is reconciled, and the canonical copy is the one corrected.
 - Added `memory-promotion`: a six-check gate for durable agent memory, update-before-add, and garbage collection.
-- Added the library catalog (`machine/library.json`, `docs/LIBRARY.md`): every skill shelved under one domain and lane, with a validator that keeps the catalog complete. Skill paths are unchanged.
+- Added the library catalog (`machine/library.json`, `docs/LIBRARY.md`): every skill shelved under one domain and lane, rendered into `docs/SKILL_CATALOG.md` by `scripts/build_catalog.py`, with a validator that enforces positional call numbers, real paths, one shelf per skill, and byte-for-byte generated docs. Skill paths are unchanged.
 - Expanded the canonical catalog to 27 skills.
 
 ## 0.1.0 — public release

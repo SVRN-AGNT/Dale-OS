@@ -138,28 +138,45 @@ if r.returncode: fail('manifest build failed')
 manifest=json.loads((ROOT/'manifest.json').read_text())
 if len(manifest.get('skills',[]))!=EXPECTED_COUNT: fail(f'manifest must contain {EXPECTED_COUNT} skills')
 
-# Library catalog: every skill shelved exactly once, under a unique call number, at its real path.
+# Library catalog: every skill shelved exactly once, under a positional call number, at its own path,
+# and the rendered docs match the JSON byte for byte.
 try:
     library=json.loads((ROOT/'machine'/'library.json').read_text())
-    shelved=[]; calls=set()
-    for domain in library.get('domains',[]):
-        for lane in domain.get('lanes',[]):
-            if not lane.get('skills'): fail(f'library lane {lane.get("code")} is empty')
-            for entry in lane.get('skills',[]):
-                shelved.append(entry.get('name'))
-                call=entry.get('call')
-                if not call or not call.startswith(lane.get('code','?')+'.'): fail(f'library call number {call!r} does not match lane {lane.get("code")}')
-                if call in calls: fail(f'library call number {call} is duplicated')
-                calls.add(call)
-                if not (ROOT/str(entry.get('path'))).is_file(): fail(f'library path missing: {entry.get("path")}')
+    if library.get('schema')!='dale-os/library/v1': fail('machine/library.json schema must be dale-os/library/v1')
+    shelved=[]; domain_codes=set(); lane_codes=set()
+    for domain in library['domains']:
+        dcode=domain['code']
+        for key in ('name','question'):
+            if not domain[key]: fail(f'library domain {dcode} has empty {key}')
+        if not re.fullmatch(r'[A-Z]',dcode): fail(f'library domain code {dcode!r} must be one capital letter')
+        if dcode in domain_codes: fail(f'library domain code {dcode} is duplicated')
+        domain_codes.add(dcode)
+        if not domain['lanes']: fail(f'library domain {dcode} has no lanes')
+        for li,lane in enumerate(domain['lanes'],1):
+            lcode=lane['code']
+            if lcode!=f'{dcode}{li}': fail(f'library lane {lcode!r} in domain {dcode} must be {dcode}{li}')
+            if lcode in lane_codes: fail(f'library lane code {lcode} is duplicated')
+            lane_codes.add(lcode)
+            if not lane['name'] or not lane['scope']: fail(f'library lane {lcode} needs a name and scope')
+            if not lane['skills']: fail(f'library lane {lcode} is empty')
+            for si,entry in enumerate(lane['skills'],1):
+                name=entry['name']; shelved.append(name)
+                if entry['call']!=f'{lcode}.{si}': fail(f'library call number {entry["call"]!r} for {name} must be {lcode}.{si}')
+                family='financial-truth' if name in EXPECTED_FINANCE else 'operator'
+                if entry['path']!=f'skills/{family}/{name}/SKILL.md': fail(f'library path for {name} must be skills/{family}/{name}/SKILL.md, got {entry["path"]!r}')
+                if not entry['tagline']: fail(f'library entry {name} has no tagline')
     dupes=sorted({s for s in shelved if shelved.count(s)>1})
     if dupes: fail(f'library shelves a skill more than once: {dupes}')
     if set(shelved)!=EXPECTED_ALL: fail(f'library catalog drift: {sorted(set(shelved) ^ EXPECTED_ALL)}')
-    catalog=(ROOT/'docs'/'SKILL_CATALOG.md').read_text(encoding='utf-8')
-    for name in EXPECTED_ALL:
-        if f'[`{name}`]' not in catalog: fail(f'docs/SKILL_CATALOG.md does not list {name}')
-except (OSError, json.JSONDecodeError) as exc:
-    fail(f'machine/library.json unreadable: {exc}')
+    sys.path.insert(0,str(ROOT/'scripts'))
+    import build_catalog
+    if (ROOT/'docs'/'SKILL_CATALOG.md').read_text(encoding='utf-8')!=build_catalog.render_catalog(library):
+        fail('docs/SKILL_CATALOG.md is stale or hand-edited; run python scripts/build_catalog.py')
+    guide=(ROOT/'docs'/'LIBRARY.md').read_text(encoding='utf-8')
+    if guide!=build_catalog.render_guide(library,guide):
+        fail('docs/LIBRARY.md domain table is stale; run python scripts/build_catalog.py')
+except (OSError, json.JSONDecodeError, KeyError, TypeError, AttributeError, SystemExit) as exc:
+    fail(f'machine/library.json invalid: {exc!r}')
 
 if errors:
     print('VALIDATION FAILED')

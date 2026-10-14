@@ -14,13 +14,13 @@ Durable memory steers every future session, so a wrong or noisy note is a bug th
 ## Workflow
 
 1. **Route before you save.** A task belongs in the tracker. A choice belongs in the decision record. An outcome belongs in a report. Raw observations stay in the inbox. Only lessons that change future behaviour are candidates for memory.
-2. **Pass the six-check gate.** Promote only if all six hold:
+2. **Pass the six-check promotion gate.** Promote only if all six hold:
    1. **Durable:** useful beyond this one task.
    2. **Verified:** backed by evidence from the work or an explicit rule from the person.
    3. **Behaviour-changing:** it changes what the agent does next time.
    4. **Not already documented:** not obvious from the repo, the docs, or a decision record.
    5. **Specific:** actionable, not a platitude.
-   6. **Pattern-level:** it corrects or confirms an important pattern, not a one-off.
+   6. **Corrects or confirms:** it fixes a mistake the agent made, or confirms an approach or a standing rule from the person that should keep being followed.
 3. **Update before you add.** Search for an existing note that covers it and extend that one. One fact, one home.
 4. **Write the why with the rule.** A rule without its reason gets misapplied at the edges. Record what happened, the rule, why it matters, and when it applies.
 5. **Mark stated intent as stated.** A person's description of how something should work is not proof that it does. Save it with its source and a verify-before-asserting flag.
@@ -30,7 +30,7 @@ Durable memory steers every future session, so a wrong or noisy note is a bug th
 ## Anti-patterns
 
 - Saving what the code, history, or docs already record.
-- Saving secrets, credentials, or private data into a shared store.
+- Saving secrets, credentials, or private data into memory at all.
 - Treating a memory note as authority over a newer instruction or the live system.
 - "Remember more" as a goal.
 

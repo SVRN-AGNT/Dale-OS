@@ -255,7 +255,7 @@
       "path": "skills/operator/verify-before-cite/SKILL.md",
       "description": "Live-verify work state before reporting or relying on it, and reconcile every place that state is recorded. Use before a status report, standup, handoff, or \"what's open\" answer; when a tracker, queue, memory note, or prior session says something is pending, merged, shipped, or blocked; after any merge, release, or promotion; or when records in two places disagree. Do not use to judge whether a claim about data or numbers is proven.",
       "rule": "**Memory is a lead, not a fact. Verify the item against its authority before you cite it, and correct the record where people actually read it.** Work state lives in the systems that change it: the code host, the deploy log, the ledger. Notes, queues, and session memory are copies, and copies go stale silently. The failure is not bad reasoning; it is reporting a confident \"still waiting on your merge\" for something that merged yesterday.",
-      "falsify": "Pick three items from your report and look each one up in its authority now. If any reads differently, the report was built from memory. Then search for one branch or draft that appears in no tracker; finding one means the sweep missed a location.",
+      "falsify": "Pick three items from your report and look each one up in its authority now. If any reads differently, the report was built from memory. Then open the canonical record you corrected and check that it now reads the same as the authority. If the correction lives only in your own notes, nothing was reconciled.",
       "deterministic_companion": false
     }
   ],

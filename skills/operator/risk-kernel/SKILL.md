@@ -42,7 +42,7 @@ Try to reach each forbidden capability from the agent's side: from the prompt, f
 
 - The executable type has more than one producer, or executors accept raw intents.
 - A hard bound lives only in a file the agent can write.
-- The worst-case loss inside the sandbox has not been computed and accepted by the person who owns the money.
+- The worst-case loss inside the sandbox has not been computed and accepted by the person who owns the affected resource: the money, the system, or the audience.
 
 A bounded sandbox does not make the agent well-behaved. It can be calmly, reliably wrong inside it. Say so.
 
