@@ -79,6 +79,56 @@ self_caller = (HERE.parent / ".github" / "workflows" / "pm-review.yml").read_tex
 check("dispatch only from the default branch", "github.ref_name == github.event.repository.default_branch" in self_caller)
 check("no merge verb", not re.search(r"/merge|auto_merge|ready_for_review|git push|contents:\s*write", code))
 
+# resolve end to end, against a fake GitHub API: renames and replays
+import os
+import tempfile
+
+
+def resolve_with(comment: dict, files: list, live_head: str = HEAD) -> dict:
+    """Run cmd_resolve on one comment id with canned API answers; return its step outputs."""
+    pr_n = 12
+    api = {
+        f"/issues/comments/{comment['id']}": comment,
+        f"/issues/{pr_n}": {"pull_request": {"url": "u"}},
+        f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
+                          "head": {"sha": live_head, "repo": {"full_name": "o/r"}}, "base": {"ref": "main"}},
+    }
+    pages = {f"/issues/{pr_n}/comments": [], f"/pulls/{pr_n}/files": files, f"/commits/{live_head}/check-runs": []}
+    saved = (pm._api, pm._paginate, dict(os.environ))
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "out"
+        out.write_text("")
+        pm._api = lambda method, path, body=None: api[path]
+        pm._paginate = lambda path: pages[path]
+        os.environ.update(GITHUB_OUTPUT=str(out), RUNNER_TEMP=d, ALLOWED_AUTHORS="Tataku", CONTROL_ISSUE="0",
+                          HELD_PATHS=r"^\.github/workflows/", COMMENT_ID=str(comment["id"]), GITHUB_REPOSITORY="o/r")
+        try:
+            pm.cmd_resolve()
+        finally:
+            pm._api, pm._paginate = saved[0], saved[1]
+            os.environ.clear()
+            os.environ.update(saved[2])
+        return dict(line.split("=", 1) for line in out.read_text().splitlines() if "=" in line)
+
+
+def pr_comment(cid: int, head: str) -> dict:
+    return handoff(f"HANDOFF: review {head}", id=cid, issue_url="https://api.github.com/repos/o/r/issues/12")
+
+
+renamed_out = [{"filename": "docs/old-ci.yml", "previous_filename": ".github/workflows/ci.yml"}]
+renamed_in = [{"filename": ".github/workflows/ci.yml", "previous_filename": "docs/ci.yml"}]
+check("a rename out of held scope is held", resolve_with(pr_comment(7, HEAD), renamed_out).get("held", "") != "")
+check("a rename into held scope is held", resolve_with(pr_comment(7, HEAD), renamed_in).get("held", "") != "")
+check("a rename outside held scope is not held",
+      resolve_with(pr_comment(7, HEAD), [{"filename": "a.md", "previous_filename": "b.md"}]).get("held") == "")
+# A replay (workflow_dispatch with comment_id) runs this same resolve on the stored comment, so it gets the same gates.
+check("a replayed HANDOFF for the live head is reviewed", resolve_with(pr_comment(8, HEAD), []).get("review") == "true")
+stale = resolve_with(pr_comment(8, OTHER), [])
+check("a replayed HANDOFF for a superseded head is refused", stale.get("review") == "false" and stale.get("pr") == "12")
+check("a replayed web comment is refused",
+      resolve_with(handoff(f"HANDOFF: {HEAD}", id=9, issue_url="https://api.github.com/repos/o/r/issues/12",
+                           performed_via_github_app=None), []).get("review") == "false")
+
 if errors:
     print("PM REVIEW TEST FAILED")
     for e in errors:
