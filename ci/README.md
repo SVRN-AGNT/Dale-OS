@@ -54,7 +54,7 @@ jobs:
   pm:
     if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
     permissions: { contents: read, issues: write, pull-requests: write, checks: write }
-    uses: Tataku/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
+    uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
     with:
       ref: <sha>
       comment_id: ${{ github.event.comment.id || inputs.comment_id }}

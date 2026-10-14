@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: "Powell"
     given-names: "Dale"
-repository-code: "https://github.com/Tataku/Dale-OS"
+repository-code: "https://github.com/SVRN-AGNT/Dale-OS"
 abstract: "An agentic operating system for high-integrity software and finance, built around authority, evidence, falsifiability, deterministic verification, and restraint."
 keywords:
   - agentic systems

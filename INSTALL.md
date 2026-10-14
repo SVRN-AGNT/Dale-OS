@@ -7,7 +7,7 @@ Dale OS is modular. Install the smallest skill set that solves the failure class
 With GitHub CLI 2.90.0 or newer:
 
 ```bash
-gh skill preview Tataku/Dale-OS execution-charter
+gh skill preview SVRN-AGNT/Dale-OS execution-charter
 ```
 
 Preview is the default trust posture. Skills can contain instructions and executable scripts; inspect the tree and `SKILL.md` before installation.
@@ -15,20 +15,20 @@ Preview is the default trust posture. Skills can contain instructions and execut
 ## Install one skill
 
 ```bash
-gh skill install Tataku/Dale-OS execution-charter
+gh skill install SVRN-AGNT/Dale-OS execution-charter
 ```
 
 Choose a host explicitly when useful:
 
 ```bash
-gh skill install Tataku/Dale-OS systemic-bug-instinct --agent claude-code --scope user
-gh skill install Tataku/Dale-OS truth-boundary --agent codex --scope project
+gh skill install SVRN-AGNT/Dale-OS systemic-bug-instinct --agent claude-code --scope user
+gh skill install SVRN-AGNT/Dale-OS truth-boundary --agent codex --scope project
 ```
 
 For the fastest unambiguous lookup, install by exact path:
 
 ```bash
-gh skill install Tataku/Dale-OS skills/operator/systemic-bug-instinct
+gh skill install SVRN-AGNT/Dale-OS skills/operator/systemic-bug-instinct
 ```
 
 ## Install every canonical skill
@@ -54,7 +54,7 @@ The v0.1.0 release candidate exercised this pattern against its then-current 20-
 For reproducible agent behavior, pin a release tag or commit SHA:
 
 ```bash
-gh skill install Tataku/Dale-OS systemic-bug-instinct --pin <TAG_OR_SHA>
+gh skill install SVRN-AGNT/Dale-OS systemic-bug-instinct --pin <TAG_OR_SHA>
 ```
 
 Then inspect updates before accepting them:
