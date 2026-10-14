@@ -146,6 +146,9 @@ dup = resolve_with(pr_comment(8, HEAD), [], pr_comments=[ruled])
 check("a repeat HANDOFF for an already-ruled head is not re-billed", dup.get("review") == "false" and dup.get("pr") == "12")
 check("a ruling on an older head does not stop a review of the new one",
       resolve_with(pr_comment(8, HEAD), [], pr_comments=[bot(ruled["body"].replace(HEAD, OTHER))]).get("review") == "true")
+quoted = bot(ruled["body"].replace(HEAD, OTHER) + f"\n\nEarlier: **Exact reviewed head:** `{HEAD}`")
+check("a ruling on another head that quotes this head's marker does not suppress the review",
+      resolve_with(pr_comment(8, HEAD), [], pr_comments=[quoted]).get("review") == "true")
 check("a forged ruling from a person does not suppress the review",
       resolve_with(pr_comment(8, HEAD), [], pr_comments=[bot(ruled["body"], login="Tataku")]).get("review") == "true")
 check("a failed run (no ruling) does not stop a re-request",

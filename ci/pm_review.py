@@ -137,12 +137,15 @@ def _bot_post(c: dict) -> bool:
     return (c.get("user") or {}).get("login") == POSTER
 
 
+# The header ruling_comment writes. Only this line names the head a ruling covers; a head quoted further down is evidence.
+RULING_HEADER = re.compile(r"PM REVIEW — [^\n]*\n\n\*\*PR:\*\* #\d+ · \*\*Exact reviewed head:\*\* `([0-9a-f]{40})`")
+
+
 def prior_ruling(pr_comments, head: str):
     """The id of a real PM ruling already posted for this exact head, or None. A repeat HANDOFF for it is not re-billed."""
-    marker = f"**Exact reviewed head:** `{str(head).lower()}`"
     for c in reversed(list(pr_comments)):
-        body = c.get("body") or ""
-        if _bot_post(c) and body.startswith("PM REVIEW —") and marker in body:
+        m = RULING_HEADER.match(c.get("body") or "")
+        if _bot_post(c) and m and m.group(1) == str(head).lower():
             return c.get("id")
     return None
 
