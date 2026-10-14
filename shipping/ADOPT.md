@@ -93,7 +93,7 @@ Pick exactly one automatic merger: a Controller workflow, or a GitHub merge queu
 
 The lander refuses L3. If no approver exists that the automation cannot impersonate, a person lands L3 changes. The trusted-reviewer list stays empty until a separate identity exists. When the owner delegates merges in writing, the merge commit quotes the delegation and says the merge is unattested.
 
-A hand merge of an L3 PR waits for the second opinion. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
+A hand merge of an L3 PR waits for the second opinion. This covers a push after the PR was marked ready, or a reviewer that has gone quiet, which is why the 2-hour timeout exists alongside the ready-time CLEAR. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
 
 **Done when:** an L3 PR with a fresh push and no new HANDOFF cannot be hand-merged under the written rule, and each hand-merge commit names its path (CLEAR, timeout, or the owner's per-PR waiver).
 
