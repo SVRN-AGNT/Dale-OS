@@ -54,6 +54,8 @@ The resolver returns canonical paths and rules. It does not replace semantic jud
 | an agent that acts, spends, or deploys without per-action approval | `risk-kernel` |
 | a status report, handoff, or tracker that says something is pending or done | `verify-before-cite` |
 | saving a lesson, rule, or preference to durable memory | `memory-promotion` |
+| an agent run or loop reporting that it is done | `completion-contract` |
+| an automated merge, approval, or promotion, or merged versus deployed | `merge-authority` |
 | movement of money | `money-trail` |
 | financial records that may contradict each other | `accounting-integrity` |
 | portfolio return | `performance-truth` |

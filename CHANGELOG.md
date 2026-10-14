@@ -14,6 +14,10 @@
 - Added `memory-promotion`: a six-check gate for durable agent memory, update-before-add, and garbage collection.
 - Added the library catalog (`machine/library.json`, `docs/LIBRARY.md`): every skill shelved under one domain and lane, rendered into `docs/SKILL_CATALOG.md` by `scripts/build_catalog.py`, with a validator that enforces positional call numbers, real paths, one shelf per skill, and byte-for-byte generated docs. Skill paths are unchanged.
 - Expanded the canonical catalog to 27 skills.
+- Added `completion-contract`: explicit obligations where silence fails, a judge separate from the worker, a closed verdict set, latched retry exhaustion, and no-progress detection.
+- Added `merge-authority`: evidence bound to the exact head, risk derived from changed paths, rules read from the base branch, a second identity for held scope, and exact state tiers.
+- Added seat → tier → pin routing rules to `machine/model-cost-policy.json` (policy, not a skill, per its promotion rule).
+- Expanded the canonical catalog to 29 skills.
 
 ## 0.1.0 — public release
 

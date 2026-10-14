@@ -14,6 +14,21 @@
     "Fail closed or require explicit authorization when projected spend exceeds a configured workflow ceiling.",
     "Never trade away accounting, provenance, authority, or safety invariants merely to reduce token cost."
   ],
+  "routing": {
+    "principle": "Route by seat, express the seat as a capability tier, and treat the concrete model ID as today's perishable answer.",
+    "layers": {
+      "seat": "the job in the workflow, such as lead loop, code or audit worker, design or copy worker; durable",
+      "tier": "the capability class that seat needs, such as fast, reasoning, frontier; durable",
+      "model_id": "the concrete model serving that tier today; perishable"
+    },
+    "rules": [
+      "Write every reference outside the pin in tier or family-relative form. A sentence that becomes false when a provider ships a new version number is written in the wrong form.",
+      "Pin concrete model IDs in exactly one place per deployment, with the date they were verified. A second copy of the pin is a second place to go stale.",
+      "Refresh the pin from a live authority such as the provider's model listing, never from memory. Never construct or guess a model ID; a plausible-looking ID is not a real one.",
+      "When a model family is renamed, retired, or added, re-pin the tier and leave the seat routing unchanged.",
+      "Spend a premium tier on purpose for named seats, not by default for whole categories of work."
+    ]
+  },
   "benchmark_exception": {
     "allowed": true,
     "rule": "A benchmark may intentionally exercise frontier and balanced tiers to measure capability differences. Benchmark breadth does not justify wasteful reruns: isolate model slots and preserve valid receipts whenever possible."

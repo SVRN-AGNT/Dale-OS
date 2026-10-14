@@ -43,6 +43,12 @@
               "name": "risk-kernel",
               "path": "skills/operator/risk-kernel/SKILL.md",
               "tagline": "Instructions are not boundaries. Make the forbidden unexpressible."
+            },
+            {
+              "call": "A2.3",
+              "name": "merge-authority",
+              "path": "skills/operator/merge-authority/SKILL.md",
+              "tagline": "Green on H authorises H, never a descendant. Merged is not deployed."
             }
           ]
         },
@@ -159,6 +165,12 @@
               "name": "loop-closure",
               "path": "skills/operator/loop-closure/SKILL.md",
               "tagline": "Capture is not the problem. Retirement is."
+            },
+            {
+              "call": "O2.2",
+              "name": "completion-contract",
+              "path": "skills/operator/completion-contract/SKILL.md",
+              "tagline": "A model saying \"done\" is not completion."
             }
           ]
         },

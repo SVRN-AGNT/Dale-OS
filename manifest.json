@@ -124,6 +124,15 @@
       "deterministic_companion": false
     },
     {
+      "name": "completion-contract",
+      "family": "operator",
+      "path": "skills/operator/completion-contract/SKILL.md",
+      "description": "Decide whether an autonomous or long-running agent task is actually complete, using explicit obligations instead of the worker's word. Use when designing or running an agent loop, autorun, overnight job, or multi-iteration task; when an agent reports \"done\", \"all set\", or \"finished\"; when a loop keeps running without retiring anything; or when retries are exhausted. Do not use to verify one specific fix or guard (use reachability-proof) or to audit a backlog (use loop-closure).",
+      "rule": "**A model saying \"done\" is not completion. The worker cannot certify its own run closed.** Long autonomous runs fail in a predictable way: the worker grows confident before the work is finished, and its own summary becomes the evidence. Completion has to be adjudicated by something other than the worker, against obligations written down before the work started.",
+      "falsify": "Delete one obligation's evidence from a completion packet and submit it. If the run still closes, the contract is narrative. Then feed the judge an unknown verdict string and confirm it fails rather than completes.",
+      "deterministic_companion": false
+    },
+    {
       "name": "diff-scope-audit",
       "family": "operator",
       "path": "skills/operator/diff-scope-audit/SKILL.md",
@@ -184,6 +193,15 @@
       "description": "Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when an agent is about to \"remember\" a lesson, rule, preference, or pattern; at the end of a session or a long autonomous run; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.",
       "rule": "**The inbox can be messy. Memory cannot be. Remember less, better.** Durable memory steers every future session, so a wrong or noisy note is a bug that repeats. Keep four things apart: raw context, verified evidence, durable memory, and authorized action. Most of what an agent notices belongs in the first two.",
       "falsify": "Take the last five notes added and run each through the gate. Count how many fail a check. Then search the store for two notes that disagree, or one that the current code contradicts. Either finding means the gate or the collection is not running.",
+      "deterministic_companion": false
+    },
+    {
+      "name": "merge-authority",
+      "family": "operator",
+      "path": "skills/operator/merge-authority/SKILL.md",
+      "description": "Decide whether an automated merge, promotion, or approval is actually authorised, and report its state in exact language. Use when an agent or bot will merge, auto-merge, promote, or release; when CI green is being treated as final approval; when an approval, review, or green check is reused after new commits; when risk is self-declared in a PR body; or when \"merged\", \"deployed\", \"shipped\", and \"live\" are being used interchangeably. Do not use to review the content of a diff (use diff-scope-audit).",
+      "rule": "**Green on H authorises H, never a descendant of H. Authority comes from identity and evidence, not from the actor's own claim.** Automated merging is safe only when the thing that grants permission cannot be supplied by the thing asking for it. Most failures are an authority quietly granted to the wrong party: a stale green, a self-declared risk level, an approval from an account the agent can act as.",
+      "falsify": "Push a commit after the last green and check whether the merge is still allowed. Add a risk label claiming \"low\" to a change touching access control and check whether it changes the decision. Edit the review rule inside the PR itself and check which copy the merger reads. Any of these succeeding means the authority is forgeable.",
       "deterministic_companion": false
     },
     {
