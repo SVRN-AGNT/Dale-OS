@@ -109,7 +109,9 @@ These are the states when this page was written. Check the linked PRs for live s
 - The release-notes bot is removed, and each promotion is frozen at one commit.
 - The shared CI layer is in this repository ([Dale-OS #20](https://github.com/Tataku/Dale-OS/pull/20)). Its first run found that this repository tested every PR commit twice.
 
-**Built, not landed:** terse test output for agents (9 lines instead of 2,531), skipping post-merge checks for an already-tested tree, a faster simulator (2.8× on its own, suite-wide saving not measured), promotion receipts generated from git, and adoption of the shared layer in two more repositories.
+**Also merged later that day:** the real-save-path test for the example module, a faster simulator (2.8× on its own; suite-wide saving not measured), and screenshots on UI PRs with a Friday digest issue.
+
+**Built, not landed:** terse test output for agents (9 lines instead of 2,531), skipping post-merge checks for an already-tested tree, promotion receipts generated from git, and adoption of the shared layer in two more repositories.
 
 **Waiting on a one-time setup from the owner:** the agents' own GitHub App and ruleset, a production test account, and one deny rule in settings.
 
