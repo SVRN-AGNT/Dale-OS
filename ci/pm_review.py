@@ -30,6 +30,7 @@ import re
 import subprocess
 import sys
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HANDOFF_APP = "claude"
@@ -37,6 +38,8 @@ PM_DIR = ".pm-review"
 VERDICTS = ("CLEAR", "CORRECT", "HOLD", "OWNER_GATE")
 CONCLUSION = {"CLEAR": "success", "CORRECT": "failure", "HOLD": "failure", "OWNER_GATE": "action_required"}
 INSTRUCTION_FILE = re.compile(r"^(CLAUDE|AGENTS)(\.local)?\.md$", re.I)
+POSTER = "github-actions[bot]"  # the post job's token; the only author whose rulings count here
+DAILY_CAP = 20  # paid PM runs per repository per 24 hours; the caller's `daily_cap` input overrides it
 
 # Strict-mode compatible (OpenAI Structured Outputs): every key required, no extras.
 PM_SCHEMA = {
@@ -130,6 +133,26 @@ def held_scope(paths, held_paths: str):
     hit = next((p for p in paths if rx.search(p)), None)
     # The path is PR-controlled and may contain newlines; keep it to one safe line for $GITHUB_OUTPUT.
     return f"matches the repository's held paths ({re.sub(r'[^\x20-\x7e]', '?', hit)[:200]})" if hit else ""
+
+
+def _bot_post(c: dict) -> bool:
+    return (c.get("user") or {}).get("login") == POSTER
+
+
+def prior_ruling(pr_comments, head: str):
+    """The id of a real PM ruling already posted for this exact head, or None. A repeat HANDOFF for it is not re-billed."""
+    marker = f"**Exact reviewed head:** `{str(head).lower()}`"
+    for c in reversed(list(pr_comments)):
+        body = c.get("body") or ""
+        if _bot_post(c) and body.startswith("PM REVIEW —") and marker in body:
+            return c.get("id")
+    return None
+
+
+def paid_runs(repo_comments) -> int:
+    """PM runs that reached the model, counted from what the post job left: a ruling, or a failed run's notice."""
+    return sum(1 for c in repo_comments if _bot_post(c) and (
+        "PM-HANDOFF-CONSUMED:" in (c.get("body") or "") or (c.get("body") or "").startswith("**PM: No PM ruling on")))
 
 
 def fence(s) -> str:
@@ -330,6 +353,21 @@ def cmd_resolve() -> None:
         and named_head(x.get("body"), head) for x in pr_comments
     ):
         return skip(f"the PR carries its own HANDOFF for {head[:8]}")
+
+    earlier = prior_ruling(pr_comments, head)
+    if earlier:
+        return skip(f"already ruled on {head[:8]}",
+                    f"The PM already ruled on `{head}` (comment {earlier}), so this HANDOFF was not reviewed again "
+                    "and nothing was billed. That ruling stands for this head; a push needs a new HANDOFF.", pr_n)
+    cap = int(env.get("DAILY_CAP") or DAILY_CAP)
+    since = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    used = paid_runs(_paginate(f"/issues/comments?since={since}"))
+    if cap > 0 and used >= cap:
+        return skip(f"daily cap reached ({used}/{cap})",
+                    f"Spend guard: this repository has had {used} paid PM reviews in the last 24 hours, the cap is {cap}, "
+                    "so this HANDOFF was NOT reviewed. This is not a ruling and does not start the 2-hour no-ruling "
+                    "timeout: re-post the HANDOFF once the count drops, or ask the owner to raise the caller's "
+                    "`daily_cap`.", pr_n)
 
     files = _paginate(f"/pulls/{pr_n}/files")
     paths = []

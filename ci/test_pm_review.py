@@ -89,7 +89,7 @@ import os
 import tempfile
 
 
-def resolve_with(comment: dict, files: list, live_head: str = HEAD) -> dict:
+def resolve_with(comment: dict, files: list, live_head: str = HEAD, pr_comments=(), repo_comments=(), cap="") -> dict:
     """Run cmd_resolve on one comment id with canned API answers; return its step outputs."""
     pr_n = 12
     api = {
@@ -98,14 +98,15 @@ def resolve_with(comment: dict, files: list, live_head: str = HEAD) -> dict:
         f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
                           "head": {"sha": live_head, "repo": {"full_name": "o/r"}}, "base": {"ref": "main"}},
     }
-    pages = {f"/issues/{pr_n}/comments": [], f"/pulls/{pr_n}/files": files, f"/commits/{live_head}/check-runs": []}
+    pages = {f"/issues/{pr_n}/comments": list(pr_comments), f"/pulls/{pr_n}/files": files,
+             f"/commits/{live_head}/check-runs": [], "/issues/comments": list(repo_comments)}
     saved = (pm._api, pm._paginate, dict(os.environ))
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "out"
         out.write_text("")
         pm._api = lambda method, path, body=None: api[path]
-        pm._paginate = lambda path: pages[path]
-        os.environ.update(GITHUB_OUTPUT=str(out), RUNNER_TEMP=d, ALLOWED_AUTHORS="Tataku", CONTROL_ISSUE="0",
+        pm._paginate = lambda path: pages[path.split("?", 1)[0]]
+        os.environ.update(GITHUB_OUTPUT=str(out), RUNNER_TEMP=d, ALLOWED_AUTHORS="Tataku", CONTROL_ISSUE="0", DAILY_CAP=cap,
                           HELD_PATHS=r"^\.github/workflows/", COMMENT_ID=str(comment["id"]), GITHUB_REPOSITORY="o/r")
         try:
             pm.cmd_resolve()
@@ -133,6 +134,32 @@ check("a replayed HANDOFF for a superseded head is refused", stale.get("review")
 check("a replayed web comment is refused",
       resolve_with(handoff(f"HANDOFF: {HEAD}", id=9, issue_url="https://api.github.com/repos/o/r/issues/12",
                            performed_via_github_app=None), []).get("review") == "false")
+
+
+# Spend guards: a repeat HANDOFF for an already-ruled head, and the per-repository daily cap.
+def bot(body: str, cid: int = 50, login: str = "github-actions[bot]") -> dict:
+    return {"id": cid, "user": {"login": login}, "body": body, "created_at": "2026-10-14T00:00:00Z"}
+
+
+ruled = bot(f"PM REVIEW — CLEAR\n\n**PR:** #12 · **Exact reviewed head:** `{HEAD}` · **Base:** `{OTHER}`\nPM-HANDOFF-CONSUMED: 7")
+dup = resolve_with(pr_comment(8, HEAD), [], pr_comments=[ruled])
+check("a repeat HANDOFF for an already-ruled head is not re-billed", dup.get("review") == "false" and dup.get("pr") == "12")
+check("a ruling on an older head does not stop a review of the new one",
+      resolve_with(pr_comment(8, HEAD), [], pr_comments=[bot(ruled["body"].replace(HEAD, OTHER))]).get("review") == "true")
+check("a forged ruling from a person does not suppress the review",
+      resolve_with(pr_comment(8, HEAD), [], pr_comments=[bot(ruled["body"], login="Tataku")]).get("review") == "true")
+check("a failed run (no ruling) does not stop a re-request",
+      resolve_with(pr_comment(8, HEAD), [], pr_comments=[bot(f"**PM: No PM ruling on {HEAD[:8]}.** x")]).get("review") == "true")
+paid = [bot("PM REVIEW — CLEAR\nPM-HANDOFF-CONSUMED: 1", i) for i in range(3)] + [bot("**PM: No PM ruling on abc.** x", 9)]
+check("paid runs count rulings and failed model runs, not other comments",
+      pm.paid_runs(paid + [bot("**PM:** stale head"), bot("PM-HANDOFF-CONSUMED: 1", login="Tataku")]) == 4)
+capped = resolve_with(pr_comment(8, HEAD), [], repo_comments=paid, cap="4")
+check("the daily cap stops a paid run and says so", capped.get("review") == "false" and "Spend guard" in capped.get("notice", ""))
+check("under the cap the review runs", resolve_with(pr_comment(8, HEAD), [], repo_comments=paid, cap="5").get("review") == "true")
+check("cap 0 means no cap", resolve_with(pr_comment(8, HEAD), [], repo_comments=paid, cap="0").get("review") == "true")
+check("the default cap applies when the caller sets none", pm.DAILY_CAP > 0
+      and resolve_with(pr_comment(8, HEAD), [], repo_comments=paid * 10).get("review") == "false")
+check("the reusable workflow passes the cap to resolve", "DAILY_CAP: ${{ inputs.daily_cap }}" in code)
 
 
 def post_with(final_message: str) -> list:
