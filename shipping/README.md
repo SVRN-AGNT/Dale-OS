@@ -132,7 +132,7 @@ These are the states when this page was written. Check the linked PRs for live s
 
 ## How it relates to the Operating Manual
 
-The owner's [Operating Manual](https://github.com/Tataku/chaz-automation/blob/main/manual/OPERATING-MANUAL.md) covers who decides. This section covers how code moves once a decision is made. The manual lives in a private repository, so the link resolves only for people with access.
+The owner's [Operating Manual](https://github.com/SVRN-AGNT/chaz-automation/blob/main/manual/OPERATING-MANUAL.md) covers who decides. This section covers how code moves once a decision is made. The manual lives in a private repository, so the link resolves only for people with access.
 
 ## Where the pieces live
 

@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/Tataku/Dale-OS/security
+    url: https://github.com/SVRN-AGNT/Dale-OS/security
     about: Do not post exploit details or sensitive data in a public issue. Use the Security tab and private reporting when available.

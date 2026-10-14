@@ -24,7 +24,7 @@ jobs:
   # ...your existing jobs, e.g. `test`...
 
   hygiene:
-    uses: Tataku/Dale-OS/.github/workflows/ci-hygiene.yml@<sha>
+    uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-hygiene.yml@<sha>
     with:
       ref: <sha>          # the same sha, so the checker matches the workflow
 
@@ -33,7 +33,7 @@ jobs:
     if: ${{ always() && (github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch) }}
     permissions:
       issues: write
-    uses: Tataku/Dale-OS/.github/workflows/ci-red-alert.yml@<sha>
+    uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-red-alert.yml@<sha>
     with:
       result: ${{ needs.test.result }}
 ```

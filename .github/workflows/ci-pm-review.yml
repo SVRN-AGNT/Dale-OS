@@ -101,7 +101,7 @@ jobs:
       - name: Checkout the shared PM script
         uses: actions/checkout@v4
         with:
-          repository: Tataku/Dale-OS
+          repository: SVRN-AGNT/Dale-OS
           ref: ${{ inputs.ref }}
           path: shared
           persist-credentials: false
@@ -179,7 +179,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: Tataku/Dale-OS
+          repository: SVRN-AGNT/Dale-OS
           ref: ${{ inputs.ref }}
           path: shared
           sparse-checkout: ci

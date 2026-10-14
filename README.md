@@ -2,7 +2,7 @@
 
 **An agentic operating system for high-integrity software and finance.**
 
-[![validate](https://github.com/Tataku/Dale-OS/actions/workflows/validate.yml/badge.svg)](https://github.com/Tataku/Dale-OS/actions/workflows/validate.yml)
+[![validate](https://github.com/SVRN-AGNT/Dale-OS/actions/workflows/validate.yml/badge.svg)](https://github.com/SVRN-AGNT/Dale-OS/actions/workflows/validate.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **Authority before autonomy. Evidence before confidence. Real fixes to real problems.**
