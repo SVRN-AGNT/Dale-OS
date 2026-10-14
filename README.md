@@ -7,7 +7,7 @@
 
 **Authority before autonomy. Evidence before confidence. Real fixes to real problems.**
 
-[Install](INSTALL.md) · [Advanced agentic engineering](docs/AGENTIC_ENGINEERING.md) · [Try to break it](CHALLENGE.md) · [Read the proof](PROOF.md) · [Browse the library](docs/LIBRARY.md) · [Skill catalog](docs/SKILL_CATALOG.md)
+[**The Shipping System**](shipping/README.md) · [Install](INSTALL.md) · [Advanced agentic engineering](docs/AGENTIC_ENGINEERING.md) · [Try to break it](CHALLENGE.md) · [Read the proof](PROOF.md) · [Browse the library](docs/LIBRARY.md) · [Skill catalog](docs/SKILL_CATALOG.md)
 
 Dale OS is a portable control plane for AI agents doing consequential software and financial work. It turns recurring failure modes into small falsifiable skills, deterministic checks, narrow compositions, machine-readable receipts, and reproducible evals.
 
@@ -25,6 +25,18 @@ The basic idea is simple:
 - **Get the money right.**
 
 This repository is the canonical source. Skills are modules inside the operating system. Deterministic tools handle math and reconciliation where reasoning alone is not good enough. Evals try to break the rules before real work does.
+
+## The Shipping System
+
+**Agents review and merge each other's work; people keep only the steps that are theirs.**
+
+[`shipping/`](shipping/README.md) packages the review-and-merge pipeline assembled in one day for a private financial repository, around the merge controller it already had. Each change gets a lane from the paths it touches: docs, ordinary, truth, or held. The lane decides who judges it (an independent agent reviewer on every PR, plus a second model from a different vendor on authority work) and who lands it (one Controller for routine work, a person for held scope). Production releases, access grants and the reviewer's blocking power stay with a person.
+
+- [Operating model](shipping/README.md): roles, lanes, the 14 rules that make it hold, and what stays human.
+- [Before and after](shipping/FLOW.md): every stage, with merged versus pending and measured versus expected.
+- [Sourced playbook](shipping/PLAYBOOK.md): Anthropic's own guidance, primary sources only, mapped to each rule.
+- [Adoption guide](shipping/ADOPT.md): twelve steps in four levels, so any repository can join, plus [templates](shipping/templates/).
+- [`shipping-lanes`](skills/operator/shipping-lanes/SKILL.md): the same rule as a skill an agent can load.
 
 ## Developer quickstart
 
@@ -68,6 +80,7 @@ For coding agents and agentic software work:
 - `completion-contract` — "done" is a verdict, not a report; the worker does not deliver it.
 - `merge-authority` — evidence authorises only the tree it judged; permission cannot come from the party asking.
 - `seam-audit` — each side can be right while the system is wrong; audit the join.
+- `shipping-lanes` — risk picks the lane; the lane picks the judge and the lander.
 
 ### Advanced agentic engineering
 
@@ -116,6 +129,8 @@ Dale-OS/
 ├── skills/                  # canonical Agent Skills modules
 │   ├── operator/
 │   └── financial-truth/
+├── shipping/                # the Shipping System: model, flow, playbook, adoption
+├── ci/                      # shared CI layer other repositories call
 ├── tools/                   # deterministic, read-only financial checks
 ├── evals/                   # activation, behavior, composition, fixtures
 ├── cases/                   # sanitized incidents that paid for rules

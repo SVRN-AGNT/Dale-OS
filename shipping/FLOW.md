@@ -1,0 +1,24 @@
+# Before and after, stage by stage
+
+Each row follows one stage a change passes through in the reference repository, from an agent writing it to production. **Kind** names the change: cut fat, improved, redundancy removed, or hole filled. **State** is as of 14 October 2026, checked on GitHub. Numbers are the threads' own measurements unless marked *expected*.
+
+The owner also has an interactive version of this table as a private page, kept outside this repository.
+
+| Stage | Before | Kind | Now | State |
+|---|---|---|---|---|
+| **Agent reads the rules** | A 411-line instructions file loaded into every session, with rationale and history | Cut fat | 225 lines of hard rules. All 320 moved lines live word for word in a detail doc that is read only when needed | Merged |
+| **Agent runs tests** | The truth tier printed 2,531 lines into the agent's context, with failures buried in it | Cut fat | 9 lines with failures first. CI keeps its full output | Built, waiting on the Controller |
+| **Tests that guard the code** | Example module: 85 tests, 36 of them checking their own copies of the code. With the real code broken 5 ways, they stayed green | Redundancy removed · Hole filled | 52 tests, plus one that opens the real dialog, saves, and checks what was stored. All 10 deliberate breakages turn it red | Built, CI green |
+| **PR gate** | Median wait about 13 min of CI wall time (22 merged PRs). The truth tier took 6m27s, and 2 tests were 78% of it | Improved | Truth tier 1m42s, measured locally. The simulator is 2.8× faster on its own; the suite-wide saving is *expected* | First merged, second built |
+| **Review** | One reviewer, reached only through a HANDOFF comment. On the day it mattered no one posted one, so it saw none of the PRs. "Reviewer clears before ready" was an instruction nothing checked | Hole filled | An independent agent reviewer on every ready PR (about 30 to 60 s and about $0.15 each), report-only. A blocking finding must quote its line. The unchanged-diff verdict carries over. The second vendor stays on authority work | Merged |
+| **Controller merges** | Acceptance tests were labelled blocking, but a red result could not stop a merge. "Can this merge?" was asked 4 times, 1.5 s apart, and one PR stalled 17 min | Hole filled · Improved | Acceptance is a required check. Retries back off over 2 to 32 s within a 120 s budget | Merged |
+| **After the merge** | A release-notes bot committed after every merge, and its runs needed a person to approve them. About 11 min of checks re-ran on code the PR had already tested | Cut fat · Redundancy removed | The bot is removed, and the merge's own push restarts the Controller. Checks skip a tree the PR gate already passed | Bot removal merged; skip built (held scope) |
+| **Nightly full suite** | Re-ran commits that already had a green nightly. A 60 min limit against 46 to 59 min runs. A red nightly told no one | Redundancy removed · Hole filled | Skips a commit that is already green. The limit is 90 min, with sharding only if runs pass about 70. A red run opens an issue | Merged; each repo adopts the alert |
+| **Promotion** | The promotion PR pointed at the moving integration branch, so every merge restarted its 56 to 57 min suite. One release was open 3 h 55 min, lost 3 suite runs and needed 4 record-keeping PRs | Redundancy removed · Cut fat · Hole filled | Each promotion is frozen at one commit on its own branch. The receipt is generated from git. Promotion will refuse while money code differs from the last truth-kit clearance | Tooling and frozen cut merged; receipt built; truth gate approved, not built |
+| **Production** | Nothing checked production after a promotion | Hole filled | A fixed browser script signs in with a test account and checks only that account. It is built switched off | Waiting on the owner's test account |
+| **Fixing red PRs** | A sweeper would have pushed fixes under the owner's account, with "never merge" only an instruction | Hole filled | The sweeper is paused. Agents get their own GitHub App, with limits GitHub enforces | Waiting on the owner to create the App |
+| **Across five repos** | Uneven. One had no workflows, this one tested every PR commit twice, and four workflows had no permissions block | Redundancy removed · Improved | One shared layer here: the red-run alert and a workflow checker | Merged; two adoption PRs open |
+
+## The trade-off
+
+Held-scope PRs merged by hand that day carry no Controller attestation. That forces the next release into full consolidation mode, the slow path with every checklist item and the whole suite. Giving agents their own identity is what eventually lets those changes go through the Controller instead.

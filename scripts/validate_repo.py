@@ -2,7 +2,7 @@
 from pathlib import Path
 import re, subprocess, sys, json
 ROOT=Path(__file__).resolve().parents[1]
-EXPECTED_OPERATOR={'execution-charter','systemic-bug-instinct','truth-boundary','latest-authority','diff-scope-audit','protected-boundary','intent-drift-check','operator-ui-audit','swarm','reachability-proof','loop-closure','false-competence-check','risk-kernel','verify-before-cite','memory-promotion','completion-contract','merge-authority','seam-audit'}
+EXPECTED_OPERATOR={'execution-charter','systemic-bug-instinct','truth-boundary','latest-authority','diff-scope-audit','protected-boundary','intent-drift-check','operator-ui-audit','swarm','reachability-proof','loop-closure','false-competence-check','risk-kernel','verify-before-cite','memory-promotion','completion-contract','merge-authority','seam-audit','shipping-lanes'}
 EXPECTED_FINANCE={'money-trail','accounting-integrity','performance-truth','basis-proof','ledger-repair','transfer-neutrality','cash-truth','financial-evidence-grade','tax-character-proof','corporate-action-continuity','model-sanity','close-the-books'}
 EXPECTED_ALL=EXPECTED_OPERATOR|EXPECTED_FINANCE
 EXPECTED_COUNT=len(EXPECTED_ALL)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
 EXPECTED={
-'execution-charter','systemic-bug-instinct','truth-boundary','latest-authority','diff-scope-audit','protected-boundary','intent-drift-check','operator-ui-audit','swarm','reachability-proof','loop-closure','false-competence-check','risk-kernel','verify-before-cite','memory-promotion','completion-contract','merge-authority','seam-audit',
+'execution-charter','systemic-bug-instinct','truth-boundary','latest-authority','diff-scope-audit','protected-boundary','intent-drift-check','operator-ui-audit','swarm','reachability-proof','loop-closure','false-competence-check','risk-kernel','verify-before-cite','memory-promotion','completion-contract','merge-authority','shipping-lanes','seam-audit',
 'money-trail','accounting-integrity','performance-truth','basis-proof','ledger-repair','transfer-neutrality','cash-truth','financial-evidence-grade','tax-character-proof','corporate-action-continuity','model-sanity','close-the-books'
 }
 EXPECTED_COUNT=len(EXPECTED)

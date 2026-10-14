@@ -1,0 +1,67 @@
+{
+  "schema": "dale-os/shipping-lanes/v1",
+  "note": "Example lane map. Copy it and replace the globs with your repository's paths. A script derives each changed path's lane (checking both sides of every rename) from the first entry whose globs match, and the PR takes the highest lane any path reaches (L3 > L2 > L1 > L0). L0 applies only when every changed path is docs. If the list of changed files or this file cannot be read, the PR is L3.",
+  "integration_branch": "main",
+  "lanes": [
+    {
+      "id": "L3",
+      "name": "held",
+      "paths": [
+        ".github/workflows/**",
+        ".github/CODEOWNERS",
+        "**/migrations/**",
+        "scripts/release/**",
+        "scripts/merge/**",
+        "**/auth/**",
+        "**/billing/**",
+        ".claude/settings.json"
+      ],
+      "requires": [
+        "required-checks-green-on-head",
+        "agent-review",
+        "second-vendor-review",
+        "person-lands"
+      ]
+    },
+    {
+      "id": "L2",
+      "name": "truth",
+      "paths": [
+        "src/ledger/**",
+        "src/sync/**",
+        "src/import/**",
+        "src/evidence/**"
+      ],
+      "requires": [
+        "required-checks-green-on-head",
+        "affected-tests",
+        "agent-review",
+        "second-vendor-review"
+      ]
+    },
+    {
+      "id": "L0",
+      "name": "docs",
+      "paths": [
+        "docs/**",
+        "**/*.md"
+      ],
+      "only_if_all_paths_match": true,
+      "requires": [
+        "required-checks-green-on-head",
+        "agent-review"
+      ]
+    },
+    {
+      "id": "L1",
+      "name": "ordinary",
+      "paths": [
+        "**"
+      ],
+      "requires": [
+        "required-checks-green-on-head",
+        "agent-review"
+      ]
+    }
+  ]
+}

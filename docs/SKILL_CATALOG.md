@@ -18,6 +18,7 @@ Every skill, shelved by domain and lane. The machine-readable catalog is [`machi
 - `A2.1` **[`protected-boundary`](../skills/operator/protected-boundary/SKILL.md)** — Stopping can be the successful action.
 - `A2.2` **[`risk-kernel`](../skills/operator/risk-kernel/SKILL.md)** — Instructions are not boundaries. Make the forbidden unexpressible.
 - `A2.3` **[`merge-authority`](../skills/operator/merge-authority/SKILL.md)** — Evidence authorises only the tree it judged.
+- `A2.4` **[`shipping-lanes`](../skills/operator/shipping-lanes/SKILL.md)** — Risk picks the lane; the lane picks the judge and the lander.
 
 ### A3 Scope
 

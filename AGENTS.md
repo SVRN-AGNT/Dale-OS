@@ -57,6 +57,7 @@ The resolver returns canonical paths and rules. It does not replace semantic jud
 | an agent run or loop reporting that it is done | `completion-contract` |
 | an automated merge, approval, or promotion, or merged versus deployed | `merge-authority` |
 | two components disagree about one concept, or each passes alone but fails together | `seam-audit` |
+| designing or adopting how agent PRs get reviewed and merged, or a reviewer only the author can summon | `shipping-lanes` (and `shipping/`) |
 | movement of money | `money-trail` |
 | financial records that may contradict each other | `accounting-integrity` |
 | portfolio return | `performance-truth` |

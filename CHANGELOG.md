@@ -29,6 +29,10 @@
 - `accounting-integrity` now covers aggregates over withheld values and fallback chains.
 - Added cases `a-total-that-dropped-an-account` and `the-capability-nobody-fed`.
 - Expanded the canonical catalog to 30 skills.
+- Added the Shipping System under `shipping/`: the operating model for agent review and merge by risk lane (roles, L0–L3 lanes, rules, what stays human), a stage-by-stage before and after with measured versus expected labels, the sourced Anthropic playbook with rollout status, a twelve-step adoption guide, and templates (reviewer rubric, HANDOFF comment, lane map, PR header).
+- Added `shipping-lanes`: risk picks the lane, the lane picks the judge and the lander, and the reviewed party never summons its own review. Shelved at A2.4.
+- Added case `the-reviewer-nobody-called`.
+- Expanded the canonical catalog to 31 skills.
 
 ## 0.1.0 — public release
 
