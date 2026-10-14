@@ -16,6 +16,11 @@ on:
 permissions:
   contents: read
 
+# One run per HANDOFF comment: a redelivered event never bills a second review.
+concurrency:
+  group: pm-review-${{ github.event.comment.id || inputs.comment_id }}
+  cancel-in-progress: false
+
 jobs:
   pm:
     # A dispatch on any other branch would run that branch's copy of the reviewer.
@@ -29,5 +34,7 @@ jobs:
     with:
       ref: ${{ github.sha }}
       comment_id: ${{ github.event.comment.id || inputs.comment_id }}
+      # CI and the PM's own caller are held: a PR that edits them gets the high bar.
+      held_paths: '^(\.github/workflows/|ci/)'
     secrets:
       openai_api_key: ${{ secrets.OPENAI_API_KEY }}

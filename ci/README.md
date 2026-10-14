@@ -49,6 +49,7 @@ on:
   issue_comment: { types: [created] }
   workflow_dispatch: { inputs: { comment_id: { type: string, required: true } } }
 permissions: { contents: read }
+concurrency: { group: 'pm-review-${{ github.event.comment.id || inputs.comment_id }}', cancel-in-progress: false }
 jobs:
   pm:
     if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
@@ -57,10 +58,16 @@ jobs:
     with:
       ref: <sha>
       comment_id: ${{ github.event.comment.id || inputs.comment_id }}
-      # optional: control_issue, contract_path, held_paths, allowed_authors, model, effort
+      held_paths: '^\.github/workflows/'   # add the repository's own held paths
+      # optional: control_issue, contract_path, allowed_authors, model, effort
     secrets:
       openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 ```
+
+The `concurrency` group stops a redelivered comment from billing a second
+review. A Claude session only reaches the PM by posting a comment through the
+`claude` app that starts with `HANDOFF:` and names the PR's head as a full
+40-character sha ([`shipping/templates/HANDOFF.md`](../shipping/templates/HANDOFF.md)).
 
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id. A dispatch from any other branch
