@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipping Lanes"
+  short_description: "Route each change to the review and lander its risk needs"

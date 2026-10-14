@@ -17,6 +17,7 @@
     {"id":"memory-pollution","symptom":"durable agent memory fills with unverified, duplicate, stale, or already-documented notes","route":"memory-promotion"},
     {"id":"self-certified-completion","symptom":"an autonomous run is declared done on the worker's own word, with unanswered obligations, exhausted retries, or no progress","route":"completion-contract"},
     {"id":"forged-merge-authority","symptom":"a merge or approval is authorized by evidence from a different tree, self-declared risk, or an approver the automation can impersonate","route":"merge-authority"},
+    {"id":"risk-blind-shipping","symptom":"agent changes are reviewed and merged on one path regardless of risk, every change waits on one person, or a reviewer runs only when the author summons it","route":"shipping-lanes"},
     {"id":"seam-divergence","symptom":"two components represent one concept differently, so each passes its own tests while the combined result is wrong","route":"seam-audit"},
     {"id":"counterfeit-competence","symptom":"work has the shape of a good fix, test, cleanup, or verification but fails the check that would distinguish it from the real thing","route":"false-competence-check"},
     {"id":"money-misclassification","symptom":"a cash movement is classified from sign or appearance rather than economic meaning","route":"money-trail"},

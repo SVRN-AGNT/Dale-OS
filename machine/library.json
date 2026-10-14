@@ -49,6 +49,12 @@
               "name": "merge-authority",
               "path": "skills/operator/merge-authority/SKILL.md",
               "tagline": "Evidence authorises only the tree it judged."
+            },
+            {
+              "call": "A2.4",
+              "name": "shipping-lanes",
+              "path": "skills/operator/shipping-lanes/SKILL.md",
+              "tagline": "Risk picks the lane; the lane picks the judge and the lander."
             }
           ]
         },

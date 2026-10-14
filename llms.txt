@@ -17,6 +17,12 @@
 - CHALLENGE.md — adversarial quick test
 - ARCHITECTURE.md — one-source/many-adapters design
 
+## The Shipping System
+- shipping/README.md — operating model for agent review and merge, by risk lane
+- shipping/ADOPT.md — step-by-step adoption for any repository
+- shipping/PLAYBOOK.md — Anthropic primary sources behind each rule
+- ci/README.md — shared CI layer
+
 ## Operator OS
 - skills/operator/execution-charter/SKILL.md
 - skills/operator/systemic-bug-instinct/SKILL.md
@@ -36,6 +42,7 @@
 - skills/operator/completion-contract/SKILL.md
 - skills/operator/merge-authority/SKILL.md
 - skills/operator/seam-audit/SKILL.md
+- skills/operator/shipping-lanes/SKILL.md
 
 ## Financial Truth
 - skills/financial-truth/money-trail/SKILL.md
