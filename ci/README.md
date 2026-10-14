@@ -51,7 +51,7 @@ on:
 permissions: { contents: read }
 jobs:
   pm:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.comment.body, 'HANDOFF:')
+    if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
     permissions: { contents: read, issues: write, pull-requests: write, checks: write }
     uses: Tataku/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
     with:
@@ -63,7 +63,8 @@ jobs:
 ```
 
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
-with that comment's id.
+from the default branch with that comment's id. A dispatch from any other branch
+is refused: it would run that branch's copy of the reviewer.
 
 ## What stays per repository
 

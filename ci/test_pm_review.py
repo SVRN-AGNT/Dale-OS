@@ -41,6 +41,7 @@ check("full live head is named", pm.named_head(f"HANDOFF: {HEAD.upper()}", HEAD)
 check("superseded head is stale", pm.named_head(f"HANDOFF: {OTHER}", HEAD) is None)
 check("short sha is not enough", pm.named_head(f"HANDOFF: {HEAD[:12]}", HEAD) is None)
 check("held paths match", pm.held_scope([".github/workflows/a.yml"], r"^\.github/") != "")
+check("held path with a newline stays one line", "\n" not in pm.held_scope([".github/x\n__PM_EOF__\npr=9"], r"^\.github/"))
 check("no held paths, no held scope", pm.held_scope([".github/workflows/a.yml"], "") == "")
 
 # fails closed
@@ -73,6 +74,9 @@ check("PM is OpenAI Codex, never Claude", "uses: openai/codex-action@v1" in code
 check("Codex is read-only with sudo dropped", "permission-profile: ':read-only'" in code and "safety-strategy: drop-sudo" in code)
 check("Codex is the last step of the review job", review.rstrip().split("- name:")[-1].lstrip().startswith("PM ruling"))
 check("review job can only read", not re.search(r":\s*write", review))
+check("caller checkout is pinned to the default branch", "ref: ${{ github.event.repository.default_branch }}" in code)
+self_caller = (HERE.parent / ".github" / "workflows" / "pm-review.yml").read_text()
+check("dispatch only from the default branch", "github.ref_name == github.event.repository.default_branch" in self_caller)
 check("no merge verb", not re.search(r"/merge|auto_merge|ready_for_review|git push|contents:\s*write", code))
 
 if errors:

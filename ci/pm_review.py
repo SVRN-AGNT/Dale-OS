@@ -128,7 +128,8 @@ def held_scope(paths, held_paths: str):
         return ""
     rx = re.compile(held_paths)
     hit = next((p for p in paths if rx.search(p)), None)
-    return f"matches the repository's held paths ({hit})" if hit else ""
+    # The path is PR-controlled and may contain newlines; keep it to one safe line for $GITHUB_OUTPUT.
+    return f"matches the repository's held paths ({re.sub(r'[^\x20-\x7e]', '?', hit)[:200]})" if hit else ""
 
 
 def fence(s) -> str:
@@ -285,8 +286,9 @@ def _outputs(**kv) -> None:
     with open(os.environ["GITHUB_OUTPUT"], "a") as f:
         for k, v in kv.items():
             v = str(v)
-            if "\n" in v:
-                f.write(f"{k}<<__PM_EOF__\n{v}\n__PM_EOF__\n")
+            if "\n" in v or "\r" in v:
+                delim = f"__PM_EOF_{os.urandom(8).hex()}__"
+                f.write(f"{k}<<{delim}\n{v}\n{delim}\n")
             else:
                 f.write(f"{k}={v}\n")
 

@@ -14,7 +14,8 @@
 #   permissions: { contents: read }
 #   jobs:
 #     pm:
-#       if: github.event_name == 'workflow_dispatch' || startsWith(github.event.comment.body, 'HANDOFF:')
+#       # A dispatch must run from the default branch, or the branch picks its own reviewer.
+#       if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
 #       permissions: { contents: read, issues: write, pull-requests: write, checks: write }
 #       uses: <owner>/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
 #       with:
@@ -91,6 +92,9 @@ jobs:
       - name: Checkout the caller's merged default branch (never the PR)
         uses: actions/checkout@v4
         with:
+          # Explicit: a hand-dispatched run on a PR branch must still see the merged
+          # default branch, never the PR's tree (whose AGENTS.md Codex would load).
+          ref: ${{ github.event.repository.default_branch }}
           path: caller
           fetch-depth: 0
           persist-credentials: false

@@ -18,7 +18,8 @@ permissions:
 
 jobs:
   pm:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.comment.body, 'HANDOFF:')
+    # A dispatch on any other branch would run that branch's copy of the reviewer.
+    if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
     permissions:
       contents: read
       issues: write
