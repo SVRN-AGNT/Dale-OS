@@ -291,10 +291,10 @@ For hard agentic work:
 
 The portable rules above were generalized from real systems in ACF Dashboard. Stable source snapshots:
 
-- [Adaptive SWARM meta-orchestrator and harness compiler](https://github.com/Tataku/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/.claude/skills/swarm/SKILL.md)
-- [Harness design contract](https://github.com/Tataku/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/.claude/skills/swarm/references/harness-design.md)
-- [Durable agent mailbox protocol](https://github.com/Tataku/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/docs/AGENT_MAILBOX_PROTOCOL.md)
-- [Event-driven autonomous worker / PM loop](https://github.com/Tataku/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/docs/AUTORUN_ORCHESTRATOR_PROTOCOL.md)
-- [Graph engineering architecture audit](https://github.com/Tataku/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/docs/audits/GRAPH_ENGINEERING_ARCHITECTURE_AUDIT_v1.md)
+- [Adaptive SWARM meta-orchestrator and harness compiler](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/.claude/skills/swarm/SKILL.md)
+- [Harness design contract](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/.claude/skills/swarm/references/harness-design.md)
+- [Durable agent mailbox protocol](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/docs/AGENT_MAILBOX_PROTOCOL.md)
+- [Event-driven autonomous worker / PM loop](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/docs/AUTORUN_ORCHESTRATOR_PROTOCOL.md)
+- [Graph engineering architecture audit](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/docs/audits/GRAPH_ENGINEERING_ARCHITECTURE_AUDIT_v1.md)
 
 These are examples, not runtime requirements. Dale OS should preserve the contracts even when the host, model family, CI system, or orchestration primitives change.

@@ -118,7 +118,7 @@ These are the states when this page was written. Check the linked PRs for live s
 - Agent Review runs on every ready PR. Each review takes about 30 to 60 seconds and costs about $0.15. It is report-only, and it has already caught two confirmed bugs: a check that passed when it should have failed, and a whitespace blind spot in its own convergence logic.
 - Acceptance tests are a required check. Mergeability retries back off over 2 to 32 seconds, within a 120-second budget.
 - The release-notes bot is removed, and each promotion is frozen at one commit.
-- The shared CI layer is in this repository ([Dale-OS #20](https://github.com/Tataku/Dale-OS/pull/20)). Its first run found that this repository tested every PR commit twice.
+- The shared CI layer is in this repository ([Dale-OS #20](https://github.com/SVRN-AGNT/Dale-OS/pull/20)). Its first run found that this repository tested every PR commit twice.
 
 **Also merged later that day:** the real-save-path test for the example module, a faster simulator (2.8× on its own; suite-wide saving not measured), and screenshots on UI PRs with a Friday digest issue.
 

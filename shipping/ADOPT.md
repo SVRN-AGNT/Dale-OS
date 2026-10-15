@@ -132,8 +132,8 @@ As of 14 October 2026:
 |---|---|---|
 | ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor on authority and held PRs with a 2-hour timeout (decided; written rule update pending) | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
 | Dale-OS (public) | 1: the layer lives here and passes strict | Lane map; agent review |
-| wallet-alpha-lab (private) | Step 1 open in [#149](https://github.com/Tataku/wallet-alpha-lab/pull/149), green | Merge (it redeploys the same site code) |
-| ACF-Docs (public) | Step 1 open in [#214](https://github.com/Tataku/ACF-Docs/pull/214), green | Merge (it redeploys the same site code) |
+| wallet-alpha-lab (private) | Step 1 open in [#149](https://github.com/SVRN-AGNT/wallet-alpha-lab/pull/149), green | Merge (it redeploys the same site code) |
+| ACF-Docs (public) | Step 1 open in [#214](https://github.com/SVRN-AGNT/ACF-Docs/pull/214), green | Merge (it redeploys the same site code) |
 | chaz-automation (private) | 0: no workflows; vault docs self-merge under a written decision | Step 1 if it gains CI |
 
 The wallet-alpha-lab link resolves only for people with access to that private repository.

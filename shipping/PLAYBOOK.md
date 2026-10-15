@@ -99,7 +99,7 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | R6 | Agents get their own GitHub identity, with limits on access | F4, F10 | Waiting on the owner to create the App, ruleset and variables |
 | R7 | Terse test output for agents | F6 | Built (9 lines instead of 2,531), waiting to merge |
 | R8 | A fast sampled PR tier plus a nightly full regression | F6, F11 | Partly done: the PR tier and nightly exist; further cuts are built |
-| R9 | Caps on every model job; reusable workflows across repos | F10 | Partly done: the reviewer is capped, and the shared layer is in this repo ([#20](https://github.com/Tataku/Dale-OS/pull/20)) |
+| R9 | Caps on every model job; reusable workflows across repos | F10 | Partly done: the reviewer is capped, and the shared layer is in this repo ([#20](https://github.com/SVRN-AGNT/Dale-OS/pull/20)) |
 | R10 | Instructions file under about 200 lines | F5 | Done: 411 to 225 lines |
 | R11 | Deterministic promotion gates | F4, F5 | In progress: tooling and the frozen cut merged, receipt built |
 | R12 | Post-deploy production check | F10 | Owner decides: built switched off |
