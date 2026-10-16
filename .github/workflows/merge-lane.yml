@@ -10,6 +10,9 @@ on:
     workflows: [pm-review, agent-review, validate]
     types: [completed]
   workflow_dispatch:
+  # Nothing else wakes the lane when a timeout passes or a hold label comes off.
+  schedule:
+    - cron: '17 */2 * * *'
 
 permissions:
   contents: read
@@ -29,5 +32,6 @@ jobs:
     with:
       ref: ${{ github.sha }}
       held_paths: '^(\.github/workflows/|ci/)'
+      required_checks: dale-os
     secrets:
       merge_token: ${{ secrets.INTEGRATION_TOKEN }}

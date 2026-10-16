@@ -17,13 +17,14 @@
 #
 #   on:
 #     workflow_run: { workflows: [pm-review, agent-review, <CI>], types: [completed] }
+#     schedule: [{ cron: '17 */2 * * *' }]
 #     workflow_dispatch:
 #   permissions: { contents: read }
 #   jobs:
 #     lane:
 #       permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read }
 #       uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-merge-lane.yml@<sha>
-#       with: { ref: <sha>, held_paths: '<the PM caller's regex>' }
+#       with: { ref: <sha>, held_paths: '<the PM caller's regex>', required_checks: '<CI check names, one per line>' }
 #       secrets: { merge_token: ${{ secrets.INTEGRATION_TOKEN }} }
 #
 # MERGE TOKEN. GitHub refuses to let GITHUB_TOKEN merge a PR that changes
@@ -51,6 +52,12 @@ on:
         description: Comma-separated GitHub logins whose HANDOFFs count
         type: string
         default: Tataku
+      required_checks:
+        description: >-
+          The repository's CI check names, one per line; each must have run on the head and passed.
+          Required so no caller forgets it; pass '' only for a repository with no CI.
+        type: string
+        required: true
       instruction_paths:
         description: The PM caller's instruction_paths, if it sets one
         type: string
@@ -95,4 +102,5 @@ jobs:
           HELD_PATHS: ${{ inputs.held_paths }}
           ALLOWED_AUTHORS: ${{ inputs.allowed_authors }}
           INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
+          REQUIRED_CHECKS: ${{ inputs.required_checks }}
         run: python3 shared/ci/merge_gate.py lane

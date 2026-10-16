@@ -30,7 +30,8 @@ Codex's comments can only come from Codex's GitHub app.
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
 HANDOFF are blocked by a CORRECT or HOLD, wait for a ruling up to 2 hours, and
-need the same passing Agent Review.
+need the same passing Agent Review. Every PR also needs each REQUIRED_CHECKS
+check to have run on the head and passed.
 
   check   one PR (`--pr N [--head SHA] [--held]`): print the verdict as JSON
   scan    every open PR into the base: print {pr: verdict} as JSON
@@ -56,6 +57,9 @@ AGENT_REVIEW = "Agent Review"
 # this many seconds apart, and merges only if the second read still allows the same head.
 SETTLE_SECONDS = 90
 MERGEABLE_POLLS, MERGEABLE_WAIT = 6, 5
+# The merge token may bypass branch rules, so the lane itself refuses what a rule would: a conflict, a branch behind a
+# base that requires it to be current, and a draft.
+REFUSED_STATES = ("dirty", "behind", "draft")
 # The only workflow whose Agent Review check counts, and only as defined on the default branch.
 AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
@@ -84,10 +88,12 @@ def newest(runs, name: str):
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
-            identify=None) -> dict:
+            identify=None, required=()) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
+    `required` names the repository's CI checks: each must have run on the head and passed (Codex P1 on #41: a
+    HANDOFF can clear before CI has even started, and an absent or skipped CI is not a pass).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts."""
     now = now or dt.datetime.now(dt.timezone.utc)
@@ -130,13 +136,16 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     live_v = live.get("verdict")
     if live_v in ("CORRECT", "HOLD"):
         return done("block", f"PM {live_v} on {head[:8]} from Codex's evidence now ({live.get('title')})")
-    if out["pm"] in ("CORRECT", "HOLD", "OWNER_GATE"):
+    if out["pm"] not in (None, "CLEAR"):
         return done("block", f"the PM's standing ruling on {head[:8]} is {out['pm']}")
 
     if live_v != "CLEAR" or out["pm"] != "CLEAR":
         if held:
             return done("wait", f"waiting on the PM's CLEAR for {head[:8]} (held scope never merges on a timeout)")
-        stamps = [t for t in (_ts(c.get("created_at")) for c in handoffs) if t]
+        # An edited HANDOFF counts from its edit: the PM answers only new comments, so an old one edited to
+        # name a new head would otherwise start that head's clock hours in the past.
+        stamps = [max(t for t in (_ts(c.get("created_at")), _ts(c.get("updated_at"))) if t)
+                  for c in handoffs if _ts(c.get("created_at"))]
         first = min(stamps) if stamps else None
         if first and now - first >= PM_TIMEOUT:
             out["reasons"].append(f"no PM ruling 2 hours after the HANDOFF for {head[:8]}: the review timeout applies")
@@ -154,10 +163,25 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
                              f"{AGENT_REVIEW_PATH}")
     if ar.get("conclusion") != "success":
         return done("block", f"Agent Review on {head[:8]} is {ar.get('conclusion')}: {(ar.get('output') or {}).get('title') or ''}".rstrip(": "))
+    for name in required:
+        ci = newest(check_runs, name)
+        if not ci or ci.get("status") != "completed":
+            return done("wait", f"waiting on required check {name} for {head[:8]}")
+        if ci.get("conclusion") != "success":
+            return done("block", f"required check {name} on {head[:8]} is {ci.get('conclusion')}")
     # The PM's own check is left out: its ruling is re-derived above, and its "waiting" check is never completed
     # (the ruling posts a new one), so it would read as running forever (Codex P1 on #41).
+    # An abandoned in-progress run is set aside only by a newer completed run that `identify` proves is the same check.
+    order = lambda r: (r.get("started_at") or "", r.get("id") or 0)  # noqa: E731
+    done_runs = [r for r in check_runs if r.get("status") == "completed"]
+
+    def superseded(r) -> bool:
+        k = identify(r) if identify else None
+        return k is not None and any(order(c) > order(r) and c.get("name") == r.get("name") and identify(c) == k
+                                     for c in done_runs)
+
     running = sorted({r.get("name") or "?" for r in check_runs
-                      if r.get("status") != "completed" and r.get("name") != pm.PM_CHECK})
+                      if r.get("status") != "completed" and r.get("name") != pm.PM_CHECK and not superseded(r)})
     if running:
         return done("wait", f"checks still running on {head[:8]}: {', '.join(running)}")
     return done("allow", f"Agent Review passed and the PM's {out['pm'] or 'timeout'} on {head[:8]} still stands")
@@ -198,13 +222,21 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
     pr = pm._api("GET", f"/pulls/{n}")
     head = (head or pr["head"]["sha"]).lower()
     paths = _paths(n)
-    held = held_flag if held_flag is not None else bool(pm.held_scope(paths, held_rx))
+    # /pulls/N/files stops at 3000 files: a PR it cannot list in full is treated as held (fails closed).
+    held = held_flag if held_flag is not None else (bool(pm.held_scope(paths, held_rx))
+                                                     or len(set(paths)) < int(pr.get("changed_files") or 0))
     return verdict(pr=pr, head=head, held=held, pr_comments=pm._paginate(f"/issues/{n}/comments"),
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
-                   failed=pm.head_failed_checks(pr, head), identify=_identify(pr)) | {"title": pr.get("title"),
+                   failed=pm.head_failed_checks(pr, head), identify=_identify(pr),
+                   required=required_checks()) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
                                                                                       "mergeable": pr.get("mergeable")}
+
+
+def required_checks() -> list[str]:
+    """REQUIRED_CHECKS: the caller's CI check names, one per line (a check name may contain commas)."""
+    return [c.strip() for c in os.environ.get("REQUIRED_CHECKS", "").splitlines() if c.strip()]
 
 
 def _open_prs(base: str) -> list[dict]:
@@ -272,8 +304,9 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         lines.append(f"#{n} {v['head'][:8]} {'held' if v['held'] else 'ordinary'}: {v['state'].upper()} — {'; '.join(v['reasons'])}")
         if not v["allow"]:
             continue
-        if v.get("mergeable") is False:
-            lines.append(f"#{n}: not merged, GitHub reports it not mergeable")
+        if v.get("mergeable") is False or v.get("mergeable_state") in REFUSED_STATES:
+            lines.append(f"#{n}: not merged, GitHub reports mergeable={v.get('mergeable')} "
+                         f"({v.get('mergeable_state')})")
             continue
         v2 = settled(n, v, lambda: evaluate(n, v["head"], held_rx, None, allowed, instr))
         if not v2["allow"]:
@@ -282,8 +315,8 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
             continue
         # null means GitHub has not finished computing it yet: poll, as its REST docs say (Codex P1 on #41).
         mergeable = mergeable_now(n, v2.get("mergeable"))
-        if mergeable is not True:
-            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable}")
+        if mergeable is not True or v2.get("mergeable_state") in REFUSED_STATES:
+            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable} ({v2.get('mergeable_state')})")
             continue
         msg = (f"Merged by the merge lane (Dale-OS ci/merge_gate.py) on both reviewers' evidence for {v['head']}:\n"
                f"{'; '.join(v['reasons'])}.\nNo person typed this merge (owner ruling 2026-10-16).")

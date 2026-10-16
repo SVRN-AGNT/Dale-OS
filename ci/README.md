@@ -205,7 +205,7 @@ person typing "merge". The lane merges a PR when, on its exact head:
 2. the PM's latest ruling is CLEAR **and** re-deriving it now from Codex's own
    comments and the head's checks (the PM's own functions) still gives CLEAR,
    so a Codex finding posted after the CLEAR blocks the merge;
-3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`) and no check other than the PM's own is still running, held or not.
+3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`), each `required_checks` CI check ran on the head and passed, and no check other than the PM's own is still running, held or not.
 
 A held PR never merges on the 2-hour timeout. A PR with no HANDOFF is left to
 the repository's own rule. An `owner-hold`, `do-not-merge` or `integration-hold`
@@ -216,17 +216,27 @@ name: merge-lane
 on:
   workflow_run: { workflows: [pm-review, agent-review, <CI workflow name>], types: [completed] }
   workflow_dispatch:
+  schedule: [{ cron: '17 */2 * * *' }]   # wakes it after a timeout passes or a hold label comes off
 permissions: { contents: read }
 jobs:
   lane:
+    # Only the default branch's copy may run on a dispatch: it holds INTEGRATION_TOKEN.
+    if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
     permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read }
     uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-merge-lane.yml@<sha>
     with:
       ref: <sha>
       held_paths: '<the same regex the PM caller passes>'
+      required_checks: |                   # the repository's CI check names, one per line; '' only with no CI
+        <CI check name>
     secrets:
       merge_token: ${{ secrets.INTEGRATION_TOKEN }}
 ```
+
+Known limits, accepted because held scope also needs Codex's CLEAR on the same head: an `Agent Review` or
+`required_checks` check is proven by the run that posted it, not by who last set its conclusion, so a workflow a PR
+adds could restate one; that PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. The
+merge token may bypass branch rules, so the lane itself refuses a conflicted, behind or draft PR.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
 in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to

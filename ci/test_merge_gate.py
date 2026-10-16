@@ -67,10 +67,10 @@ def proven(r):
 
 
 def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW, identify=proven,
-      failed=None):
+      failed=None, required=("ci",)):
     return mg.verdict(pr=pr, head=HEAD, held=held, pr_comments=list(comments), review_comments=list(review),
                       check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now, identify=identify,
-                      failed=failed)
+                      failed=failed, required=required)
 
 
 # the happy path the owner asked for: no person types
@@ -97,6 +97,13 @@ check("a standing CORRECT blocks", v(comments=[handoff(), summary(), ruling("COR
 check("a later CORRECT replaces an earlier CLEAR", v(comments=[handoff(), summary(), ruling(), ruling("CORRECT")])["block"])
 check("a PR that edits AGENTS.md is held by the PM", v(paths=("AGENTS.md",))["block"])
 
+# any standing ruling but CLEAR blocks, whatever its spelling (the PM writes "OWNER GATE")
+check("an OWNER GATE ruling blocks a non-held PR at the timeout",
+      v(held=False, comments=[handoff(at="2026-10-16T08:00:00Z"), ruling("OWNER GATE")])["block"])
+# an edited HANDOFF restarts the clock (the PM only answers new comments)
+check("a day-old HANDOFF edited a minute ago to name this head does not start at the timeout",
+      v(held=False, comments=[handoff(at="2026-10-15T10:00:00Z", updated_at="2026-10-16T11:59:00Z")])["state"] == "wait")
+
 # held scope never merges on the timeout
 r = v(comments=[handoff(at="2026-10-16T08:00:00Z")])
 check("held scope waits for a CLEAR even 4 hours after the HANDOFF", r["state"] == "wait" and not r["allow"])
@@ -117,8 +124,9 @@ check("non-held scope with no HANDOFF is left to its own rule", v(held=False, co
 check("held scope needs Agent Review", v(checks=[run("ci")])["state"] == "wait")
 check("Agent Review still running: wait", v(checks=[run("Agent Review", status="in_progress"), run("ci", rid=2)])["state"] == "wait")
 check("Agent Review changes requested blocks", v(checks=[run("Agent Review", "failure"), run("ci", rid=2)])["block"])
-check("a newer Agent Review from another app does not stand in",
-      v(checks=[run("Agent Review", status="in_progress"), run("Agent Review", started="2026-10-16T11:00:00Z", rid=9, app="x")])["state"] == "wait")
+r = v(checks=[run("Agent Review", "failure"), run("Agent Review", started="2026-10-16T11:00:00Z", rid=9, app="x"),
+              run("ci", rid=2)], failed=[])
+check("a newer Agent Review from another app does not stand in", r["block"] and "Agent Review" in r["reasons"][0])
 check("a check still running on a held head: wait", v(checks=GREEN + [run("build", status="queued", rid=4)])["state"] == "wait")
 check("the PM's own never-completed waiting check does not hold the merge forever (Codex P1 on #41)",
       v(checks=GREEN + [run("PM Review", status="in_progress", rid=5)])["allow"])
@@ -134,6 +142,29 @@ check("a newer Agent Review from a PR-branch copy of agent-review.yml does not c
 check("an Agent Review with no provable run does not count",
       v(checks=[run("Agent Review", started=late, rid=50), run("ci", rid=2)])["block"])
 check("without an identity check, no Agent Review counts", v(identify=None)["block"])
+
+# the repository's CI must have run and passed (Codex P1 on #41: a HANDOFF can clear before CI starts)
+check("a required check that has not started: wait", v(checks=[run("Agent Review")])["state"] == "wait")
+check("a required check that was skipped blocks", v(checks=[run("Agent Review"), run("ci", "skipped", rid=2)])["block"])
+check("a required check still running: wait",
+      v(checks=[run("Agent Review"), run("ci", status="in_progress", rid=2)])["state"] == "wait")
+check("non-held scope needs the required check too", v(held=False, checks=[run("Agent Review")])["state"] == "wait")
+os.environ["REQUIRED_CHECKS"] = "build\n Tests, audits, generator drift, build \n"
+check("REQUIRED_CHECKS is one name per line, commas kept",
+      mg.required_checks() == ["build", "Tests, audits, generator drift, build"])
+os.environ.pop("REQUIRED_CHECKS")
+check("no REQUIRED_CHECKS means none", mg.required_checks() == [])
+
+# an abandoned in-progress run, superseded by a newer completed run of the same proven check, is not running
+check("an abandoned run superseded by a newer completed one does not hold the merge",
+      v(checks=GREEN + [run("build", status="in_progress", started="2026-10-16T09:00:00Z", rid=4),
+                        run("build", started="2026-10-16T10:30:00Z", rid=5)])["allow"])
+check("a running run with no newer completed one still waits",
+      v(checks=GREEN + [run("build", status="in_progress", started="2026-10-16T11:00:00Z", rid=4),
+                        run("build", started="2026-10-16T10:30:00Z", rid=5)])["state"] == "wait")
+check("an unprovable running run is never set aside",
+      v(checks=GREEN + [run("build", status="in_progress", started="2026-10-16T09:00:00Z", rid=40),
+                        run("build", started="2026-10-16T10:30:00Z", rid=41)])["state"] == "wait")
 
 # the PM's own failed-check list (identity-aware since #40) is what the gate obeys
 check("the PM's failed-check list decides, when given",
@@ -182,6 +213,10 @@ reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, 
 mg.pm._api = lambda *a, **k: {"mergeable": True}
 mg.lane("main", "", ["Tataku"], "")
 check("the lane merges once a null mergeable resolves to true", len(merged) == 1)
+for state in ("behind", "dirty"):
+    reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state=state)])
+    mg.lane("main", "", ["Tataku"], "")
+    check(f"the lane never merges a {state} PR on a bypass token", len(merged) == 1)
 
 # workflow shape
 wf = (HERE.parent / ".github" / "workflows" / "ci-merge-lane.yml").read_text()
