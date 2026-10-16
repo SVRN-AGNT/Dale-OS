@@ -10,6 +10,7 @@ only owns the parts that should never differ between repositories.
 | [`ci-red-alert.yml`](../.github/workflows/ci-red-alert.yml) | Keeps one issue open while a scheduled or trunk run is red; closes it when green | Add an `alert` job that `needs:` the watched job |
 | [`ci-hygiene.yml`](../.github/workflows/ci-hygiene.yml) + [`ci_hygiene.py`](ci_hygiene.py) | Checks the repository's workflows against the floor below | Add a `hygiene` job; report-only until `strict: true` |
 | [`ci-pm-review.yml`](../.github/workflows/ci-pm-review.yml) + [`pm_review.py`](pm_review.py) | Answers every Claude `HANDOFF:` comment with a second-vendor (OpenAI Codex) PM review: a `PM REVIEW —` comment and a `PM Review` check on the exact head | Add the caller below and an `OPENAI_API_KEY` repository secret |
+| [`ci-agent-review.yml`](../.github/workflows/ci-agent-review.yml) + [`agent_review/`](agent_review/review.mjs) | An independent Claude instance reviews every non-draft PR by an allowlisted author and posts an `Agent Review` check on the exact head, billed to the Claude subscription only | Add the caller below; the `CLAUDE_CODE_OAUTH_TOKEN` organization secret reaches every repository |
 
 ## The floor
 
@@ -72,6 +73,41 @@ review. A Claude session only reaches the PM by posting a comment through the
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id. A dispatch from any other branch
 is refused: it would run that branch's copy of the reviewer.
+
+## The agent-review caller
+
+The Claude reviewer runs on `pull_request_target`, so the caller, the reviewer
+and its prompt always come from the merged base: a PR cannot edit its own
+judge, and nothing from the PR is checked out or run. It bills only the Claude
+subscription (`CLAUDE_CODE_OAUTH_TOKEN`, from `claude setup-token`); any API
+key is stripped from the reviewer's environment. A subscription usage limit
+gives `action_required` ("not reviewed"), never an API bill.
+
+```yaml
+name: agent-review
+on:
+  pull_request_target: { types: [opened, reopened, synchronize, ready_for_review] }
+  workflow_dispatch: { inputs: { pr: { type: string, required: true } } }
+permissions: { contents: read }
+concurrency: { group: 'agent-review-${{ github.event.pull_request.number || inputs.pr }}', cancel-in-progress: true }
+jobs:
+  review:
+    if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false)
+    permissions: { contents: read, pull-requests: write, checks: write, actions: read }
+    uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-agent-review.yml@<sha>
+    with:
+      ref: <sha>
+      pr: ${{ github.event.pull_request.number || inputs.pr }}
+      held_paths: '^\.github/workflows/'   # add the repository's own held paths
+      # optional: base_ref, allowed_authors, daily_cap, model, budget_usd
+    secrets:
+      claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+```
+
+Only same-repository PRs by an allowlisted author reach the model, so on a
+public repository a stranger's PR never spends the subscription. The reviewer
+has read-only file and `git` tools, no network tool, and never reads PR
+comments.
 
 ## What stays per repository
 

@@ -1,0 +1,296 @@
+# Reusable: an independent Claude instance reviews every PR, billed to the
+# Claude subscription, with no API key anywhere.
+#
+# A fresh Claude with no access to the author's session reads the PR's diff and
+# returns a typed verdict, posted as the `Agent Review` check run on the exact
+# head (a push revokes it), plus one PR comment when it requests changes.
+# Logic and rationale: ci/agent_review/review.mjs. Proven first in
+# SVRN-AGNT/ACFDashboard `.github/workflows/agent-review.yml`.
+#
+# Caller (one small file per repository; ci/README.md has the full block):
+#
+#   on:
+#     pull_request_target: { types: [opened, reopened, synchronize, ready_for_review] }
+#     workflow_dispatch: { inputs: { pr: { type: string, required: true } } }
+#   permissions: { contents: read }
+#   concurrency: { group: 'agent-review-${{ github.event.pull_request.number || inputs.pr }}', cancel-in-progress: true }
+#   jobs:
+#     review:
+#       if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+#       permissions: { contents: read, pull-requests: write, checks: write, actions: read }
+#       uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-agent-review.yml@<sha>
+#       with:
+#         ref: <sha>
+#         pr: ${{ github.event.pull_request.number || inputs.pr }}
+#       secrets:
+#         claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+#
+# WHY A PR CANNOT JUDGE ITSELF. `pull_request_target` runs the caller from the
+# merged base, and this workflow checks out only the base branch and a pinned
+# Dale-OS sha. The PR is fetched as git OBJECTS and read with read-only tools;
+# nothing from the PR is checked out, installed or executed, and PR comments
+# are never read. Only same-repository PRs by an allowlisted author reach the
+# model, so a stranger's PR on a public repository never spends the
+# subscription or meets the token.
+#
+# It reviews; it never approves, merges, marks ready or deploys.
+name: ci-agent-review
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Dale-OS ref to take the reviewer from; pin it to the same sha as `uses:`
+        type: string
+        required: true
+      pr:
+        description: The PR number to review
+        type: string
+        required: true
+      base_ref:
+        description: Branch PRs are reviewed against (empty = the repository's default branch)
+        type: string
+        default: ''
+      allowed_authors:
+        description: Comma-separated GitHub logins whose PRs are reviewed
+        type: string
+        default: Tataku
+      held_paths:
+        description: Optional regex of paths the repository holds for the high bar
+        type: string
+        default: '^\.github/workflows/'
+      daily_cap:
+        description: Runs of the caller workflow per 24h before reviews pause (runaway guard, 0 = none)
+        type: number
+        default: 150
+      caller_workflow:
+        description: File name of the calling workflow, for the run count
+        type: string
+        default: agent-review.yml
+      model:
+        description: Reviewer model (the reasoning tier; CLAUDE.md files route review there)
+        type: string
+        default: opus
+      budget_usd:
+        description: Per-review cap on the plan usage one review may take (notional dollars)
+        type: string
+        default: '2'
+    secrets:
+      claude_code_oauth_token:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Independent agent review
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+      actions: read
+    steps:
+      - name: Checkout the caller's merged base (never the PR)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base_ref || github.event.repository.default_branch }}
+          path: caller
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout the shared reviewer
+        uses: actions/checkout@v4
+        with:
+          repository: SVRN-AGNT/Dale-OS
+          ref: ${{ inputs.ref }}
+          path: shared
+          sparse-checkout: ci/agent_review
+          persist-credentials: false
+
+      - name: Resolve the PR and open the check
+        id: pr
+        uses: actions/github-script@v7
+        env:
+          PR_INPUT: ${{ inputs.pr }}
+          BASE_REF: ${{ inputs.base_ref || github.event.repository.default_branch }}
+          ALLOWED_AUTHORS: ${{ inputs.allowed_authors }}
+          HELD_PATHS: ${{ inputs.held_paths }}
+          DAILY_CAP: ${{ inputs.daily_cap }}
+          CALLER_WORKFLOW: ${{ inputs.caller_workflow }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const n = Number(process.env.PR_INPUT);
+            const pr = (await github.rest.pulls.get({ owner, repo, pull_number: n })).data;
+            // Closed or merged since the run was queued: nothing to review, and no check
+            // (an "action_required" on a merged head reads like a block).
+            if (pr.state !== 'open') { core.notice(`#${n} is ${pr.merged ? 'merged' : 'closed'}; no review.`); return; }
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: n, per_page: 100 });
+            const paths = [];
+            for (const f of files) { paths.push(f.filename); if (f.previous_filename) paths.push(f.previous_filename); }
+            let held = '';
+            if (process.env.HELD_PATHS) {
+              const re = new RegExp(process.env.HELD_PATHS);
+              const hit = paths.find((p) => re.test(p));
+              if (hit) held = `held path (${hit})`;
+            }
+            // Runaway guard: past the cap no review runs, and it says so. It counts
+            // runs, not reviews, and fails closed when the count cannot be read
+            // (ci/agent_review/spendCap.mjs says why).
+            const cap = Number(process.env.DAILY_CAP || 0);
+            let capped = false;
+            if (cap > 0) {
+              try {
+                const { capReached, listingSince } = await import(`${process.env.GITHUB_WORKSPACE}/shared/ci/agent_review/spendCap.mjs`);
+                const now = Date.now();
+                const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+                  owner, repo, workflow_id: process.env.CALLER_WORKFLOW, created: `>=${listingSince(now)}`, per_page: 100 });
+                const self = (await github.rest.actions.getWorkflowRun({ owner, repo, run_id: context.runId })).data;
+                capped = capReached({ runs, self, cap, now });
+              } catch (e) {
+                core.warning(`Could not count today's agent-review runs (${e.status || e.message}); treating the cap as reached.`);
+                capped = true;
+              }
+            }
+            core.setOutput('capped', String(capped));
+            const check = await github.rest.checks.create({
+              owner, repo, name: 'Agent Review', head_sha: pr.head.sha, status: 'in_progress',
+              output: { title: 'Reviewing', summary: `Independent agent review of ${pr.head.sha.slice(0, 8)} in progress.` },
+            });
+            // Only same-repository PRs by an allowlisted author into the reviewed base reach
+            // the model. Anything else needs a person, and says so.
+            const allowed = process.env.ALLOWED_AUTHORS.split(',').map((s) => s.trim()).filter(Boolean);
+            const sameRepo = pr.head.repo && pr.head.repo.full_name === `${owner}/${repo}`;
+            const eligible = !capped && sameRepo && allowed.includes(pr.user.login) && pr.base.ref === process.env.BASE_REF;
+            core.setOutput('number', String(n));
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('check_id', String(check.data.id));
+            core.setOutput('eligible', String(eligible));
+            core.setOutput('held', held);
+            core.setOutput('files', JSON.stringify(paths));
+            core.setOutput('author', pr.user.login);
+            const fs = require('fs');
+            fs.writeFileSync(`${process.env.RUNNER_TEMP}/pr-title.txt`, pr.title || '');
+            fs.writeFileSync(`${process.env.RUNNER_TEMP}/pr-body.txt`, pr.body || '');
+
+      - name: Check the subscription token
+        id: cred
+        env:
+          HAS_TOKEN: ${{ secrets.claude_code_oauth_token != '' }}
+        run: echo "available=${HAS_TOKEN}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch the PR as objects (no checkout)
+        if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
+        working-directory: caller
+        env:
+          TOKEN: ${{ github.token }}
+          PR: ${{ steps.pr.outputs.number }}
+          HEAD: ${{ steps.pr.outputs.head_sha }}
+          BASE_REF: ${{ inputs.base_ref || github.event.repository.default_branch }}
+        run: |
+          AUTH=$(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)
+          git -c http.extraheader="AUTHORIZATION: basic ${AUTH}" fetch --no-tags origin \
+            "+refs/pull/${PR}/head:refs/remotes/pr/head" "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          test "$(git rev-parse refs/remotes/pr/head)" = "$HEAD"
+
+      # Re-review convergence: the newest earlier head of this PR with a real
+      # verdict. review.mjs reuses it when the PR's diff is unchanged (a base
+      # merge, a rebase) and otherwise hands it to the reviewer.
+      - name: Find the previous review
+        if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const commits = await github.paginate(github.rest.pulls.listCommits, { owner, repo, pull_number: Number(process.env.PR_NUMBER), per_page: 100 });
+            const earlier = commits.map((c) => c.sha).filter((sha) => sha !== process.env.HEAD_SHA).reverse().slice(0, 20);
+            let previous = null;
+            for (const sha of earlier) {
+              const runs = (await github.rest.checks.listForRef({ owner, repo, ref: sha, check_name: 'Agent Review', filter: 'latest' })).data.check_runs;
+              const run = runs.find((r) => r.status === 'completed' && r.app?.slug === 'github-actions' && ['success', 'failure'].includes(r.conclusion));
+              if (run) {
+                previous = { sha, conclusion: run.conclusion, externalId: run.external_id || '', title: run.output?.title || '', summary: run.output?.summary || '' };
+                break;
+              }
+            }
+            require('fs').writeFileSync(`${process.env.RUNNER_TEMP}/previous-review.json`, JSON.stringify(previous));
+            core.info(previous ? `previous review: ${previous.sha.slice(0, 8)} ${previous.conclusion}` : 'no previous review');
+
+      - name: Install the reviewer CLI
+        if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2
+
+      - name: Review
+        if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
+        working-directory: caller
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.claude_code_oauth_token }}
+          BASE_REF: ${{ inputs.base_ref || github.event.repository.default_branch }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_AUTHOR: ${{ steps.pr.outputs.author }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          HELD_SCOPE: ${{ steps.pr.outputs.held }}
+          CHANGED_FILES: ${{ steps.pr.outputs.files }}
+          REVIEW_MODEL: ${{ inputs.model }}
+          REVIEW_BUDGET_USD: ${{ inputs.budget_usd }}
+        run: |
+          export PR_TITLE="$(cat "$RUNNER_TEMP/pr-title.txt")"
+          export PR_BODY="$(cat "$RUNNER_TEMP/pr-body.txt")"
+          PREVIOUS_REVIEW_PATH="$RUNNER_TEMP/previous-review.json" \
+          RESULT_PATH="$RUNNER_TEMP/verdict.json" node "$GITHUB_WORKSPACE/shared/ci/agent_review/review.mjs"
+
+      # Always completes the check, so a crashed step can never leave a
+      # verdict-shaped hole. Anything without a verdict file is not an approval.
+      - name: Post the verdict
+        if: always() && steps.pr.outputs.check_id != ''
+        uses: actions/github-script@v7
+        env:
+          CHECK_ID: ${{ steps.pr.outputs.check_id }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          ELIGIBLE: ${{ steps.pr.outputs.eligible }}
+          CAPPED: ${{ steps.pr.outputs.capped }}
+          HAS_CRED: ${{ steps.cred.outputs.available }}
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const at = process.env.HEAD_SHA.slice(0, 8);
+            let r;
+            if (process.env.CAPPED === 'true') {
+              r = { conclusion: 'action_required', title: 'Agent review daily cap reached',
+                    summary: 'Runaway guard: this repository passed its daily agent-review run cap, or this is a re-run, which the cap cannot count, so no review ran. This is not an approval. Dispatch a fresh run later (workflow_dispatch with this PR number).' };
+            } else if (process.env.ELIGIBLE !== 'true') {
+              r = { conclusion: 'action_required', title: 'Not eligible for autonomous review',
+                    summary: 'Only same-repository PRs by an allowlisted author into the reviewed branch are reviewed by the agent. A person must review this PR.' };
+            } else if (process.env.HAS_CRED !== 'true') {
+              r = { conclusion: 'neutral', title: 'Agent review not configured',
+                    summary: 'No CLAUDE_CODE_OAUTH_TOKEN secret reaches this repository, so no review ran. This PR is UNREVIEWED.' };
+            } else {
+              try { r = JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/verdict.json`, 'utf8')); }
+              catch { r = { conclusion: 'action_required', title: `Agent review did not reach a verdict on ${at}`,
+                            summary: 'The review step failed before writing a verdict. This is not an approval; re-run this workflow.' }; }
+            }
+            await github.rest.checks.update({
+              owner, repo, check_run_id: Number(process.env.CHECK_ID),
+              status: 'completed', conclusion: r.conclusion,
+              ...(r.externalId ? { external_id: r.externalId } : {}),
+              output: { title: r.title, summary: r.summary },
+            });
+            // One comment when changes are requested, so the author session is woken
+            // with the findings. A carried-over verdict already commented on its own head.
+            if (r.conclusion === 'failure' && !r.reused) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: Number(process.env.PR_NUMBER),
+                body: `**Agent Review: changes requested on \`${at}\`**\n\n${r.summary}\n\n` +
+                      `Push a fix and the review re-runs on the new head.\n\n` +
+                      `---\n_Generated by [Claude Code](https://claude.ai/code)_`,
+              });
+            }
+            core.summary.addHeading(`Agent Review — ${r.conclusion}`, 2).addRaw(r.title).addBreak().addRaw(r.summary);
+            await core.summary.write();
