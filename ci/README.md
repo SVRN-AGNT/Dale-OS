@@ -241,6 +241,9 @@ merge token may bypass branch rules, so the lane itself merges only from a merge
 Write access can edit any comment and the author stays Codex, so a Codex comment, review or finding last edited by
 anyone else blocks the PR (read through GraphQL's `editor`). A completed Codex review of the head that yields no
 readable ruling never reaches the 2-hour timeout. A caller's `--held false` cannot override the gate's own held paths.
+`check --settle` applies the same merge-ready test to its settled read; a caller whose own rule makes another state
+normal names the full list in `MERGE_READY_STATES`. A required workflow's dispatched run counts only from the default
+branch, and an Agent Review pass is sunk by any other check claiming the same run that failed or is still running.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
 in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to

@@ -150,6 +150,31 @@ try:
 except ValueError:
     pass
 
+# a dispatch runs whatever the chosen ref defines, so it counts as CI only from the default branch (Codex P1 on #41)
+PR_MAIN = dict(PR, base={"repo": {"default_branch": "main"}})
+check("a dispatched CI run on the PR branch is not CI", v(pr=PR_MAIN, workflow_runs=[
+    dict(wfrun(), event="workflow_dispatch", head_branch="feature")])["state"] == "wait")
+check("it cannot mask a failed pull_request run either", v(pr=PR_MAIN, workflow_runs=[
+    wfrun("failure", wid=1), dict(wfrun(created="2026-10-16T11:00:00Z", wid=2), event="workflow_dispatch",
+                                  head_branch="feature")])["block"])
+check("a dispatch from the default branch counts", v(pr=PR_MAIN, workflow_runs=[
+    dict(wfrun(), event="workflow_dispatch", head_branch="main")])["allow"])
+check("a pull_request run counts", v(pr=PR_MAIN, workflow_runs=[dict(wfrun(), event="pull_request")])["allow"])
+
+# an Agent Review check claiming the trusted run cannot outvote that run's own failure (Codex P1 on #41)
+genuine = lambda c="success", status="completed", stamp="run:900:1": dict(  # noqa: E731
+    run("Agent Review", c, status=status), external_id=stamp)
+forged = dict(run("Agent Review", started="2026-10-16T10:30:00Z", rid=3), external_id="run:900:1")
+check("a forged pass next to the same run's failure blocks",
+      v(checks=[genuine("failure"), forged, run("ci", rid=2)], failed=[])["block"])
+check("a forged pass while the same run is still going waits",
+      v(checks=[genuine(status="in_progress"), forged, run("ci", rid=2)], failed=[])["state"] == "wait")
+check("a genuine re-run (another run) still passes after an old failure",
+      v(checks=[genuine("failure", stamp="run:899:1"), forged, run("ci", rid=2)], failed=[])["allow"])
+check("so does a re-run attempt of the same run",
+      v(checks=[genuine("failure", stamp="run:900:1"), dict(forged, external_id="run:900:2"), run("ci", rid=2)],
+        failed=[])["allow"])
+
 # held scope never merges on the timeout
 r = v(comments=[handoff(at="2026-10-16T08:00:00Z")])
 check("held scope waits for a CLEAR even 4 hours after the HANDOFF", r["state"] == "wait" and not r["allow"])
@@ -267,6 +292,32 @@ real_statuses, mg._statuses = mg._statuses, lambda h: unreadable()
 check("unstable whose statuses cannot be read is not merge-ready", mg.not_ready(True, "unstable", HEAD) != "")
 mg._statuses = real_statuses
 check("a null mergeable is never merge-ready", mg.not_ready(None, "clean", HEAD, []) != "")
+# a PR GitHub cut off at 3000 files is held even when renames make its name list look complete (Codex P2 on #41)
+names = mg._PathList(["a.py", "old.py"] * 1500)
+names.records = 3000
+check("truncation is judged by file records, not names", names.records < 3001 and len(set(names)) < 3001)
+check("--settle refuses a settled read that is not merge-ready", mg.not_ready(True, "blocked", HEAD, []) != "")
+check("a caller's MERGE_READY_STATES can name a state its own rule makes normal",
+      mg.not_ready(True, "blocked", HEAD, [], ready=("clean", "blocked")) == "")
+import contextlib, io  # noqa: E401,E402
+saved_eval = mg.evaluate
+mg.evaluate = lambda *a, **k: dict(ALLOW, mergeable=True, mergeable_state="blocked")
+os.environ.pop("GITHUB_OUTPUT", None)
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf):
+    mg.main(["check", "--pr", "12", "--settle"])
+check("check --settle does not allow a head GitHub reports blocked (Codex P1 on #41)",
+      json.loads(buf.getvalue())["allow"] is False)
+mg.evaluate = lambda *a, **k: dict(ALLOW, mergeable=True, mergeable_state="clean")
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf):
+    mg.main(["check", "--pr", "12", "--settle"])
+check("check --settle allows a clean settled head", json.loads(buf.getvalue())["allow"] is True)
+mg.evaluate = saved_eval
+os.environ["MERGE_READY_STATES"] = "clean, blocked"
+check("MERGE_READY_STATES is read from the environment", mg.merge_ready_states() == ("clean", "blocked"))
+os.environ.pop("MERGE_READY_STATES")
+check("the default merge-ready states never include blocked", "blocked" not in mg.merge_ready_states())
 merged = []
 mg._open_prs = lambda base: [{"number": 12, "title": "t"}]
 mg._merge = lambda *a: merged.append(a)

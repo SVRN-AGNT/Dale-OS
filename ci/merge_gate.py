@@ -64,6 +64,7 @@ MERGEABLE_POLLS, MERGEABLE_WAIT = 6, 5
 MERGE_READY_STATES = ("clean", "has_hooks", "unstable")
 # The only workflow whose Agent Review check counts, and only as defined on the default branch.
 AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
+MANUAL_EVENTS = ("workflow_dispatch", "repository_dispatch")
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
 PM_TIMEOUT = dt.timedelta(hours=2)
 
@@ -176,9 +177,23 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
                              f"{AGENT_REVIEW_PATH}")
     if ar.get("conclusion") != "success":
         return done("block", f"Agent Review on {head[:8]} is {ar.get('conclusion')}: {(ar.get('output') or {}).get('title') or ''}".rstrip(": "))
+    # The run stamp a check carries is written by whoever posts it, so a forger can claim the trusted run. Any other
+    # Agent Review check claiming the same run that failed or is still running sinks it (Codex P1 on #41): a genuine
+    # pass is never contradicted by its own run.
+    claim = claimed_run(ar)
+    twins = [r for r in check_runs if r is not ar and r.get("name") == AGENT_REVIEW and claimed_run(r) == claim]
+    if any(r.get("status") != "completed" for r in twins):
+        return done("wait", f"another Agent Review check claiming the same run is still running on {head[:8]}")
+    if any(r.get("conclusion") != "success" for r in twins):
+        return done("block", f"another Agent Review check claiming the same run as the passing one on {head[:8]} "
+                             "did not pass, so the pass cannot be trusted")
+    default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch")
     for path in required:
+        # A dispatch runs whatever definition the chosen ref holds, so it counts only from the default branch
+        # (Codex P1 on #41); pull_request and push runs use the head's own file, which a PR changes only as held scope.
         runs = [w for w in workflow_runs
-                if str(w.get("path") or "").split("@")[0] == path and str(w.get("head_sha") or "").lower() == head]
+                if str(w.get("path") or "").split("@")[0] == path and str(w.get("head_sha") or "").lower() == head
+                and (w.get("event") not in MANUAL_EVENTS or (default_branch and w.get("head_branch") == default_branch))]
         ci = max(runs, key=lambda w: (w.get("created_at") or "", w.get("id") or 0, w.get("run_attempt") or 0),
                  default=None)
         if not ci or ci.get("status") != "completed":
@@ -203,6 +218,15 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     return done("allow", f"Agent Review passed and the PM's {out['pm'] or 'timeout'} on {head[:8]} still stands")
 
 
+def claimed_run(r: dict):
+    """The workflow run (and attempt) a check names: its run stamp, or the run in its job link. None when neither."""
+    m = pm.RUN_STAMP.match(r.get("external_id") or "")
+    if m:
+        return (m.group(1), m.group(2))
+    m = pm.JOB_CHECK_URL.match(r.get("details_url") or "")
+    return (m.group(2), None) if m else None
+
+
 def _ts(s):
     try:
         return dt.datetime.fromisoformat(str(s).replace("Z", "+00:00"))
@@ -213,12 +237,18 @@ def _ts(s):
 # ---------------------------------------------------------------- GitHub reads
 
 def _paths(n: int) -> list[str]:
-    out = []
-    for f in pm._paginate(f"/pulls/{n}/files"):
+    """Every name a PR's files carry (both sides of a rename). `.records` is how many file records GitHub listed."""
+    out, files = _PathList(), pm._paginate(f"/pulls/{n}/files")
+    out.records = len(files)
+    for f in files:
         out.append(f["filename"])
         if f.get("previous_filename"):
             out.append(f["previous_filename"])
     return out
+
+
+class _PathList(list):
+    records = 0
 
 
 def _identify(pr: dict):
@@ -241,7 +271,7 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
     # /pulls/N/files stops at 3000 files: a PR it cannot list in full is treated as held (fails closed).
     # A caller's --held can only raise the bar: the gate's own held-path test always applies too.
     held = (bool(held_flag) or bool(pm.held_scope(paths, held_rx))
-            or len(set(paths)) < int(pr.get("changed_files") or 0))
+            or getattr(paths, "records", len(paths)) < int(pr.get("changed_files") or 0))
     return verdict(pr=pr, head=head, held=held, pr_comments=pm._paginate(f"/issues/{n}/comments"),
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
@@ -341,6 +371,13 @@ def main(argv=None) -> int:
         v = evaluate(a.pr, a.head, held_rx, held_flag, allowed, instr)
         if a.settle and v["allow"]:
             v = settled(a.pr, v, lambda: evaluate(a.pr, v["head"], held_rx, held_flag, allowed, instr))
+            # --settle is the last word before a caller's merge call, so it also says whether GitHub reports the
+            # settled head merge-ready (Codex P1 on #41). A caller whose own rule makes another state normal (ACF's
+            # agent guard makes every PR `blocked` for anyone but its Controller) names it in MERGE_READY_STATES.
+            why = v["allow"] and not_ready(v.get("mergeable"), v.get("mergeable_state"), v["head"],
+                                           ready=merge_ready_states())
+            if why:
+                v = dict(v, allow=False, block=False, state="wait", reasons=v["reasons"] + [f"not merge-ready: {why}"])
         print(json.dumps(v))
         if env.get("GITHUB_OUTPUT"):
             pm._outputs(allow=str(v["allow"]).lower(), state=v["state"], reason="; ".join(v["reasons"]))
@@ -420,9 +457,15 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
     return 0
 
 
-def not_ready(mergeable, state, head: str, statuses=None) -> str:
+def merge_ready_states() -> tuple:
+    """MERGE_READY_STATES from the environment (comma-separated) when a caller sets it, else the lane's default."""
+    named = tuple(x.strip() for x in os.environ.get("MERGE_READY_STATES", "").split(",") if x.strip())
+    return named or MERGE_READY_STATES
+
+
+def not_ready(mergeable, state, head: str, statuses=None, ready=MERGE_READY_STATES) -> str:
     """Why GitHub's mergeability for `head` is not merge-ready, or "" when it is (see MERGE_READY_STATES)."""
-    if mergeable is not True or state not in MERGE_READY_STATES:
+    if mergeable is not True or state not in ready:
         return f"GitHub reports mergeable={mergeable} ({state})"
     if state == "unstable":
         # unstable = a non-passing commit status or check. Check runs are the gate's own evidence; statuses are not.
