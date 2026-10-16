@@ -244,18 +244,10 @@ def reviewer_instruction_edits(paths, pattern: str = "") -> list[str]:
 
 
 def failed_checks(check_runs) -> list[str]:
-    """Checks on the head that failed or were not reviewed. Every failure counts. Only a cancelled run is set aside, and
-    only when a newer run with the same name from the same app exists (a superseded duplicate, routine under
-    concurrency groups); a name alone never proves two runs are the same check."""
-    def key(r):
-        return ((r.get("app") or {}).get("id"), r.get("name"))
-    newest = {}
-    for r in check_runs:
-        if int(r.get("id") or 0) > int(newest.get(key(r), {}).get("id") or 0):
-            newest[key(r)] = r
+    """Checks with any run on the head that failed, was cancelled or was not reviewed. No run is set aside for a
+    newer one: neither a name nor an app proves two runs are the same check, so a stray cancel is fixed at its source."""
     return sorted({r.get("name") or "?" for r in check_runs
-                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK
-                   and not (r.get("conclusion") == "cancelled" and newest[key(r)] is not r)})
+                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK})
 
 
 def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
@@ -491,8 +483,8 @@ def cmd_resolve() -> None:
 
     comment = _api("GET", f"/issues/comments/{int(env['COMMENT_ID'])}")
     issue_number = int(comment["issue_url"].rstrip("/").split("/")[-1])
-    expected = str(env.get("EXPECTED_PR") or "").strip()
-    if expected and expected != str(issue_number):
+    expected = str(env.get("EXPECTED_PR") or "")
+    if expected and (not re.fullmatch(r"[1-9][0-9]*", expected) or expected != str(issue_number)):
         # A dispatch locks on the PR it names; a comment on another PR would run outside that lock.
         return skip(f"comment {comment['id']} is on #{issue_number}, not the dispatched #{expected}")
     if _from_codex(comment):
@@ -585,7 +577,7 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
     # Readable blocking evidence is read before any completion guard: a finding Codex posted on the head, or a
     # failed check, is CORRECT even if Codex never marks its review completed.
     findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head)
-    failed = failed_checks(_paginate(f"/commits/{head}/check-runs"))
+    failed = failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all"))  # default "latest" hides older runs
     if not state and not edits and not findings and not failed:
         print(f"::notice::Waiting on Codex's review of {head[:8]}")
         _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),

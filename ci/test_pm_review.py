@@ -223,18 +223,18 @@ runs = [{"name": "dale-os", "status": "completed", "conclusion": "failure"},
         {"name": "lint", "status": "in_progress", "conclusion": None},
         {"name": "opt", "status": "completed", "conclusion": "skipped"},
         {"name": "Agent Review", "status": "completed", "conclusion": "action_required"}]
-A, B = {"id": 15368}, {"id": 999}
-check("a cancelled run replaced by a newer run of the same check from the same app does not count",
-      pm.failed_checks([{"id": 1, "app": A, "name": "mark", "status": "completed", "conclusion": "cancelled"},
-                        {"id": 2, "app": A, "name": "mark", "status": "completed", "conclusion": "success"}]) == [])
-check("a failure always counts, even with a newer success of the same name",
+A = {"id": 15368}
+check("every failed or cancelled run counts, even with a newer same-name success from the same app",
       pm.failed_checks([{"id": 1, "app": A, "name": "ci", "status": "completed", "conclusion": "failure"},
-                        {"id": 2, "app": A, "name": "ci", "status": "completed", "conclusion": "success"}]) == ["ci"])
-check("another app's newer same-name success never hides a failure or a cancel",
-      pm.failed_checks([{"id": 101, "app": A, "name": "security", "status": "completed", "conclusion": "failure"},
-                        {"id": 102, "app": B, "name": "security", "status": "completed", "conclusion": "success"}]) == ["security"]
+                        {"id": 2, "app": A, "name": "ci", "status": "completed", "conclusion": "success"}]) == ["ci"]
       and pm.failed_checks([{"id": 101, "app": A, "name": "security", "status": "completed", "conclusion": "cancelled"},
-                            {"id": 102, "app": B, "name": "security", "status": "completed", "conclusion": "success"}]) == ["security"])
+                            {"id": 102, "app": A, "name": "security", "status": "completed", "conclusion": "success"}]) == ["security"])
+seen = []
+saved_api = pm._api
+pm._api = lambda method, path, body=None: (seen.append(path), {"check_runs": []})[1]
+pm._paginate(f"/commits/{HEAD}/check-runs?filter=all")
+pm._api = saved_api
+check("check runs are requested with filter=all, pagination kept", seen == [f"/commits/{HEAD}/check-runs?filter=all&per_page=100&page=1"])
 check("failed checks: failures and not-reviewed count; the PM's own check, pending and skipped do not", pm.failed_checks(runs) == ["Agent Review", "dale-os"])
 r = pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD)
 check("a finding beats a no-findings flag", r["verdict"] == "CORRECT")
@@ -287,7 +287,7 @@ def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(),
            f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
                               "head": {"sha": live_head, "repo": {"full_name": "o/r"}}, "base": {"ref": "main", "sha": OTHER}}}
     pages = {f"/issues/{pr_n}/comments": list(pr_comments), f"/pulls/{pr_n}/files": list(files),
-             f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs": list(checks)}
+             f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs?filter=all": list(checks)}
     saved = (pm._api, pm._paginate, dict(os.environ))
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "out"
@@ -389,6 +389,9 @@ check("the resolver accepts spaced JSON in Codex's marker", "codex-review-state:
       and pm.codex_review_for([spaced], HEAD) is not None)
 check("a dispatch for another PR is refused",
       resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR="99").get("review") == "false")
+for bad in (" 12", "12 ", "012", "+12", "12.0"):
+    check(f"a non-canonical dispatch PR {bad!r} is refused (it would lock on another key)",
+          resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR=bad).get("review") == "false")
 check("a dispatch for this PR is answered",
       resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR="12").get("review") == "codex")
 # Codex finishes its summary before its clean receipt is visible (PR-wide flag true): wait, then the receipt rules.
