@@ -43,3 +43,5 @@ jobs:
       # CI and the PM's own caller are held: a PR that edits them gets the high bar.
       held_paths: '^(\.github/workflows/|ci/)'
       provider: chatgpt
+      # AGENTS.md routes its reader to PRINCIPLES.md and the SKILL.md files, so Codex may read them as instructions.
+      instruction_paths: '(^|/)(AGENTS(\.override)?|PRINCIPLES|SKILL)\.md$'

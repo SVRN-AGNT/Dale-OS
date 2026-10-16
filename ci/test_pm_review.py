@@ -213,8 +213,16 @@ check("no findings is a CLEAR", r["ruled"] and r["verdict"] == "CLEAR" and r["co
 for prio in ("P0", "P1", ""):
     r = pm.codex_ruling(st_f, pm.codex_findings([codex_finding(HEAD, prio)], HEAD), HEAD)
     check(f"a {prio or 'no-priority'} finding is a CORRECT", r["verdict"] == "CORRECT" and r["conclusion"] == "failure")
-r = pm.codex_ruling(st_f, pm.codex_findings([codex_finding(HEAD, "P2")], HEAD), HEAD)
-check("a P2-only review is a CLEAR that lists it", r["verdict"] == "CLEAR" and "Non-blocking" in r["body"] and "Fix the thing" in r["body"])
+for prio in ("P2", "P3"):
+    r = pm.codex_ruling(st_f, pm.codex_findings([codex_finding(HEAD, prio)], HEAD), HEAD)
+    check(f"a {prio} finding still withholds a CLEAR", r["verdict"] == "CORRECT" and "Fix the thing" in r["body"])
+r = pm.codex_ruling(st, [], HEAD, failed=["dale-os"])
+check("a failed check on the head withholds a CLEAR", r["verdict"] == "CORRECT" and "dale-os" in r["body"])
+runs = [{"name": "dale-os", "status": "completed", "conclusion": "failure"},
+        {"name": "PM Review", "status": "completed", "conclusion": "failure"},
+        {"name": "lint", "status": "in_progress", "conclusion": None},
+        {"name": "opt", "status": "completed", "conclusion": "skipped"}]
+check("failed checks: failures count, the PM's own check, pending and skipped do not", pm.failed_checks(runs) == ["dale-os"])
 r = pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD)
 check("a finding beats a no-findings flag", r["verdict"] == "CORRECT")
 r = pm.codex_ruling(st_f, [], HEAD)
@@ -225,27 +233,31 @@ check("an unreadable findings flag is no ruling", not pm.codex_ruling(bad, [], H
 r = pm.codex_ruling(st, [], HEAD, pm.reviewer_instruction_edits(["docs/AGENTS.md", "a.py"]))
 check("a PR that edits AGENTS.md is held", r["verdict"] == "HOLD" and r["conclusion"] == "failure")
 check("CLAUDE.md is not Codex's instruction file", pm.reviewer_instruction_edits(["CLAUDE.md"]) == [])
+routed = r"(^|/)(AGENTS(\.override)?|PRINCIPLES|SKILL)\.md$"
+check("a repository can name the files its AGENTS.md routes to",
+      pm.reviewer_instruction_edits(["PRINCIPLES.md", "skills/x/SKILL.md", "README.md"], routed) == ["PRINCIPLES.md", "skills/x/SKILL.md"])
 check("a HANDOFF without @codex review is told no review is coming", "no review is coming" in pm.waiting_on(f"HANDOFF: {HEAD}"))
 check("a HANDOFF with @codex review waits", "Waiting on Codex" in pm.waiting_on(f"HANDOFF: {HEAD}\n@codex review\n"))
 chat = pm.ruling_comment(pm.codex_ruling(st, [], HEAD), 12, HEAD, OTHER, 99, "https://x", "chatgpt")
 check("a Codex ruling keeps the header the dedupe reads", pm.RULING_HEADER.match(chat).group(1) == HEAD and "ChatGPT plan" in chat)
 
 
-def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD) -> dict:
+def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD, checks=(), **extra_env) -> dict:
     pr_n = 12
     api = {f"/issues/comments/{comment['id']}": comment, f"/issues/{pr_n}": {"pull_request": {"url": "u"}},
            f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
                               "head": {"sha": live_head, "repo": {"full_name": "o/r"}}, "base": {"ref": "main", "sha": OTHER}}}
     pages = {f"/issues/{pr_n}/comments": list(pr_comments), f"/pulls/{pr_n}/files": list(files),
-             f"/pulls/{pr_n}/comments": list(review_comments)}
+             f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs": list(checks)}
     saved = (pm._api, pm._paginate, dict(os.environ))
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "out"
         out.write_text("")
         pm._api = lambda method, path, body=None: api[path]
         pm._paginate = lambda path: pages[path]
-        os.environ.update(GITHUB_OUTPUT=str(out), RUNNER_TEMP=d, ALLOWED_AUTHORS="Tataku", CONTROL_ISSUE="0", HELD_PATHS="",
-                          COMMENT_ID=str(comment["id"]), GITHUB_REPOSITORY="o/r", PROVIDER="chatgpt")
+        os.environ.update({"GITHUB_OUTPUT": str(out), "RUNNER_TEMP": d, "ALLOWED_AUTHORS": "Tataku", "CONTROL_ISSUE": "0",
+                           "HELD_PATHS": "", "COMMENT_ID": str(comment["id"]), "GITHUB_REPOSITORY": "o/r", "PROVIDER": "chatgpt",
+                           **extra_env})
         try:
             pm.cmd_resolve()
         finally:
@@ -282,6 +294,12 @@ check("a person posting Codex's marker is not Codex",
       resolve_chatgpt(forged, pr_comments=[ask, forged]).get("review") == "false")
 check("Codex finishing after a ruling posts nothing new",
       resolve_chatgpt(done, pr_comments=[ask, done, ruled]).get("review") == "false")
+f = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], checks=[runs[0]])
+check("a failed check on the head turns a clean Codex review into CORRECT", json.loads(f["ruling"])["verdict"] == "CORRECT")
+for env in ({"CONTROL_ISSUE": "5506"}, {"CONTRACT_PATH": "docs/pm.md"}):
+    g = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], **env)
+    check(f"a configured PM contract ({next(iter(env))}) is never silently skipped: no ruling",
+          g.get("review") == "codex" and not json.loads(g["ruling"])["ruled"])
 h = resolve_chatgpt(ask, pr_comments=[ask], files=[{"filename": "AGENTS.md"}])
 check("a PR editing AGENTS.md is held without waiting", h.get("review") == "codex" and json.loads(h["ruling"])["verdict"] == "HOLD")
 
@@ -301,6 +319,12 @@ def post_chatgpt(**env) -> list:
     return calls
 
 
+saved_pag = pm._paginate
+pm._paginate = lambda path: [ruled] if path == "/issues/12/comments" else []
+late = post_chatgpt(REVIEW="waiting", NOTICE="x") + post_chatgpt(REVIEW="codex", RULING=json.dumps(pm.codex_ruling(st, [], HEAD)))
+pm._paginate = saved_pag
+check("a run that finds the head already ruled posts nothing (no duplicate, no stale waiting check)",
+      not any(m == "POST" for m, _, _ in late))
 wait_calls = post_chatgpt(REVIEW="waiting", NOTICE=pm.waiting_on("HANDOFF: x\n@codex review"))
 check("waiting sets PM Review in progress and posts no comment",
       posted_check(wait_calls)["status"] == "in_progress" and "conclusion" not in posted_check(wait_calls)

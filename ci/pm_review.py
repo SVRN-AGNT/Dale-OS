@@ -167,10 +167,13 @@ CODEX_STATE = re.compile(r"<!-- codex-review-state:v1 (\{.*?\}) -->", re.S)
 CODEX_FINDING = "<!-- codex-code-review-finding:v1 -->"
 CODEX_PRIORITY = re.compile(r"!\[(P[0-9]) Badge\]")
 CODEX_ASK = re.compile(r"(?m)^@codex review\s*$")
-BLOCKING_PRIORITIES = ("P0", "P1")
 # Codex reads AGENTS.md as its review instructions, and from the PR it reviews, so a PR that
-# edits one could steer its own reviewer. Such a PR gets no ruling from Codex.
-REVIEWER_INSTRUCTIONS = re.compile(r"(^|/)AGENTS(\.override)?\.md$", re.I)
+# edits one could steer its own reviewer. Such a PR gets no ruling from Codex. A repository whose
+# AGENTS.md routes the reader to more files names them too (input `instruction_paths`).
+REVIEWER_INSTRUCTIONS = r"(^|/)AGENTS(\.override)?\.md$"
+# A completed check that failed on the head: no CLEAR while one stands (the PM's own check excepted).
+FAILED_CHECK = ("failure", "timed_out", "cancelled", "startup_failure")
+PM_CHECK = "PM Review"
 
 
 def _from_codex(c: dict) -> bool:
@@ -218,11 +221,17 @@ def codex_findings(review_comments, head: str) -> list[dict]:
     return out
 
 
-def reviewer_instruction_edits(paths) -> list[str]:
-    return [p for p in paths if REVIEWER_INSTRUCTIONS.search(p)]
+def reviewer_instruction_edits(paths, pattern: str = "") -> list[str]:
+    rx = re.compile(pattern or REVIEWER_INSTRUCTIONS, re.I)
+    return [p for p in paths if rx.search(p)]
 
 
-def codex_ruling(state, findings, head_sha: str, instruction_edits=()) -> dict:
+def failed_checks(check_runs) -> list[str]:
+    return sorted({r.get("name") or "?" for r in check_runs
+                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK})
+
+
+def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=()) -> dict:
     """Turn Codex's review of the head into a ruling, failing closed. state is codex_review_for's answer."""
     at = str(head_sha)[:8]
 
@@ -243,25 +252,23 @@ def codex_ruling(state, findings, head_sha: str, instruction_edits=()) -> dict:
     if not state:
         return none("Codex has not finished a review of this head.")
     any_findings = state.get("has_any_findings")
-    if any_findings is False and not findings:
-        verdict, blocking, notes = "CLEAR", [], []
-    elif any_findings is True or findings:
-        if not findings:
-            return none("Codex reports findings on this head, but the PM could not read them yet. Re-run the PM.")
-        blocking = [f for f in findings if f["priority"] in BLOCKING_PRIORITIES]  # unreadable is P0
-        notes = [f for f in findings if f not in blocking]
-        verdict = "CORRECT" if blocking else "CLEAR"
-    else:
+    if any_findings is True and not findings:
+        return none("Codex reports findings on this head, but the PM could not read them yet. Re-run the PM.")
+    if any_findings is not True and any_findings is not False:
         return none(f"Codex's review state is unreadable (has_any_findings={json.dumps(any_findings)}).")
+    # Priority is Codex's urgency, not whether a finding is wrong code, so every finding withholds a CLEAR
+    # until it is fixed on a new head. A finding the author thinks is mistaken is the owner's call.
+    verdict = "CORRECT" if findings or failed else "CLEAR"
 
-    lines = [f"Codex code review of this exact head: {len(findings)} finding(s), {len(blocking)} blocking "
-             f"({'/'.join(BLOCKING_PRIORITIES)}).", ""]
-    if blocking:
-        lines += ["### Blocking", *[where(f) for f in blocking], "",
-                  "### Required actions", "- Fix each blocking finding (or answer it on its thread with why it is wrong), "
-                  "push, and post a new HANDOFF for the new head.", ""]
-    if notes:
-        lines += ["### Non-blocking findings", "Answer each on its thread: fixed, or why it stays.", *[where(f) for f in notes], ""]
+    lines = [f"Codex code review of this exact head: {len(findings)} finding(s)." +
+             (f" Failed checks on the head: {', '.join(failed)}." if failed else ""), ""]
+    if findings:
+        lines += ["### Blocking", *[where(f) for f in findings], ""]
+    if failed:
+        lines += ["### Failed checks", *[f"- {n}" for n in failed], ""]
+    if verdict == "CORRECT":
+        lines += ["### Required actions", "- Fix each finding and failed check, push, and post a new HANDOFF for the new head. "
+                  "A finding you believe is wrong: answer it on its thread and ask the owner to waive it for this PR.", ""]
     lines += ["### Independently verified", f"- Codex (OpenAI, on the ChatGPT plan) completed a code review of `{head_sha}`.",
               "- The review state and findings were read from comments only Codex's GitHub app can write."]
     return {"ruled": True, "verdict": verdict, "conclusion": CONCLUSION[verdict], "title": f"PM {verdict} on {at}",
@@ -530,16 +537,26 @@ def _changed_paths(pr_n: int) -> list[str]:
 
 def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, paths) -> None:
     """Rule from Codex's review of the head if it has finished; otherwise say the PM is waiting on it."""
+    env = os.environ
     pr_n = pr["number"]
+    if env.get("CONTRACT_PATH") or int(env.get("CONTROL_ISSUE") or 0):
+        # The `api` PM applies a contract file or control-issue body; Codex's review cannot read either.
+        ruling = {"ruled": False, "verdict": None, "conclusion": "action_required", "title": f"No PM ruling on {head[:8]}",
+                  "body": "This repository configures a PM contract (`contract_path` or `control_issue`), which Codex's review "
+                          "cannot apply. Move the contract into the `## Review guidelines` section of AGENTS.md on the default "
+                          "branch, which Codex does apply, and drop the input. This is not a ruling and not a CLEAR."}
+        _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling), base_sha=pr["base"]["sha"])
+        return
     state = codex_review_for(pr_comments, head)
-    edits = reviewer_instruction_edits(paths)
+    edits = reviewer_instruction_edits(paths, env.get("INSTRUCTION_PATHS", ""))
     if not state and not edits:
         print(f"::notice::Waiting on Codex's review of {head[:8]}")
         _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),
                  base_sha=pr["base"]["sha"])
         return
     findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head) if state else []
-    ruling = codex_ruling(state, findings, head, edits)
+    failed = failed_checks(_paginate(f"/commits/{head}/check-runs")) if state else []
+    ruling = codex_ruling(state, findings, head, edits, failed)
     print(f"::notice::{ruling['title']}")
     _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling),
              base_sha=pr["base"]["sha"])
@@ -623,6 +640,11 @@ def cmd_post() -> None:
     def say(body: str) -> None:
         _api("POST", f"/issues/{pr}/comments", {"body": body})
 
+    if env.get("REVIEW") in ("waiting", "codex") and prior_ruling(_paginate(f"/issues/{pr}/comments"), env["HEAD_SHA"]):
+        # Another run ruled on this head while this one was resolving: posting now would duplicate it or
+        # leave a stale "waiting" check over the ruling.
+        print(f"already ruled on {env['HEAD_SHA'][:8]}; nothing posted")
+        return
     if env.get("REVIEW") == "waiting":
         _api("POST", "/check-runs", {
             "name": "PM Review", "head_sha": env["HEAD_SHA"], "status": "in_progress",

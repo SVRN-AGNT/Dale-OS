@@ -75,6 +75,10 @@ on:
         description: Codex reasoning effort
         type: string
         default: high
+      instruction_paths:
+        description: "chatgpt only: regex of paths Codex reads as review instructions (default: any AGENTS.md); a PR editing one gets HOLD"
+        type: string
+        default: ''
       provider:
         description: "api: run Codex with an OpenAI API key. chatgpt: read Codex's own GitHub review (ChatGPT plan, no key)"
         type: string
@@ -138,6 +142,8 @@ jobs:
           CONTROL_ISSUE: ${{ inputs.control_issue }}
           HELD_PATHS: ${{ inputs.held_paths }}
           PROVIDER: ${{ inputs.provider }}
+          CONTRACT_PATH: ${{ inputs.contract_path }}
+          INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
         run: python3 shared/ci/pm_review.py resolve
 
       - name: Check provider credential

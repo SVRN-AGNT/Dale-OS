@@ -77,10 +77,16 @@ from it with no `OPENAI_API_KEY`. Turn Codex's automatic review off (it would
 review every push and spend the plan's 5-hour window; measured about 2.5% per
 review) and let the HANDOFF ask: it carries `@codex review` on a line of its
 own. The PM reads only comments written by `chatgpt-codex-connector[bot]`, an
-app login GitHub reserves. No findings on the head is `CLEAR`; a P0 or P1
-finding (or one with no readable priority) is `CORRECT`; P2 and P3 are listed
-as non-blocking. A PR that edits an `AGENTS.md` gets `HOLD`, because Codex reads
-that file as its review instructions. Codex's review cannot raise `OWNER GATE`.
+app login GitHub reserves. No findings on the head and no failed check is
+`CLEAR`; any finding, of any priority, or a failed check is `CORRECT` (priority
+is Codex's urgency, not whether the code is wrong; a finding the author thinks
+mistaken goes to the owner). A PR that edits an `AGENTS.md`, or a path in
+`instruction_paths` (the files a repository's AGENTS.md routes its reader to),
+gets `HOLD`, because Codex reads those as its review instructions from the PR.
+Codex's review cannot raise `OWNER GATE`, and it cannot apply a
+`contract_path` or `control_issue` contract: with either set, the PM gives no
+ruling. Put the contract in the `## Review guidelines` section of AGENTS.md,
+which Codex applies.
 
 ```yaml
 on:
