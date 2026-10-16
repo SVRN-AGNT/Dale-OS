@@ -147,16 +147,28 @@ def _bot_post(c: dict) -> bool:
 
 
 # The header ruling_comment writes. Only this line names the head a ruling covers; a head quoted further down is evidence.
-RULING_HEADER = re.compile(r"PM REVIEW — [^\n]*\n\n\*\*PR:\*\* #\d+ · \*\*Exact reviewed head:\*\* `([0-9a-f]{40})`")
+RULING_HEADER = re.compile(r"PM REVIEW — ([^\n]*)\n\n\*\*PR:\*\* #\d+ · \*\*Exact reviewed head:\*\* `([0-9a-f]{40})`")
 
 
 def prior_ruling(pr_comments, head: str):
     """The id of a real PM ruling already posted for this exact head, or None. A repeat HANDOFF for it is not re-billed."""
+    return (latest_ruling(pr_comments, head) or (None, None))[0]
+
+
+def latest_ruling(pr_comments, head: str):
+    """(id, verdict) of the newest real PM ruling for this exact head, or None."""
     for c in reversed(list(pr_comments)):
         m = RULING_HEADER.match(c.get("body") or "")
-        if _bot_post(c) and m and m.group(1) == str(head).lower():
-            return c.get("id")
+        if _bot_post(c) and m and m.group(2) == str(head).lower():
+            return c.get("id"), m.group(1).strip()
     return None
+
+
+def standing_clear(pr_comments, head: str) -> bool:
+    """True when the newest ruling for this head is a CLEAR. Under provider "chatgpt" a CLEAR is not final: a later
+    Codex finding or failed check on the same head must be able to replace it with CORRECT (never the reverse)."""
+    latest = latest_ruling(pr_comments, head)
+    return bool(latest) and latest[1] == "CLEAR"
 
 
 
@@ -511,7 +523,8 @@ def cmd_resolve() -> None:
         return skip(f"the PR carries its own HANDOFF for {head[:8]}")
 
     earlier = prior_ruling(pr_comments, head)
-    if earlier:
+    recheck = env.get("PROVIDER", "api") == "chatgpt" and issue_number == pr_n and standing_clear(pr_comments, head)
+    if earlier and not recheck:
         return skip(f"already ruled on {head[:8]}",
                     f"The PM already ruled on `{head}` (comment {earlier}), so this HANDOFF was not reviewed again "
                     "and nothing was billed. That ruling stands for this head; a push needs a new HANDOFF.", pr_n)
@@ -526,7 +539,7 @@ def cmd_resolve() -> None:
         if issue_number != pr_n:
             return skip("a mirror cannot ask Codex", "Codex reviews only when asked on the PR itself. "
                         "Post this HANDOFF, with `@codex review`, on the PR.", pr_n)
-        return _codex_outputs(pr, head, comment["id"], comment["body"], pr_comments, paths)
+        return _codex_outputs(pr, head, comment["id"], comment["body"], pr_comments, paths, recheck)
     checks = _paginate(f"/commits/{head}/check-runs")
     state = {
         "number": pr["number"], "title": pr["title"], "author": pr["user"]["login"], "draft": pr["draft"],
@@ -560,10 +573,24 @@ def _changed_paths(pr_n: int) -> list[str]:
     return paths
 
 
-def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, paths) -> None:
-    """Rule from Codex's review of the head if it has finished; otherwise say the PM is waiting on it."""
+def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, paths, recheck: bool = False) -> None:
+    """Rule from Codex's review of the head if it has finished; otherwise say the PM is waiting on it. With `recheck`
+    (a CLEAR already stands for the head) only blocking evidence is posted, as a CORRECT or HOLD that replaces it."""
     env = os.environ
     pr_n = pr["number"]
+    if recheck:
+        ruling = codex_ruling(codex_review_for(pr_comments, head), codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head),
+                              head, reviewer_instruction_edits(paths, env.get("INSTRUCTION_PATHS", "")),
+                              failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all")),
+                              codex_clean_receipt(pr_comments, head))
+        if ruling.get("verdict") not in ("CORRECT", "HOLD"):
+            print(f"::notice::No PM review: the CLEAR on {head[:8]} still stands")
+            _outputs(review="false", notice="", pr=pr_n)
+            return
+        print(f"::notice::{ruling['title']} replaces the CLEAR on {head[:8]}")
+        _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling),
+                 base_sha=pr["base"]["sha"], supersede="true")
+        return
     if env.get("CONTRACT_PATH") or int(env.get("CONTROL_ISSUE") or 0):
         # The `api` PM applies a contract file or control-issue body; Codex's review cannot read either.
         ruling = {"ruled": False, "verdict": None, "conclusion": "action_required", "title": f"No PM ruling on {head[:8]}",
@@ -609,13 +636,14 @@ def _resolve_codex_finished(comment: dict, issue_number: int, allowed, skip) -> 
         return skip(f"#{issue_number} is not an open same-repository PR")
     head = pr["head"]["sha"].lower()
     pr_comments = _paginate(f"/issues/{issue_number}/comments")
-    if prior_ruling(pr_comments, head):
+    recheck = standing_clear(pr_comments, head)
+    if prior_ruling(pr_comments, head) and not recheck:
         return skip(f"already ruled on {head[:8]}")
     waiting = [c for c in pr_comments
                if classify(c, issue_number, True, allowed)["review"] and named_head(c.get("body"), head)]
     if not waiting:
         return skip(f"no HANDOFF names {head[:8]}")
-    _codex_outputs(pr, head, waiting[-1]["id"], waiting[-1]["body"], pr_comments, _changed_paths(issue_number))
+    _codex_outputs(pr, head, waiting[-1]["id"], waiting[-1]["body"], pr_comments, _changed_paths(issue_number), recheck)
 
 
 def _git(args: list[str], cwd: Path) -> bytes:
@@ -672,9 +700,11 @@ def cmd_post() -> None:
     def say(body: str) -> None:
         _api("POST", f"/issues/{pr}/comments", {"body": body})
 
-    if env.get("REVIEW") in ("waiting", "codex") and prior_ruling(_paginate(f"/issues/{pr}/comments"), env["HEAD_SHA"]):
+    latest = latest_ruling(_paginate(f"/issues/{pr}/comments"), env["HEAD_SHA"]) if env.get("REVIEW") in ("waiting", "codex") else None
+    replaces_clear = env.get("REVIEW") == "codex" and env.get("SUPERSEDE") == "true" and latest and latest[1] == "CLEAR"
+    if latest and not replaces_clear:
         # Another run ruled on this head while this one was resolving: posting now would duplicate it or
-        # leave a stale "waiting" check over the ruling.
+        # leave a stale "waiting" check over the ruling. Only blocking evidence may replace a standing CLEAR.
         print(f"already ruled on {env['HEAD_SHA'][:8]}; nothing posted")
         return
     if env.get("REVIEW") == "waiting":
@@ -693,6 +723,9 @@ def cmd_post() -> None:
         except (ValueError, AssertionError):
             ruling = {"ruled": False, "conclusion": "action_required", "title": f"No PM ruling on {env['HEAD_SHA'][:8]}",
                       "body": "The PM could not read its own ruling. This is not a CLEAR."}
+        if replaces_clear and ruling.get("verdict") not in ("CORRECT", "HOLD"):
+            print(f"the CLEAR on {env['HEAD_SHA'][:8]} stands; nothing posted")
+            return
         return _post_ruling(ruling, pr, env["HEAD_SHA"], env.get("BASE_SHA", ""), env.get("HANDOFF_ID", ""), run_url, "chatgpt")
     if env.get("REVIEW") != "true":
         if env.get("NOTICE"):

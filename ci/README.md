@@ -131,6 +131,12 @@ review timeout counts only after a dispatch re-run of the HANDOFF on the head,
 from the default branch, still gives no ruling; that run reads every finding
 and failed check on the head.
 
+With `provider: chatgpt` a `CLEAR` is not final for its head. A later Codex
+summary or receipt, a repeat HANDOFF, or a dispatch re-reads the head, and a
+finding or failed check found then posts a `CORRECT` (or `HOLD`) that replaces
+the `CLEAR`. Nothing ever turns a `CORRECT` or `HOLD` into a `CLEAR` on the same
+head; that takes a push and a new HANDOFF.
+
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id (and, for `provider: chatgpt`, its PR
 number). A dispatch from any other branch
