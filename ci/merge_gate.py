@@ -319,19 +319,23 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         lines.append(f"#{n} {v['head'][:8]} {'held' if v['held'] else 'ordinary'}: {v['state'].upper()} — {'; '.join(v['reasons'])}")
         if not v["allow"]:
             continue
-        if v.get("mergeable") is False or v.get("mergeable_state") in REFUSED_STATES:
-            lines.append(f"#{n}: not merged, GitHub reports mergeable={v.get('mergeable')} "
-                         f"({v.get('mergeable_state')})")
+        # null means GitHub has not finished computing it yet: poll, as its REST docs say (Codex P1 on #41). The poll
+        # runs BEFORE the settled read, so nothing but that read stands between the evidence and the merge call: a
+        # finding that lands while GitHub computes mergeability is still seen (Codex P1 on #41).
+        mergeable, state = mergeable_now(n, v)
+        if mergeable is not True or state in REFUSED_STATES:
+            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable} ({state})")
             continue
         v2 = settled(n, v, lambda: evaluate(n, v["head"], held_rx, None, allowed, instr))
         if not v2["allow"]:
             lines.append(f"#{n}: not merged, the second read {SETTLE_SECONDS}s later says {v2['state'].upper()} — "
                          f"{'; '.join(v2['reasons'])}")
             continue
-        # null means GitHub has not finished computing it yet: poll, as its REST docs say (Codex P1 on #41).
-        mergeable, state = mergeable_now(n, v2)
-        if mergeable is not True or state in REFUSED_STATES:
-            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable} ({state})")
+        # The final read must itself say mergeable and not refused; a null here waits for the next lane run rather than
+        # polling again after the evidence was read.
+        if v2.get("mergeable") is not True or v2.get("mergeable_state") in REFUSED_STATES:
+            lines.append(f"#{n}: not merged, the second read reports mergeable={v2.get('mergeable')} "
+                         f"({v2.get('mergeable_state')}); the next lane run retries")
             continue
         msg = (f"Merged by the merge lane (Dale-OS ci/merge_gate.py) on both reviewers' evidence for {v['head']}:\n"
                f"{'; '.join(v['reasons'])}.\nNo person typed this merge (owner ruling 2026-10-16).")

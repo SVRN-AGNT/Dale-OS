@@ -228,18 +228,37 @@ os.environ.setdefault("GITHUB_TOKEN", "t")
 os.environ.pop("GITHUB_STEP_SUMMARY", None)
 mg.lane("main", "", ["Tataku"], "")
 check("the lane does not merge when the second read blocks", merged == [])
-reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, mergeable=None)])
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, mergeable=True, mergeable_state="clean")])
 mg.pm._api = lambda *a, **k: {"mergeable": True, "mergeable_state": "clean"}
 mg.lane("main", "", ["Tataku"], "")
 check("the lane merges once a null mergeable resolves to true", len(merged) == 1)
-reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, mergeable=None, mergeable_state="unknown")])
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None, mergeable_state="unknown")])
 mg.pm._api = lambda *a, **k: {"mergeable": True, "mergeable_state": "behind"}
 mg.lane("main", "", ["Tataku"], "")
 check("a null that resolves to behind is not merged", len(merged) == 1)
+# Codex P1 on #41: no mergeability poll may sit between the final evidence read and the merge call.
+order = []
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None),
+              dict(ALLOW, mergeable=True, mergeable_state="clean")])
+mg.evaluate = lambda *a, **k: (order.append("evidence"), next(reads))[1]
+mg.pm._api = lambda *a, **k: (order.append("poll"), {"mergeable": True, "mergeable_state": "clean"})[1]
+mg.lane("main", "", ["Tataku"], "")
+check("the mergeability poll runs before the final evidence read, never after it",
+      len(merged) == 2 and order == ["evidence", "poll", "evidence"])
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state="clean"),
+              dict(ALLOW, mergeable=None, mergeable_state="unknown")])
+mg.lane("main", "", ["Tataku"], "")
+check("a final read whose mergeable is null waits for the next run instead of polling past the evidence",
+      len(merged) == 2)
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state="clean"),
+              dict(ALLOW, mergeable=True, mergeable_state="behind")])
+mg.lane("main", "", ["Tataku"], "")
+check("a final read that turned behind is not merged", len(merged) == 2)
+mg.evaluate = lambda *a, **k: next(reads)
 for state in ("behind", "dirty"):
     reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state=state)])
     mg.lane("main", "", ["Tataku"], "")
-    check(f"the lane never merges a {state} PR on a bypass token", len(merged) == 1)
+    check(f"the lane never merges a {state} PR on a bypass token", len(merged) == 2)
 
 # workflow shape
 wf = (HERE.parent / ".github" / "workflows" / "ci-merge-lane.yml").read_text()
