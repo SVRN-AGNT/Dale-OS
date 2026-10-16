@@ -11,7 +11,7 @@ HANDOFF: <full 40-character head sha>
 @codex review
 ```
 
-Before calling a `provider: chatgpt` HANDOFF timed out, re-run the PM workflow by dispatch for that HANDOFF and its PR; the timeout counts only if that run still gives no ruling.
+Before merging on a `provider: chatgpt` CLEAR, or calling its HANDOFF timed out, re-run the PM workflow by dispatch for that HANDOFF and its PR and wait for the run. A Codex finding posted inline after the CLEAR wakes nothing, and that run turns it into CORRECT. Only a run that concluded `success` and whose "Resolve the HANDOFF and its PR" step logged a notice naming the head counts: `the CLEAR on <head> still stands` before merging, or `Waiting on Codex's review of <head>` (or `Waiting on Codex's receipt for <head>`) before the timeout. Any other outcome does not count; fix the cause and dispatch again.
 
 The longer form below is for `provider: api`, whose reviewer reads the claims and checks them.
 
