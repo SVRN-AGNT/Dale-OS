@@ -104,6 +104,9 @@ jobs:
           repository: SVRN-AGNT/Dale-OS
           ref: ${{ inputs.ref }}
           path: shared
+          # Full history: a PR that moves a caller's Dale-OS pin names a newer
+          # commit, and the PM must be able to read that commit to rule on it.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Resolve the HANDOFF and its PR
