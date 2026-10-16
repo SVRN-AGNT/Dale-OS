@@ -267,14 +267,15 @@ def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=()
                     *[f"- Move the change to `{p}` into its own PR, or have a person review this one." for p in instruction_edits[:10]]])}
     if not state:
         return none("Codex has not finished a review of this head.")
+    # Readable blocking evidence rules first: no flag in Codex's summary may turn a finding or a failed check
+    # into "no ruling", which the review timeout would let through. Priority is Codex's urgency, not whether a
+    # finding is wrong code, so every finding withholds a CLEAR until it is fixed on a new head.
     any_findings = state.get("has_any_findings")
-    if any_findings is True and not findings and not clean_receipt:
-        return none("Codex reports findings on this PR, but the PM found none on this head and no clean receipt for it yet. "
-                    "Re-run the PM.")
-    if any_findings is not True and any_findings is not False:
-        return none(f"Codex's review state is unreadable (has_any_findings={json.dumps(any_findings)}).")
-    # Priority is Codex's urgency, not whether a finding is wrong code, so every finding withholds a CLEAR
-    # until it is fixed on a new head. A finding the author thinks is mistaken is the owner's call.
+    if not findings and not failed:
+        if any_findings is True and not clean_receipt:
+            return none("Codex reports findings on this PR, but the PM found none on this head and no clean receipt for it yet.")
+        if any_findings is not True and any_findings is not False:
+            return none(f"Codex's review state is unreadable (has_any_findings={json.dumps(any_findings)}).")
     verdict = "CORRECT" if findings or failed else "CLEAR"
 
     lines = [f"Codex code review of this exact head: {len(findings)} finding(s)." +
@@ -577,27 +578,34 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
         return
     findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head) if state else []
     failed = failed_checks(_paginate(f"/commits/{head}/check-runs")) if state else []
-    ruling = codex_ruling(state, findings, head, edits, failed, codex_clean_receipt(pr_comments, head))
+    clean = codex_clean_receipt(pr_comments, head)
+    if state and not edits and not findings and not failed and state.get("has_any_findings") is True and not clean:
+        # Codex can finish its summary before its receipt for the head is visible; the receipt's own event rules.
+        print(f"::notice::Waiting on Codex's receipt for {head[:8]}")
+        _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),
+                 base_sha=pr["base"]["sha"])
+        return
+    ruling = codex_ruling(state, findings, head, edits, failed, clean)
     print(f"::notice::{ruling['title']}")
     _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling),
              base_sha=pr["base"]["sha"])
 
 
 def _resolve_codex_finished(comment: dict, issue_number: int, allowed, skip) -> None:
-    """Codex's summary comment changed: if it finished reviewing the live head of a PR with a HANDOFF waiting, rule."""
+    """Codex's summary or receipt comment changed: if Codex finished reviewing the live head of a PR with a HANDOFF
+    waiting, rule. Completion is re-read from the PR's comments, so either comment arriving last can rule."""
     env = os.environ
     if env.get("PROVIDER", "api") != "chatgpt":
         return skip("this repository's PM does not read Codex's review")
-    st = codex_state(comment)
-    if not st or st.get("status") != "completed":
-        return skip("Codex's review is not finished")
+    if not codex_state(comment) and CODEX_RECEIPT not in (comment.get("body") or ""):
+        return skip("not Codex's review summary or receipt")
     pr = _api("GET", f"/pulls/{issue_number}")
     if pr["state"] != "open" or not pr["head"].get("repo") or pr["head"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"]:
         return skip(f"#{issue_number} is not an open same-repository PR")
     head = pr["head"]["sha"].lower()
-    if str(st.get("commit_sha") or "").lower() != head:
-        return skip("Codex reviewed a commit that is no longer the head")
     pr_comments = _paginate(f"/issues/{issue_number}/comments")
+    if not codex_review_for(pr_comments, head):
+        return skip(f"Codex has not finished reviewing {head[:8]}")
     if prior_ruling(pr_comments, head):
         return skip(f"already ruled on {head[:8]}")
     waiting = [c for c in pr_comments

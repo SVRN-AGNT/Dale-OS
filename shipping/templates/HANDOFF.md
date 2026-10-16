@@ -15,7 +15,6 @@ The longer form below is for `provider: api`, whose reviewer reads the claims an
 
 ```text
 HANDOFF: second-vendor review requested
-@codex review
 
 PR: #<number>   Head: <full sha>   Base: <branch> @ <sha>
 Lane: <L2 truth | L3 held>, derived from: <the paths that set the lane>

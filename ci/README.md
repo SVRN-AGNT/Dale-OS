@@ -98,7 +98,7 @@ jobs:
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
       || (github.event.action == 'created' && startsWith(github.event.comment.body, 'HANDOFF:'))
-      || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, 'codex-review-state:v1'))
+      || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && (contains(github.event.comment.body, 'codex-review-state:v1') || contains(github.event.comment.body, 'codex-review-receipt:v1')))
     concurrency: { group: 'pm-review-${{ github.event.issue.number || inputs.pr }}', cancel-in-progress: false }
     permissions: { contents: read, issues: write, pull-requests: write, checks: write }
     uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
@@ -118,8 +118,10 @@ branch's. A dispatch names both the comment and its PR, so it takes the same
 per-PR lock as comment events; the PM refuses a comment on any other PR.
 
 The HANDOFF run sets `PM Review` to in progress; Codex's summary comment
-changing to completed runs the PM again, and it rules for the latest HANDOFF
-naming that head. Whichever arrives second rules, so a review that finished
+changing to completed, or its receipt for the head, runs the PM again, and it
+rules for the latest HANDOFF naming that head. Codex's `has_any_findings` covers
+the whole PR, so a head with no findings of its own is CLEAR only once Codex's
+"no major issues" receipt names it. Whichever arrives second rules, so a review that finished
 before the HANDOFF is answered at once.
 
 To answer a HANDOFF posted before the caller existed, run the workflow by hand

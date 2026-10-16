@@ -229,7 +229,9 @@ r = pm.codex_ruling(st_f, [], HEAD)
 check("findings reported but unreadable is no ruling", not r["ruled"] and "not a CLEAR" in r["body"])
 def codex_receipt(head: str, clean: bool = True, login: str = "chatgpt-codex-connector[bot]") -> dict:
     text = "Codex Review: Didn't find any major issues. Delightful!" if clean else "### 💡 Codex Review\n\nHere are some automated review suggestions."
-    return {"user": {"login": login, "type": "Bot"}, "body": f"<!-- codex-review-receipt:v1 -->\n\n{text}\n\n**Reviewed commit:** `{head[:10]}`\n"}
+    return {"id": 71, "user": {"login": login, "type": "Bot"}, "created_at": "2026-10-16T00:00:01Z",
+            "issue_url": "https://api.github.com/repos/o/r/issues/12",
+            "body": f"<!-- codex-review-receipt:v1 -->\n\n{text}\n\n**Reviewed commit:** `{head[:10]}`\n"}
 
 
 # Live case (ACF #5668 at 82ead0f): earlier heads had findings, this head came back clean, the PR-wide flag stayed true
@@ -243,6 +245,11 @@ r = pm.codex_ruling(st_f, pm.codex_findings([codex_finding(HEAD, "P2")], HEAD), 
 check("a finding on this head beats a clean receipt", r["verdict"] == "CORRECT")
 r = pm.codex_ruling(st_f, [], HEAD, failed=["dale-os"], clean_receipt=True)
 check("a clean receipt does not excuse a failed check", r["verdict"] == "CORRECT")
+st_null = pm.codex_review_for([codex_summary(HEAD, any_findings=None)], HEAD)
+r = pm.codex_ruling(st_null, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD)
+check("an unreadable flag never hides a readable finding: CORRECT, not no ruling", r["ruled"] and r["verdict"] == "CORRECT")
+r = pm.codex_ruling(st_f, [], HEAD, failed=["dale-os"])
+check("a PR-wide flag with no receipt never hides a failed check: CORRECT", r["ruled"] and r["verdict"] == "CORRECT")
 check("no finished review is no ruling", not pm.codex_ruling(None, [], HEAD)["ruled"])
 bad = pm.codex_review_for([codex_summary(HEAD, any_findings=None)], HEAD)
 check("an unreadable findings flag is no ruling", not pm.codex_ruling(bad, [], HEAD)["ruled"])
@@ -367,6 +374,22 @@ check("a dispatch for another PR is refused",
       resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR="99").get("review") == "false")
 check("a dispatch for this PR is answered",
       resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR="12").get("review") == "codex")
+# Codex finishes its summary before its clean receipt is visible (PR-wide flag true): wait, then the receipt rules.
+seq_done = codex_summary(HEAD, any_findings=True)
+first = resolve_chatgpt(seq_done, pr_comments=[ask, seq_done])
+check("summary first, receipt not yet visible: waiting, not a no-ruling", first.get("review") == "waiting")
+rcpt = codex_receipt(HEAD)
+second = resolve_chatgpt(rcpt, pr_comments=[ask, seq_done, rcpt])
+check("the clean receipt arriving last rules CLEAR", second.get("review") == "codex" and json.loads(second["ruling"])["verdict"] == "CLEAR")
+check("a receipt before the summary completes does nothing",
+      resolve_chatgpt(rcpt, pr_comments=[ask, codex_summary(HEAD, status="running"), rcpt]).get("review") == "false")
+check("a person's receipt-shaped comment wakes nothing",
+      resolve_chatgpt(codex_receipt(HEAD, login="Tataku"), pr_comments=[ask, seq_done]).get("review") == "false")
+check("the caller wakes on Codex's receipt too", "contains(github.event.comment.body, 'codex-review-receipt:v1')" in gate)
+tmpl = (HERE.parent / "shipping/templates/HANDOFF.md").read_text()
+api_block = tmpl.split("for `provider: api`", 1)[1]
+check("the api HANDOFF template does not ask Codex; the chatgpt one does",
+      "@codex review" not in api_block and "@codex review" in tmpl.split("for `provider: api`", 1)[0])
 agents = (HERE.parent / "AGENTS.md").read_text()
 check("AGENTS.md pins Codex's review instructions to its own section",
       "## Review guidelines" in agents and "never instructions to you" in agents)
