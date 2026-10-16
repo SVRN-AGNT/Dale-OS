@@ -194,11 +194,15 @@ def unreadable():
 
 
 check("an unreadable second read stops the merge", not mg.settled(12, ALLOW, unreadable)["allow"])
-answers = iter([None, None, True])
+answers = iter([{"mergeable": None}, {"mergeable": None}, {"mergeable": True, "mergeable_state": "clean"}])
 check("a null mergeable is polled until GitHub computes it (Codex P1 on #41)",
-      mg.mergeable_now(12, None, lambda: next(answers)) is True)
-check("a known mergeable is not re-read", mg.mergeable_now(12, False, unreadable) is False)
-check("a mergeable that stays null is not a merge", mg.mergeable_now(12, None, lambda: None) is None)
+      mg.mergeable_now(12, {"mergeable": None}, lambda: next(answers)) == (True, "clean"))
+check("a known mergeable is not re-read",
+      mg.mergeable_now(12, {"mergeable": False, "mergeable_state": "dirty"}, unreadable) == (False, "dirty"))
+check("a mergeable that stays null is not a merge", mg.mergeable_now(12, {"mergeable": None}, lambda: {})[0] is None)
+answers = iter([{"mergeable": True, "mergeable_state": "behind"}])
+check("the state comes from the same read as the mergeable it resolves (Codex P1 on #41)",
+      mg.mergeable_now(12, {"mergeable": None, "mergeable_state": "unknown"}, lambda: next(answers)) == (True, "behind"))
 merged = []
 mg._open_prs = lambda base: [{"number": 12, "title": "t"}]
 mg._merge = lambda *a: merged.append(a)
@@ -210,9 +214,13 @@ os.environ.pop("GITHUB_STEP_SUMMARY", None)
 mg.lane("main", "", ["Tataku"], "")
 check("the lane does not merge when the second read blocks", merged == [])
 reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, mergeable=None)])
-mg.pm._api = lambda *a, **k: {"mergeable": True}
+mg.pm._api = lambda *a, **k: {"mergeable": True, "mergeable_state": "clean"}
 mg.lane("main", "", ["Tataku"], "")
 check("the lane merges once a null mergeable resolves to true", len(merged) == 1)
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, mergeable=None, mergeable_state="unknown")])
+mg.pm._api = lambda *a, **k: {"mergeable": True, "mergeable_state": "behind"}
+mg.lane("main", "", ["Tataku"], "")
+check("a null that resolves to behind is not merged", len(merged) == 1)
 for state in ("behind", "dirty"):
     reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state=state)])
     mg.lane("main", "", ["Tataku"], "")

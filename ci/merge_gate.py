@@ -314,9 +314,9 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
                          f"{'; '.join(v2['reasons'])}")
             continue
         # null means GitHub has not finished computing it yet: poll, as its REST docs say (Codex P1 on #41).
-        mergeable = mergeable_now(n, v2.get("mergeable"))
-        if mergeable is not True or v2.get("mergeable_state") in REFUSED_STATES:
-            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable} ({v2.get('mergeable_state')})")
+        mergeable, state = mergeable_now(n, v2)
+        if mergeable is not True or state in REFUSED_STATES:
+            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable} ({state})")
             continue
         msg = (f"Merged by the merge lane (Dale-OS ci/merge_gate.py) on both reviewers' evidence for {v['head']}:\n"
                f"{'; '.join(v['reasons'])}.\nNo person typed this merge (owner ruling 2026-10-16).")
@@ -337,18 +337,20 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
     return 0
 
 
-def mergeable_now(n: int, mergeable, read=None):
-    """GitHub's mergeable for PR n, polled while it is still null (computed asynchronously), MERGEABLE_POLLS times."""
-    read = read or (lambda: pm._api("GET", f"/pulls/{n}").get("mergeable"))
+def mergeable_now(n: int, pr: dict, read=None) -> tuple:
+    """(mergeable, mergeable_state) for PR n, both from one response, polled while mergeable is still null (GitHub
+    computes it asynchronously), MERGEABLE_POLLS times. A state left over from a null read is never paired with a
+    later mergeable (Codex P1 on #41: null/unknown, then true/behind)."""
+    read = read or (lambda: pm._api("GET", f"/pulls/{n}"))
     for _ in range(MERGEABLE_POLLS):
-        if mergeable is not None:
+        if pr.get("mergeable") is not None:
             break
         time.sleep(MERGEABLE_WAIT)
         try:
-            mergeable = read()
+            pr = read() or {}
         except (urllib.error.URLError, KeyError, ValueError):
-            mergeable = None
-    return mergeable
+            pr = {}
+    return pr.get("mergeable"), pr.get("mergeable_state")
 
 
 def settled(n: int, first: dict, read) -> dict:
