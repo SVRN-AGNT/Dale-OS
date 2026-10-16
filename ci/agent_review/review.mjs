@@ -110,14 +110,18 @@ export function materializePr({ baseSha, headSha, files, previousSha = '', root 
 }
 
 /**
- * Tools the reviewer may use: file reading only. No shell at all, not even
+ * Tools the reviewer may use: file reading inside the working directory only. No shell at all, not even
  * "read-only" git: `git grep -O<cmd>` runs a command and `git show --output=`
  * writes a file, so a prompt-injected reviewer with git could leak the token in
  * its environment or forge its own verdict. Everything it needs is on disk:
  * the base tree, the PR's diff and each changed file at the head
  * (materializePr), and the diff since the previous review.
  */
-export const ALLOWED_TOOLS = Object.freeze(['Read', 'Grep', 'Glob']);
+// Granted by nothing: in dontAsk mode Read, Grep and Glob already run inside the
+// working directory (the base checkout, with the PR materialized in it), and
+// every read outside it is auto-denied. Allowing the bare tool names could
+// widen them to the whole filesystem, where /proc/<pid>/environ holds the token.
+export const ALLOWED_TOOLS = Object.freeze([]);
 export const DISALLOWED_TOOLS = Object.freeze([
   'Bash', 'Edit', 'Write', 'NotebookEdit', 'WebFetch', 'WebSearch', 'Agent',
   // Read can open any file, so the places a credential lives are denied too;
@@ -410,7 +414,6 @@ function main() {
     '--output-format', 'json',
     '--json-schema', JSON.stringify(VERDICT_SCHEMA),
     '--permission-mode', 'dontAsk',
-    '--allowedTools', ALLOWED_TOOLS.join(','),
     '--disallowedTools', DISALLOWED_TOOLS.join(','),
     // Project settings can carry the repo's session hooks. The reviewer must not run them.
     '--setting-sources', 'user',

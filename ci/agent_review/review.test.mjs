@@ -64,7 +64,8 @@ test('the prompt names the caller base branch and fences the PR text as data', (
 });
 
 test('the reviewer reads files only: no shell (git -O and --output run and write), network or agent', () => {
-  assert.deepEqual([...ALLOWED_TOOLS], ['Read', 'Grep', 'Glob']);
+  // No allow rules: dontAsk runs reads inside the working directory and denies the rest.
+  assert.deepEqual([...ALLOWED_TOOLS], []);
   for (const t of ['Bash', 'Edit', 'Write', 'WebFetch', 'WebSearch', 'Agent', 'Read(//proc/**)']) assert.ok(DISALLOWED_TOOLS.includes(t), t);
 });
 
