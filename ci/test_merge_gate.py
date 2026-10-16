@@ -56,9 +56,20 @@ GREEN = [run("Agent Review"), run("ci", rid=2)]
 CLEAR_COMMENTS = [handoff(), summary(), ruling()]
 
 
-def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW):
+def proven(r):
+    """Stands in for pm.check_identity: run id 1..9 proves the default branch's agent-review.yml."""
+    if r.get("id") == 66:
+        return (r["name"], ".github/workflows/forged.yml", "run:66")
+    if r.get("id") == 77:
+        return (r["name"], mg.AGENT_REVIEW_PATH, "run:77")
+    return (r["name"], mg.AGENT_REVIEW_PATH, "default") if 1 <= r.get("id", 0) <= 9 else None
+
+
+def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW, identify=proven,
+      failed=None):
     return mg.verdict(pr=pr, head=HEAD, held=held, pr_comments=list(comments), review_comments=list(review),
-                      check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now)
+                      check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now, identify=identify,
+                      failed=failed)
 
 
 # the happy path the owner asked for: no person types
@@ -103,11 +114,23 @@ check("a newer Agent Review from another app does not stand in",
       v(checks=[run("Agent Review", status="in_progress"), run("Agent Review", started="2026-10-16T11:00:00Z", rid=9, app="x")])["state"] == "wait")
 check("a check still running on a held head: wait", v(checks=GREEN + [run("build", status="queued", rid=4)])["state"] == "wait")
 
+# only the trusted reviewer workflow's check counts (Codex P1 on #41)
+late = "2026-10-16T11:00:00Z"
+check("a newer Agent Review success from another workflow does not count",
+      v(checks=[run("Agent Review", "failure"), run("Agent Review", started=late, rid=66), run("ci", rid=2)],
+        failed=[])["block"])
+check("a newer Agent Review from a PR-branch copy of agent-review.yml does not count",
+      v(checks=[run("Agent Review", "failure"), run("Agent Review", started=late, rid=77), run("ci", rid=2)],
+        failed=[])["block"])
+check("an Agent Review with no provable run does not count",
+      v(checks=[run("Agent Review", started=late, rid=50), run("ci", rid=2)])["block"])
+check("without an identity check, no Agent Review counts", v(identify=None)["block"])
+
 # the PM's own failed-check list (identity-aware since #40) is what the gate obeys
 check("the PM's failed-check list decides, when given",
       mg.verdict(pr=PR, head=HEAD, held=True, pr_comments=CLEAR_COMMENTS, review_comments=[],
                                              check_runs=GREEN + [run("ci", "cancelled", rid=3)], paths=["a.py"],
-                                             allowed=["Tataku"], now=NOW, failed=[])["allow"])
+                                             allowed=["Tataku"], now=NOW, failed=[], identify=proven)["allow"])
 check("without the list, any failed run on the head blocks", v(checks=GREEN + [run("ci", "cancelled", rid=3)])["block"])
 
 # the PR itself
@@ -125,6 +148,10 @@ check("the lane's merge token is optional and passed only to the lane step",
 check("the job has a timeout", code.count("runs-on:") == 1 and "timeout-minutes:" in code)
 check("one lane run at a time per repository, never cancelled mid-merge",
       "cancel-in-progress: false" in code)
+caller = (HERE.parent / ".github" / "workflows" / "merge-lane.yml").read_text()
+check("a dispatch runs only the default branch's caller (it holds INTEGRATION_TOKEN)",
+      "if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch"
+      in caller)
 
 if errors:
     print("FAIL:\n  " + "\n  ".join(errors))

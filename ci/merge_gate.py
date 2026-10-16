@@ -50,6 +50,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pm_review as pm  # noqa: E402  the PM's own reading of Codex's evidence
 
 AGENT_REVIEW = "Agent Review"
+# The only workflow whose Agent Review check counts, and only as defined on the default branch.
+AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
 PM_TIMEOUT = dt.timedelta(hours=2)
 
@@ -75,10 +77,13 @@ def newest(runs, name: str):
 
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
-            allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None) -> dict:
+            allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
+            identify=None) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
-    `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts."""
+    `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
+    `identify` is the PM's check_identity for this repository; held scope counts an Agent Review only when it proves
+    the check came from the default branch's agent-review.yml. Without it, no Agent Review counts."""
     now = now or dt.datetime.now(dt.timezone.utc)
     head = str(head or "").lower()
     out = {"pr": pr.get("number"), "head": head, "held": bool(held), "handoff": False,
@@ -139,6 +144,10 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     ar = newest(check_runs, AGENT_REVIEW)
     if not ar or ar.get("status") != "completed":
         return done("wait", f"waiting on Agent Review of {head[:8]}")
+    ident = identify(ar) if identify else None
+    if not ident or ident[1] != AGENT_REVIEW_PATH or ident[2] != "default":
+        return done("block", f"the newest Agent Review on {head[:8]} is not proven to come from the default branch's "
+                             f"{AGENT_REVIEW_PATH}")
     if ar.get("conclusion") != "success":
         return done("block", f"Agent Review on {head[:8]} is {ar.get('conclusion')}: {(ar.get('output') or {}).get('title') or ''}".rstrip(": "))
     running = sorted({r.get("name") or "?" for r in check_runs if r.get("status") != "completed"})
@@ -165,6 +174,19 @@ def _paths(n: int) -> list[str]:
     return out
 
 
+def _identify(pr: dict):
+    """The PM's check_identity for this PR's repository, with one cache for the run records it reads."""
+    default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch") or ""
+    cache: dict = {}
+
+    def fetch(path):
+        if path not in cache:
+            cache[path] = pm._api("GET", path)
+        return cache[path]
+
+    return lambda r: pm.check_identity(r, default_branch, fetch)
+
+
 def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, allowed, instruction_paths: str) -> dict:
     pr = pm._api("GET", f"/pulls/{n}")
     head = (head or pr["head"]["sha"]).lower()
@@ -174,7 +196,7 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
-                   failed=pm.head_failed_checks(pr, head)) | {"title": pr.get("title"),
+                   failed=pm.head_failed_checks(pr, head), identify=_identify(pr)) | {"title": pr.get("title"),
                                                                                       "mergeable": pr.get("mergeable")}
 
 
