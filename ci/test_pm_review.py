@@ -227,6 +227,22 @@ r = pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HE
 check("a finding beats a no-findings flag", r["verdict"] == "CORRECT")
 r = pm.codex_ruling(st_f, [], HEAD)
 check("findings reported but unreadable is no ruling", not r["ruled"] and "not a CLEAR" in r["body"])
+def codex_receipt(head: str, clean: bool = True, login: str = "chatgpt-codex-connector[bot]") -> dict:
+    text = "Codex Review: Didn't find any major issues. Delightful!" if clean else "### 💡 Codex Review\n\nHere are some automated review suggestions."
+    return {"user": {"login": login, "type": "Bot"}, "body": f"<!-- codex-review-receipt:v1 -->\n\n{text}\n\n**Reviewed commit:** `{head[:10]}`\n"}
+
+
+# Live case (ACF #5668 at 82ead0f): earlier heads had findings, this head came back clean, the PR-wide flag stayed true
+check("a clean receipt for this head is read", pm.codex_clean_receipt([codex_receipt(HEAD)], HEAD))
+check("a clean receipt for another commit is not this head's", not pm.codex_clean_receipt([codex_receipt(OTHER)], HEAD))
+check("a person's copy of a clean receipt is ignored", not pm.codex_clean_receipt([codex_receipt(HEAD, login="Tataku")], HEAD))
+check("a suggestions receipt is not a clean one", not pm.codex_clean_receipt([codex_receipt(HEAD, clean=False)], HEAD))
+r = pm.codex_ruling(st_f, [], HEAD, clean_receipt=True)
+check("a PR-wide findings flag with a clean receipt for this head is a CLEAR", r["verdict"] == "CLEAR")
+r = pm.codex_ruling(st_f, pm.codex_findings([codex_finding(HEAD, "P2")], HEAD), HEAD, clean_receipt=True)
+check("a finding on this head beats a clean receipt", r["verdict"] == "CORRECT")
+r = pm.codex_ruling(st_f, [], HEAD, failed=["dale-os"], clean_receipt=True)
+check("a clean receipt does not excuse a failed check", r["verdict"] == "CORRECT")
 check("no finished review is no ruling", not pm.codex_ruling(None, [], HEAD)["ruled"])
 bad = pm.codex_review_for([codex_summary(HEAD, any_findings=None)], HEAD)
 check("an unreadable findings flag is no ruling", not pm.codex_ruling(bad, [], HEAD)["ruled"])

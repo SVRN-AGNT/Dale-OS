@@ -165,6 +165,9 @@ def prior_ruling(pr_comments, head: str):
 CODEX_BOT = "chatgpt-codex-connector[bot]"  # GitHub enforces app logins: no person or other app can post as it
 CODEX_STATE = re.compile(r"<!-- codex-review-state:v1 (\{.*?\}) -->", re.S)
 CODEX_FINDING = "<!-- codex-code-review-finding:v1 -->"
+CODEX_RECEIPT = "<!-- codex-review-receipt:v1 -->"
+CODEX_CLEAN = re.compile(r"Didn't find any major issues")
+CODEX_REVIEWED = re.compile(r"\*\*Reviewed commit:\*\* `([0-9a-f]{7,40})`")
 CODEX_PRIORITY = re.compile(r"!\[(P[0-9]) Badge\]")
 CODEX_ASK = re.compile(r"(?m)^@codex review\s*$")
 # Codex reads AGENTS.md as its review instructions, and from the PR it reviews, so a PR that
@@ -204,6 +207,19 @@ def codex_review_for(pr_comments, head: str):
     return None
 
 
+def codex_clean_receipt(pr_comments, head: str) -> bool:
+    """Codex's own "no major issues" receipt names this head. has_any_findings is PR-wide and stays true after
+    earlier heads' findings are fixed, so this receipt is what shows that this head itself came back clean."""
+    for c in pr_comments:
+        body = c.get("body") or ""
+        if not _from_codex(c) or CODEX_RECEIPT not in body or not CODEX_CLEAN.search(body):
+            continue
+        m = CODEX_REVIEWED.search(body)
+        if m and str(head).lower().startswith(m.group(1).lower()):
+            return True
+    return False
+
+
 def codex_findings(review_comments, head: str) -> list[dict]:
     """Codex's inline findings made on this head. A finding with no readable priority counts as P0."""
     out = []
@@ -231,7 +247,7 @@ def failed_checks(check_runs) -> list[str]:
                    if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK})
 
 
-def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=()) -> dict:
+def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
     """Turn Codex's review of the head into a ruling, failing closed. state is codex_review_for's answer."""
     at = str(head_sha)[:8]
 
@@ -252,8 +268,9 @@ def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=()
     if not state:
         return none("Codex has not finished a review of this head.")
     any_findings = state.get("has_any_findings")
-    if any_findings is True and not findings:
-        return none("Codex reports findings on this head, but the PM could not read them yet. Re-run the PM.")
+    if any_findings is True and not findings and not clean_receipt:
+        return none("Codex reports findings on this PR, but the PM found none on this head and no clean receipt for it yet. "
+                    "Re-run the PM.")
     if any_findings is not True and any_findings is not False:
         return none(f"Codex's review state is unreadable (has_any_findings={json.dumps(any_findings)}).")
     # Priority is Codex's urgency, not whether a finding is wrong code, so every finding withholds a CLEAR
@@ -560,7 +577,7 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
         return
     findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head) if state else []
     failed = failed_checks(_paginate(f"/commits/{head}/check-runs")) if state else []
-    ruling = codex_ruling(state, findings, head, edits, failed)
+    ruling = codex_ruling(state, findings, head, edits, failed, codex_clean_receipt(pr_comments, head))
     print(f"::notice::{ruling['title']}")
     _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling),
              base_sha=pr["base"]["sha"])
