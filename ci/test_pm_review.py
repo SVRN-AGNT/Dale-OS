@@ -223,11 +223,18 @@ runs = [{"name": "dale-os", "status": "completed", "conclusion": "failure"},
         {"name": "lint", "status": "in_progress", "conclusion": None},
         {"name": "opt", "status": "completed", "conclusion": "skipped"},
         {"name": "Agent Review", "status": "completed", "conclusion": "action_required"}]
-check("a failure superseded by a newer run of the same check does not count",
-      pm.failed_checks([{"id": 1, "name": "mark", "status": "completed", "conclusion": "cancelled"},
-                        {"id": 2, "name": "mark", "status": "completed", "conclusion": "success"}]) == []
-      and pm.failed_checks([{"id": 2, "name": "ci", "status": "completed", "conclusion": "failure"},
-                            {"id": 1, "name": "ci", "status": "completed", "conclusion": "success"}]) == ["ci"])
+A, B = {"id": 15368}, {"id": 999}
+check("a cancelled run replaced by a newer run of the same check from the same app does not count",
+      pm.failed_checks([{"id": 1, "app": A, "name": "mark", "status": "completed", "conclusion": "cancelled"},
+                        {"id": 2, "app": A, "name": "mark", "status": "completed", "conclusion": "success"}]) == [])
+check("a failure always counts, even with a newer success of the same name",
+      pm.failed_checks([{"id": 1, "app": A, "name": "ci", "status": "completed", "conclusion": "failure"},
+                        {"id": 2, "app": A, "name": "ci", "status": "completed", "conclusion": "success"}]) == ["ci"])
+check("another app's newer same-name success never hides a failure or a cancel",
+      pm.failed_checks([{"id": 101, "app": A, "name": "security", "status": "completed", "conclusion": "failure"},
+                        {"id": 102, "app": B, "name": "security", "status": "completed", "conclusion": "success"}]) == ["security"]
+      and pm.failed_checks([{"id": 101, "app": A, "name": "security", "status": "completed", "conclusion": "cancelled"},
+                            {"id": 102, "app": B, "name": "security", "status": "completed", "conclusion": "success"}]) == ["security"])
 check("failed checks: failures and not-reviewed count; the PM's own check, pending and skipped do not", pm.failed_checks(runs) == ["Agent Review", "dale-os"])
 r = pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD)
 check("a finding beats a no-findings flag", r["verdict"] == "CORRECT")
@@ -318,9 +325,10 @@ check("Codex finishing with no HANDOFF for the head does nothing",
 old_ask = handoff(f"HANDOFF: review {OTHER}\n@codex review", id=6, issue_url=ask["issue_url"])
 check("a HANDOFF for an older head does not get this head's ruling",
       resolve_chatgpt(done, pr_comments=[old_ask, done]).get("review") == "false")
-check("Codex finishing an older commit does nothing",
-      resolve_chatgpt(codex_summary(OTHER), pr_comments=[ask]).get("review") == "false")
-check("a running review does nothing", resolve_chatgpt(codex_summary(HEAD, status="running"), pr_comments=[ask]).get("review") == "false")
+check("Codex finishing an older commit gives no ruling for the head, only waiting",
+      resolve_chatgpt(codex_summary(OTHER), pr_comments=[ask]).get("review") == "waiting")
+check("a running review with no evidence gives no ruling, only waiting",
+      resolve_chatgpt(codex_summary(HEAD, status="running"), pr_comments=[ask]).get("review") == "waiting")
 forged = codex_summary(HEAD, login="Tataku")
 check("a person posting Codex's marker is not Codex",
       resolve_chatgpt(forged, pr_comments=[ask, forged]).get("review") == "false")
@@ -390,8 +398,8 @@ check("summary first, receipt not yet visible: waiting, not a no-ruling", first.
 rcpt = codex_receipt(HEAD)
 second = resolve_chatgpt(rcpt, pr_comments=[ask, seq_done, rcpt])
 check("the clean receipt arriving last rules CLEAR", second.get("review") == "codex" and json.loads(second["ruling"])["verdict"] == "CLEAR")
-check("a receipt before the summary completes does nothing",
-      resolve_chatgpt(rcpt, pr_comments=[ask, codex_summary(HEAD, status="running"), rcpt]).get("review") == "false")
+check("a receipt before the summary completes gives no ruling, only waiting",
+      resolve_chatgpt(rcpt, pr_comments=[ask, codex_summary(HEAD, status="running"), rcpt]).get("review") == "waiting")
 check("a person's receipt-shaped comment wakes nothing",
       resolve_chatgpt(codex_receipt(HEAD, login="Tataku"), pr_comments=[ask, seq_done]).get("review") == "false")
 check("the caller wakes on Codex's receipt too", "contains(github.event.comment.body, 'codex-review-receipt:v1')" in gate)
@@ -405,6 +413,16 @@ for summ in ([], [codex_summary(HEAD, status="running")]):
     check(f"a readable finding with {'a running' if summ else 'no'} summary is CORRECT, not waiting",
           pf.get("review") == "codex" and json.loads(pf["ruling"])["verdict"] == "CORRECT")
 pc = resolve_chatgpt(ask, pr_comments=[ask], checks=[runs[0]])
+run_sum = codex_summary(HEAD, status="running")
+ps = resolve_chatgpt(run_sum, pr_comments=[ask, run_sum], checks=[runs[0]])
+check("Codex's running-summary event with a failed check on the head is CORRECT",
+      ps.get("review") == "codex" and json.loads(ps["ruling"])["verdict"] == "CORRECT")
+check("Codex's running-summary event with no evidence waits", resolve_chatgpt(run_sum, pr_comments=[ask, run_sum]).get("review") == "waiting")
+# A finding lands after the running summary and Codex never completes: no event fires, so the timeout rule
+# requires a dispatch re-run of the HANDOFF first, which reads the finding.
+late_f = resolve_chatgpt(ask, pr_comments=[run_sum, ask], review_comments=[codex_finding(HEAD, "P1")], EXPECTED_PR="12")
+check("the dispatch re-run before a timeout reads a late finding: CORRECT",
+      late_f.get("review") == "codex" and json.loads(late_f["ruling"])["verdict"] == "CORRECT")
 check("a failed check with no Codex review yet is CORRECT, not waiting", json.loads(pc["ruling"])["verdict"] == "CORRECT")
 check("no completed review and no blocking evidence still waits, never CLEAR",
       resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD, status="running"), ask]).get("review") == "waiting")

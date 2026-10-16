@@ -124,6 +124,13 @@ the whole PR, so a head with no findings of its own is CLEAR only once Codex's
 "no major issues" receipt names it. Whichever arrives second rules, so a review that finished
 before the HANDOFF is answered at once.
 
+A finding Codex posts inline, or a check that fails, after the last event the
+PM saw wakes nothing (review events would run the PR's own copy of the
+workflow, so the PM never listens to them). So with `provider: chatgpt`, a
+review timeout counts only after a dispatch re-run of the HANDOFF on the head,
+from the default branch, still gives no ruling; that run reads every finding
+and failed check on the head.
+
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id (and, for `provider: chatgpt`, its PR
 number). A dispatch from any other branch

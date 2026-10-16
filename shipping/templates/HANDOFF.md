@@ -11,6 +11,8 @@ HANDOFF: <full 40-character head sha>
 @codex review
 ```
 
+Before calling a `provider: chatgpt` HANDOFF timed out, re-run the PM workflow by dispatch for that HANDOFF and its PR; the timeout counts only if that run still gives no ruling.
+
 The longer form below is for `provider: api`, whose reviewer reads the claims and checks them.
 
 ```text

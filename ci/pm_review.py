@@ -244,14 +244,18 @@ def reviewer_instruction_edits(paths, pattern: str = "") -> list[str]:
 
 
 def failed_checks(check_runs) -> list[str]:
-    """Checks whose latest run on the head failed or was not reviewed. A run superseded by a newer one of the same
-    name (a re-run, or a cancelled duplicate) does not count."""
-    latest = {}
+    """Checks on the head that failed or were not reviewed. Every failure counts. Only a cancelled run is set aside, and
+    only when a newer run with the same name from the same app exists (a superseded duplicate, routine under
+    concurrency groups); a name alone never proves two runs are the same check."""
+    def key(r):
+        return ((r.get("app") or {}).get("id"), r.get("name"))
+    newest = {}
     for r in check_runs:
-        name = r.get("name") or "?"
-        if name != PM_CHECK and (name not in latest or int(r.get("id") or 0) > int(latest[name].get("id") or 0)):
-            latest[name] = r
-    return sorted(n for n, r in latest.items() if r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK)
+        if int(r.get("id") or 0) > int(newest.get(key(r), {}).get("id") or 0):
+            newest[key(r)] = r
+    return sorted({r.get("name") or "?" for r in check_runs
+                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK
+                   and not (r.get("conclusion") == "cancelled" and newest[key(r)] is not r)})
 
 
 def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
@@ -613,8 +617,6 @@ def _resolve_codex_finished(comment: dict, issue_number: int, allowed, skip) -> 
         return skip(f"#{issue_number} is not an open same-repository PR")
     head = pr["head"]["sha"].lower()
     pr_comments = _paginate(f"/issues/{issue_number}/comments")
-    if not codex_review_for(pr_comments, head) and not codex_findings(_paginate(f"/pulls/{issue_number}/comments"), head):
-        return skip(f"Codex has not finished reviewing {head[:8]}")
     if prior_ruling(pr_comments, head):
         return skip(f"already ruled on {head[:8]}")
     waiting = [c for c in pr_comments
