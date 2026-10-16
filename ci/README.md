@@ -222,7 +222,7 @@ jobs:
   lane:
     # Only the default branch's copy may run on a dispatch: it holds INTEGRATION_TOKEN.
     if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
-    permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read }
+    permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read, statuses: read }
     uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-merge-lane.yml@<sha>
     with:
       ref: <sha>
@@ -238,6 +238,9 @@ proven by the run that posted it, not by who last set its conclusion, so a workf
 PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. CI is read from GitHub's
 workflow-run records, which no posted check can stand in for. The
 merge token may bypass branch rules, so the lane itself merges only from a merge-ready state: `clean`, `has_hooks`, or `unstable` with every commit status green. `blocked`, `behind`, `dirty`, `draft` and `unknown` are refused.
+Write access can edit any comment and the author stays Codex, so a Codex comment, review or finding last edited by
+anyone else blocks the PR (read through GraphQL's `editor`). A completed Codex review of the head that yields no
+readable ruling never reaches the 2-hour timeout. A caller's `--held false` cannot override the gate's own held paths.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
 in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to

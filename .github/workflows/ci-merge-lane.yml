@@ -22,7 +22,7 @@
 #   permissions: { contents: read }
 #   jobs:
 #     lane:
-#       permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read }
+#       permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read, statuses: read }
 #       uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-merge-lane.yml@<sha>
 #       with: { ref: <sha>, held_paths: '<the PM caller's regex>', required_workflows: '<CI workflow files, one per line>' }
 #       secrets: { merge_token: ${{ secrets.INTEGRATION_TOKEN }} }
@@ -85,6 +85,7 @@ jobs:
       issues: read
       checks: read
       actions: read   # the PM's check_identity reads workflow runs; without it every old failure keeps counting
+      statuses: read  # an `unstable` PR merges only when every commit status is green; private repos need this to read them
     steps:
       - name: Checkout the shared gate (never the PR)
         uses: actions/checkout@v4

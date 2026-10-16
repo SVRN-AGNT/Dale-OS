@@ -28,6 +28,7 @@ jobs:
       issues: read
       checks: read
       actions: read
+      statuses: read
     uses: ./.github/workflows/ci-merge-lane.yml
     with:
       ref: ${{ github.sha }}

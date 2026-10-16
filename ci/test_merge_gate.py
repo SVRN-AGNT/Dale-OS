@@ -75,11 +75,11 @@ def proven(r):
 
 
 def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW, identify=proven,
-      failed=None, required=(CI,), workflow_runs=None):
+      failed=None, required=(CI,), workflow_runs=None, foreign_edits=()):
     return mg.verdict(pr=pr, head=HEAD, held=held, pr_comments=list(comments), review_comments=list(review),
                       check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now, identify=identify,
                       failed=failed, required=required,
-                      workflow_runs=[wfrun()] if workflow_runs is None else workflow_runs)
+                      workflow_runs=[wfrun()] if workflow_runs is None else workflow_runs, foreign_edits=foreign_edits)
 
 
 # the happy path the owner asked for: no person types
@@ -112,6 +112,43 @@ check("an OWNER GATE ruling blocks a non-held PR at the timeout",
 # an edited HANDOFF restarts the clock (the PM only answers new comments)
 check("a day-old HANDOFF edited a minute ago to name this head does not start at the timeout",
       v(held=False, comments=[handoff(at="2026-10-15T10:00:00Z", updated_at="2026-10-16T11:59:00Z")])["state"] == "wait")
+
+# a completed Codex review with no readable ruling never reaches the timeout (it may hide an unparsed or deleted finding)
+r = v(held=False, comments=[handoff(at="2026-10-16T08:00:00Z"), summary(any_findings=True)])
+check("a finished Codex review with no readable ruling does not merge on the timeout", not r["allow"])
+check("no review at all still merges a non-held PR on the timeout",
+      v(held=False, comments=[handoff(at="2026-10-16T08:00:00Z")])["allow"])
+
+# a Codex comment someone else edited cannot be trusted (write access can edit any comment; the author stays Codex)
+check("a Codex comment edited by someone else blocks the merge",
+      v(foreign_edits=["comment 2 by Tataku"])["block"])
+check("it blocks a non-held PR on the timeout too",
+      v(held=False, comments=[handoff(at="2026-10-16T08:00:00Z")], foreign_edits=["comment 2 by x"])["block"])
+cx = {"login": mg.CODEX_LOGIN}
+
+
+def node(i, author=cx, editor=None):
+    return {"databaseId": i, "author": author, "editor": editor}
+
+
+def conn(*nodes, more=False):
+    return {"pageInfo": {"hasNextPage": more}, "nodes": list(nodes)}
+
+
+check("Codex editing its own comments is fine", mg.foreign_edits_in(
+    {"comments": conn(node(1, editor=cx)), "reviews": conn(dict(node(2), comments=conn(node(3, editor=cx))))}) == [])
+check("an edit by anyone else to a Codex summary is caught", mg.foreign_edits_in(
+    {"comments": conn(node(1, editor={"login": "Tataku"})), "reviews": conn()}) == ["comment 1 by Tataku"])
+check("an edit by anyone else to a Codex review or inline finding is caught", len(mg.foreign_edits_in(
+    {"comments": conn(), "reviews": conn(dict(node(2, editor={"login": "github-actions"}),
+                                              comments=conn(node(3, editor={"login": "x"}))))})) == 2)
+check("someone editing their own comment is not Codex's evidence", mg.foreign_edits_in(
+    {"comments": conn(node(1, author={"login": "Tataku"}, editor={"login": "Tataku"})), "reviews": conn()}) == [])
+try:
+    mg.foreign_edits_in({"comments": conn(more=True), "reviews": conn()})
+    check("an unread page of comments fails closed", False)
+except ValueError:
+    pass
 
 # held scope never merges on the timeout
 r = v(comments=[handoff(at="2026-10-16T08:00:00Z")])
@@ -298,6 +335,8 @@ caller = (HERE.parent / ".github" / "workflows" / "merge-lane.yml").read_text()
 check("a dispatch runs only the default branch's caller (it holds INTEGRATION_TOKEN)",
       "if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch"
       in caller)
+check("the lane and its caller can read commit statuses (private repos 403 without it)",
+      "statuses: read" in code and "statuses: read" in caller)
 
 if errors:
     print("FAIL:\n  " + "\n  ".join(errors))

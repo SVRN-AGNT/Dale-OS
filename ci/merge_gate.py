@@ -25,7 +25,8 @@ also closes the late-finding hole: Codex may post an inline finding after the
 CLEAR, which wakes no workflow, and a merge that only read the old CLEAR would
 let it through. The PM's `PM REVIEW — CLEAR` comment and `PM Review` check are
 not trusted alone: any workflow on a PR branch can post as github-actions.
-Codex's comments can only come from Codex's GitHub app.
+Codex's comments can only be created by Codex's GitHub app, but write access can edit any comment, so a Codex
+comment last edited by anyone else blocks the PR.
 
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
@@ -89,7 +90,7 @@ def newest(runs, name: str):
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
-            identify=None, required=(), workflow_runs=()) -> dict:
+            identify=None, required=(), workflow_runs=(), foreign_edits=()) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
@@ -97,7 +98,9 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     GitHub's own workflow-run records, which no check a PR's workflow posts can stand in for) must have passed
     (Codex P1s on #41: a HANDOFF can clear before CI starts; a check is only a name a workflow can post).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
-    the check came from the default branch's agent-review.yml. Without it, no Agent Review counts."""
+    the check came from the default branch's agent-review.yml. Without it, no Agent Review counts.
+    `foreign_edits` lists Codex comments someone other than Codex last edited: write access can edit any comment and
+    the author stays Codex, so any such edit blocks (it could have erased a finding)."""
     now = now or dt.datetime.now(dt.timezone.utc)
     head = str(head or "").lower()
     out = {"pr": pr.get("number"), "head": head, "held": bool(held), "handoff": False,
@@ -124,6 +127,9 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     out["handoff"] = bool(handoffs)
     ruled = pm.latest_ruling(pr_comments, head)
     out["pm"] = ruled[1] if ruled else None
+    if handoffs and foreign_edits:
+        return done("block", "a Codex comment was last edited by someone other than Codex (" +
+                    ", ".join(sorted(set(foreign_edits))[:5]) + "), so Codex's evidence on this PR cannot be trusted")
     if not handoffs:
         # No second-vendor review was asked for on this head. Held scope cannot merge without one;
         # a non-held PR is outside this gate (its own merge rule applies).
@@ -141,6 +147,11 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     if out["pm"] not in (None, "CLEAR"):
         return done("block", f"the PM's standing ruling on {head[:8]} is {out['pm']}")
 
+    if live_v is None and pm.codex_review_for(pr_comments, head):
+        # Codex finished reviewing this head but no ruling can be read from it (a finding in a form the PM cannot
+        # parse, or one that was deleted). The timeout is for "no review arrived", never for this.
+        return done("wait", f"Codex finished reviewing {head[:8]} but no ruling can be read from it; "
+                            "the review timeout does not apply")
     if live_v != "CLEAR" or out["pm"] != "CLEAR":
         if held:
             return done("wait", f"waiting on the PM's CLEAR for {head[:8]} (held scope never merges on a timeout)")
@@ -228,15 +239,16 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
     head = (head or pr["head"]["sha"]).lower()
     paths = _paths(n)
     # /pulls/N/files stops at 3000 files: a PR it cannot list in full is treated as held (fails closed).
-    held = held_flag if held_flag is not None else (bool(pm.held_scope(paths, held_rx))
-                                                     or len(set(paths)) < int(pr.get("changed_files") or 0))
+    # A caller's --held can only raise the bar: the gate's own held-path test always applies too.
+    held = (bool(held_flag) or bool(pm.held_scope(paths, held_rx))
+            or len(set(paths)) < int(pr.get("changed_files") or 0))
     return verdict(pr=pr, head=head, held=held, pr_comments=pm._paginate(f"/issues/{n}/comments"),
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
                    failed=pm.head_failed_checks(pr, head), identify=_identify(pr),
                    required=required_workflows(),
-                   workflow_runs=_workflow_runs(head)) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
+                   workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n)) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
                                                                                       "mergeable": pr.get("mergeable")}
 
 
@@ -248,6 +260,56 @@ def _workflow_runs(head: str) -> list[dict]:
         if len(batch) < 100:
             return out
         page += 1
+
+
+CODEX_LOGIN = pm.CODEX_BOT.removesuffix("[bot]")  # GraphQL names an app actor without the [bot] suffix
+_EDITS_QUERY = """query($owner: String!, $name: String!, $n: Int!, $after: String) {
+  repository(owner: $owner, name: $name) { pullRequest(number: $n) {
+    comments(first: 100) { pageInfo { hasNextPage } nodes { databaseId author { login } editor { login } } }
+    reviews(first: 50, after: $after) { pageInfo { hasNextPage endCursor } nodes {
+      databaseId author { login } editor { login }
+      comments(first: 100) { pageInfo { hasNextPage } nodes { databaseId author { login } editor { login } } } } } } } }"""
+
+
+def foreign_edits_in(pull: dict) -> list[str]:
+    """Codex-authored comments, reviews and review comments whose last editor is not Codex. Raises ValueError when a
+    connection has more pages than were read, so an unread page never passes as unedited (fails closed)."""
+    out = []
+
+    def scan(conn: dict, kind: str):
+        if (conn.get("pageInfo") or {}).get("hasNextPage"):
+            raise ValueError(f"more {kind} than one page; Codex's edits cannot all be read")
+        for node in conn.get("nodes") or []:
+            check(node, kind)
+
+    def check(node: dict, kind: str):
+        # Codex's own edits (its summary goes from running to completed) carry its own login as the editor.
+        author, editor = (node.get("author") or {}).get("login"), (node.get("editor") or {}).get("login")
+        if author in (CODEX_LOGIN, pm.CODEX_BOT) and editor and editor != author:
+            out.append(f"{kind} {node.get('databaseId')} by {editor}")
+
+    scan(pull.get("comments") or {}, "comment")
+    reviews = pull.get("reviews") or {}
+    for review in reviews.get("nodes") or []:
+        check(review, "review")
+        scan(review.get("comments") or {}, "review comment")
+    return out
+
+
+def _foreign_edits(n: int) -> list[str]:
+    owner, name = os.environ["GITHUB_REPOSITORY"].split("/", 1)
+    out, after = [], None
+    while True:
+        data = pm._api("POST", "https://api.github.com/graphql", {"query": _EDITS_QUERY, "variables": {
+            "owner": owner, "name": name, "n": n, "after": after}}) or {}
+        if data.get("errors") or not data.get("data"):
+            raise ValueError(f"GraphQL read of #{n} failed: {str(data.get('errors'))[:200]}")
+        pull = data["data"]["repository"]["pullRequest"]
+        out += foreign_edits_in(pull)
+        page = pull["reviews"]["pageInfo"]
+        if not page.get("hasNextPage"):
+            return out
+        after = page["endCursor"]
 
 
 def required_workflows() -> list[str]:
