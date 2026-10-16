@@ -14,6 +14,10 @@ on:
         description: Id of an existing HANDOFF comment to review
         type: string
         required: true
+      pr:
+        description: The PR that comment is on (keys the same per-PR lock as comment events)
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -25,11 +29,12 @@ jobs:
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
       || (github.event.action == 'created' && startsWith(github.event.comment.body, 'HANDOFF:'))
-      || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, '"status":"completed"'))
-    # One run at a time per PR, so a HANDOFF and Codex finishing never post two rulings. Job-level, so the
-    # PR's other comments (skipped by the `if`) never take the queue's one pending slot. Each run re-reads the PR.
+      || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, 'codex-review-state:v1'))
+    # One run at a time per PR (comment events and dispatches share the key), so a HANDOFF and Codex
+    # finishing never post two rulings. Job-level, so the PR's other comments (skipped by the `if`) never
+    # take the queue's one pending slot. Each run re-reads the PR; the resolver decides whether Codex finished.
     concurrency:
-      group: pm-review-${{ github.event.issue.number || inputs.comment_id }}
+      group: pm-review-${{ github.event.issue.number || inputs.pr }}
       cancel-in-progress: false
     permissions:
       contents: read
@@ -40,8 +45,9 @@ jobs:
     with:
       ref: ${{ github.sha }}
       comment_id: ${{ github.event.comment.id || inputs.comment_id }}
+      expected_pr: ${{ inputs.pr }}
       # CI and the PM's own caller are held: a PR that edits them gets the high bar.
       held_paths: '^(\.github/workflows/|ci/)'
+      # AGENTS.md's `## Review guidelines` tell Codex to take instructions only from that section, and a PR
+      # that edits AGENTS.md is held, so the guidelines Codex applies are always the base branch's.
       provider: chatgpt
-      # AGENTS.md routes its reader to PRINCIPLES.md and the SKILL.md files, so Codex may read them as instructions.
-      instruction_paths: '(^|/)(AGENTS(\.override)?|PRINCIPLES|SKILL)\.md$'

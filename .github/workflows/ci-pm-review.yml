@@ -33,9 +33,9 @@
 #   jobs:
 #     pm:
 #       if: ... || (github.event.action == 'created' && startsWith(github.event.comment.body, 'HANDOFF:'))
-#             || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, '"status":"completed"'))
-#       concurrency: { group: 'pm-review-${{ github.event.issue.number || inputs.comment_id }}', cancel-in-progress: false }
-#       with: { provider: chatgpt, ... }   # and no secrets
+#             || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, 'codex-review-state:v1'))
+#       concurrency: { group: 'pm-review-${{ github.event.issue.number || inputs.pr }}', cancel-in-progress: false }
+#       with: { provider: chatgpt, expected_pr: '${{ inputs.pr }}', ... }   # and no secrets; dispatch takes comment_id and pr
 #
 # It reviews; it never approves, merges, marks ready or deploys.
 name: ci-pm-review
@@ -75,6 +75,10 @@ on:
         description: Codex reasoning effort
         type: string
         default: high
+      expected_pr:
+        description: "Dispatch only: the PR the caller locked on; a comment on any other PR is refused"
+        type: string
+        default: ''
       instruction_paths:
         description: "chatgpt only: regex of paths Codex reads as review instructions (default: any AGENTS.md); a PR editing one gets HOLD"
         type: string
@@ -144,6 +148,7 @@ jobs:
           PROVIDER: ${{ inputs.provider }}
           CONTRACT_PATH: ${{ inputs.contract_path }}
           INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
+          EXPECTED_PR: ${{ inputs.expected_pr }}
         run: python3 shared/ci/pm_review.py resolve
 
       - name: Check provider credential

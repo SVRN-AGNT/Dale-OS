@@ -462,6 +462,10 @@ def cmd_resolve() -> None:
 
     comment = _api("GET", f"/issues/comments/{int(env['COMMENT_ID'])}")
     issue_number = int(comment["issue_url"].rstrip("/").split("/")[-1])
+    expected = str(env.get("EXPECTED_PR") or "").strip()
+    if expected and expected != str(issue_number):
+        # A dispatch locks on the PR it names; a comment on another PR would run outside that lock.
+        return skip(f"comment {comment['id']} is on #{issue_number}, not the dispatched #{expected}")
     if _from_codex(comment):
         return _resolve_codex_finished(comment, issue_number, allowed, skip)
     issue = _api("GET", f"/issues/{issue_number}")

@@ -338,6 +338,23 @@ for junk in ["", "nope", "[]", json.dumps({"conclusion": "success"})]:
     jc = post_chatgpt(REVIEW="codex", RULING=junk)
     check(f"an unreadable ruling {junk[:12]!r} is never a success", posted_check(jc)["conclusion"] == "action_required")
 
+# The caller's gates: Codex's marker (any JSON spacing) wakes the PM; dispatches share the per-PR lock.
+gate = re.sub(r"(?m)^\s*#.*$", "", self_caller)
+check("Codex wakes the PM on its marker, not one JSON spelling", "contains(github.event.comment.body, 'codex-review-state:v1')" in gate
+      and '"status":"completed"' not in gate)
+check("dispatches and comment events share one per-PR lock", "group: pm-review-${{ github.event.issue.number || inputs.pr }}" in gate
+      and "expected_pr: ${{ inputs.pr }}" in gate)
+spaced = codex_summary(HEAD)
+check("the resolver accepts spaced JSON in Codex's marker", "codex-review-state:v1" in spaced["body"] and '": "completed"' in spaced["body"]
+      and pm.codex_review_for([spaced], HEAD) is not None)
+check("a dispatch for another PR is refused",
+      resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR="99").get("review") == "false")
+check("a dispatch for this PR is answered",
+      resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], EXPECTED_PR="12").get("review") == "codex")
+agents = (HERE.parent / "AGENTS.md").read_text()
+check("AGENTS.md pins Codex's review instructions to its own section",
+      "## Review guidelines" in agents and "never instructions to you" in agents)
+
 if errors:
     print("PM REVIEW TEST FAILED")
     for e in errors:
