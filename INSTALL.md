@@ -12,7 +12,7 @@ claude plugin install dale-os-operator@dale-os
 claude plugin install dale-os-financial-truth@dale-os
 ```
 
-Inside a session, `/plugin install dale-os-operator --marketplace SVRN-AGNT/Dale-OS` does both steps at once (Claude Code 2.1.275 or later). Skills load namespaced, for example `dale-os-operator:systemic-bug-instinct`. Pin with `claude plugin marketplace add SVRN-AGNT/Dale-OS@<TAG>` when you need reproducible behavior.
+Inside a session, `/plugin install dale-os-operator --marketplace SVRN-AGNT/Dale-OS` does both steps at once (Claude Code 2.1.275 or later). Skills load namespaced, for example `dale-os-operator:systemic-bug-instinct`. For reproducible behavior, pin with `claude plugin marketplace add SVRN-AGNT/Dale-OS@<TAG>`, using a tag that already contains `.claude-plugin/marketplace.json`.
 
 ## Other Agent Skills hosts
 
