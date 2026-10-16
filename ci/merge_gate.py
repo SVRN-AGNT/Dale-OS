@@ -91,7 +91,7 @@ def newest(runs, name: str):
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
-            identify=None, required=(), workflow_runs=(), foreign_edits=()) -> dict:
+            identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
@@ -113,6 +113,9 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
         out["reasons"].append(why)
         return out
 
+    if not complete:
+        return done("block", "GitHub lists only part of this PR's files, so held paths and review-instruction edits "
+                             "cannot be checked; split the PR")
     if pr.get("state") != "open":
         return done("block", "not open")
     if str((pr.get("head") or {}).get("sha") or "").lower() != head:
@@ -268,11 +271,12 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
     pr = pm._api("GET", f"/pulls/{n}")
     head = (head or pr["head"]["sha"]).lower()
     paths = _paths(n)
-    # /pulls/N/files stops at 3000 files: a PR it cannot list in full is treated as held (fails closed).
+    # /pulls/N/files stops at 3000 files: a PR it cannot list in full cannot be checked for held paths or
+    # review-instruction edits, so it never merges here (Codex P2 on #41).
+    complete = getattr(paths, "records", len(paths)) >= int(pr.get("changed_files") or 0)
     # A caller's --held can only raise the bar: the gate's own held-path test always applies too.
-    held = (bool(held_flag) or bool(pm.held_scope(paths, held_rx))
-            or getattr(paths, "records", len(paths)) < int(pr.get("changed_files") or 0))
-    return verdict(pr=pr, head=head, held=held, pr_comments=pm._paginate(f"/issues/{n}/comments"),
+    held = bool(held_flag) or bool(pm.held_scope(paths, held_rx)) or not complete
+    return verdict(pr=pr, head=head, held=held, complete=complete, pr_comments=pm._paginate(f"/issues/{n}/comments"),
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,

@@ -175,6 +175,11 @@ check("so does a re-run attempt of the same run",
       v(checks=[genuine("failure", stamp="run:900:1"), dict(forged, external_id="run:900:2"), run("ci", rid=2)],
         failed=[])["allow"])
 
+check("a PR GitHub cannot list in full never merges (Codex P2 on #41)", mg.verdict(
+    pr=PR, head=HEAD, held=True, pr_comments=list(CLEAR_COMMENTS), review_comments=[], check_runs=list(GREEN),
+    paths=["a.py"], allowed=["Tataku"], now=NOW, identify=proven, required=(CI,), workflow_runs=[wfrun()],
+    complete=False)["block"])
+
 # held scope never merges on the timeout
 r = v(comments=[handoff(at="2026-10-16T08:00:00Z")])
 check("held scope waits for a CLEAR even 4 hours after the HANDOFF", r["state"] == "wait" and not r["allow"])
