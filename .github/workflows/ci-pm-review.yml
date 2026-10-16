@@ -24,6 +24,19 @@
 #       secrets:
 #         openai_api_key: ${{ secrets.OPENAI_API_KEY }}
 #
+# provider: chatgpt (no API key) reads Codex's own GitHub review instead, on the
+# owner's ChatGPT plan. The caller then also listens for Codex's summary comment,
+# and each HANDOFF carries `@codex review` on a line of its own:
+#
+#   on:
+#     issue_comment: { types: [created, edited] }
+#   jobs:
+#     pm:
+#       if: ... || (github.event.action == 'created' && startsWith(github.event.comment.body, 'HANDOFF:'))
+#             || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, 'codex-review-state:v1'))
+#       concurrency: { group: 'pm-review-${{ github.event.issue.number || inputs.pr }}', cancel-in-progress: false }
+#       with: { provider: chatgpt, expected_pr: '${{ inputs.pr }}', ... }   # and no secrets; dispatch takes comment_id and pr
+#
 # It reviews; it never approves, merges, marks ready or deploys.
 name: ci-pm-review
 
@@ -62,6 +75,18 @@ on:
         description: Codex reasoning effort
         type: string
         default: high
+      expected_pr:
+        description: "Dispatch only: the PR the caller locked on; a comment on any other PR is refused"
+        type: string
+        default: ''
+      instruction_paths:
+        description: "chatgpt only: regex of paths Codex reads as review instructions (default: any AGENTS.md); a PR editing one gets HOLD"
+        type: string
+        default: ''
+      provider:
+        description: "api: run Codex with an OpenAI API key. chatgpt: read Codex's own GitHub review (ChatGPT plan, no key)"
+        type: string
+        default: api
     secrets:
       openai_api_key:
         required: false
@@ -88,8 +113,11 @@ jobs:
       handoff_id: ${{ steps.resolve.outputs.handoff_id }}
       has_key: ${{ steps.cred.outputs.available }}
       final_message: ${{ steps.codex.outputs.final-message }}
+      ruling: ${{ steps.resolve.outputs.ruling }}
+      resolved_base_sha: ${{ steps.resolve.outputs.base_sha }}
     steps:
       - name: Checkout the caller's merged default branch (never the PR)
+        if: inputs.provider == 'api'
         uses: actions/checkout@v4
         with:
           # Explicit: a hand-dispatched run on a PR branch must still see the merged
@@ -117,17 +145,21 @@ jobs:
           ALLOWED_AUTHORS: ${{ inputs.allowed_authors }}
           CONTROL_ISSUE: ${{ inputs.control_issue }}
           HELD_PATHS: ${{ inputs.held_paths }}
+          PROVIDER: ${{ inputs.provider }}
+          CONTRACT_PATH: ${{ inputs.contract_path }}
+          INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
+          EXPECTED_PR: ${{ inputs.expected_pr }}
         run: python3 shared/ci/pm_review.py resolve
 
       - name: Check provider credential
         id: cred
-        if: steps.resolve.outputs.review == 'true'
+        if: steps.resolve.outputs.review == 'true' && inputs.provider == 'api'
         env:
           HAS_KEY: ${{ secrets.openai_api_key != '' }}
         run: echo "available=${HAS_KEY}" >> "$GITHUB_OUTPUT"
 
       - name: Fetch the PR as objects (no checkout)
-        if: steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        if: inputs.provider == 'api' && steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
         working-directory: caller
         env:
           TOKEN: ${{ github.token }}
@@ -142,7 +174,7 @@ jobs:
 
       - name: Write the PM's inputs
         id: prepare
-        if: steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        if: inputs.provider == 'api' && steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
         env:
           CALLER_DIR: caller
           PR_NUMBER: ${{ steps.resolve.outputs.pr }}
@@ -156,7 +188,7 @@ jobs:
       # nothing may run after the model in a job that holds a token.
       - name: PM ruling (OpenAI Codex, read-only)
         id: codex
-        if: steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        if: inputs.provider == 'api' && steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.openai_api_key }}
@@ -195,7 +227,8 @@ jobs:
           NOTICE: ${{ needs.review.outputs.notice }}
           HAS_KEY: ${{ needs.review.outputs.has_key }}
           HEAD_SHA: ${{ needs.review.outputs.head_sha }}
-          BASE_SHA: ${{ needs.review.outputs.base_sha }}
+          BASE_SHA: ${{ needs.review.outputs.base_sha || needs.review.outputs.resolved_base_sha }}
+          RULING: ${{ needs.review.outputs.ruling }}
           HANDOFF_ID: ${{ needs.review.outputs.handoff_id }}
           FINAL_MESSAGE: ${{ needs.review.outputs.final_message }}
           REVIEW_RESULT: ${{ needs.review.result }}

@@ -18,6 +18,15 @@ Why OpenAI: the PM is the second opinion on Claude's work, so it must be a
 different vendor. Codex runs read-only (no writes, no network) on the PR written
 as files; nothing from the PR is checked out or executed.
 
+Two providers. `api` (the original) runs openai/codex-action, which needs an
+OpenAI API key. `chatgpt` reads Codex's own GitHub code review, which runs on the
+owner's ChatGPT plan with no API key: the HANDOFF carries `@codex review`, Codex
+reviews the PR, and the PM turns Codex's review of the exact head into the ruling
+(no findings -> CLEAR; a blocking-priority finding -> CORRECT). The workflow runs
+again when Codex's summary comment reports the review complete, so a HANDOFF is
+answered whichever arrives first. Codex's review is comments only, so the
+OWNER_GATE judgement the `api` PM makes is not available from it.
+
 Fails closed: anything other than a well-formed ruling is "no ruling", never a
 CLEAR. A CLEAR that lists blocking findings is a CORRECT. A CLEAR that records
 nothing it checked is not counted.
@@ -151,6 +160,149 @@ def prior_ruling(pr_comments, head: str):
 
 
 
+# ---------------------------------------------------------------- provider "chatgpt": Codex's own review
+
+CODEX_BOT = "chatgpt-codex-connector[bot]"  # GitHub enforces app logins: no person or other app can post as it
+CODEX_STATE = re.compile(r"<!-- codex-review-state:v1 (\{.*?\}) -->", re.S)
+CODEX_FINDING = "<!-- codex-code-review-finding:v1 -->"
+CODEX_RECEIPT = "<!-- codex-review-receipt:v1 -->"
+CODEX_CLEAN = re.compile(r"Didn't find any major issues")
+CODEX_REVIEWED = re.compile(r"\*\*Reviewed commit:\*\* `([0-9a-f]{7,40})`")
+CODEX_PRIORITY = re.compile(r"!\[(P[0-9]) Badge\]")
+CODEX_ASK = re.compile(r"(?m)^@codex review\s*$")
+# Codex reads AGENTS.md as its review instructions, and from the PR it reviews, so a PR that
+# edits one could steer its own reviewer. Such a PR gets no ruling from Codex. A repository whose
+# AGENTS.md routes the reader to more files names them too (input `instruction_paths`).
+REVIEWER_INSTRUCTIONS = r"(^|/)AGENTS(\.override)?\.md$"
+# A completed check that failed on the head: no CLEAR while one stands (the PM's own check excepted).
+FAILED_CHECK = ("failure", "timed_out", "cancelled", "startup_failure", "action_required")
+PM_CHECK = "PM Review"
+
+
+def _from_codex(c: dict) -> bool:
+    u = c.get("user") or {}
+    return u.get("login") == CODEX_BOT and u.get("type", "Bot") == "Bot"
+
+
+def codex_state(c: dict):
+    """The code-review state in a comment Codex wrote, or None. Any other author's copy of the marker is ignored."""
+    if not _from_codex(c):
+        return None
+    m = CODEX_STATE.search(c.get("body") or "")
+    if not m:
+        return None
+    try:
+        state = json.loads(m.group(1)).get("code_review")
+    except (ValueError, AttributeError):
+        return None
+    return state if isinstance(state, dict) else None
+
+
+def codex_review_for(pr_comments, head: str):
+    """Codex's completed code review of exactly this head, or None (not run, still running, or of another commit)."""
+    for c in reversed(list(pr_comments)):
+        st = codex_state(c)
+        if st and str(st.get("commit_sha") or "").lower() == str(head).lower() and st.get("status") == "completed":
+            return st
+    return None
+
+
+def codex_clean_receipt(pr_comments, head: str) -> bool:
+    """Codex's own "no major issues" receipt names this head. has_any_findings is PR-wide and stays true after
+    earlier heads' findings are fixed, so this receipt is what shows that this head itself came back clean."""
+    for c in pr_comments:
+        body = c.get("body") or ""
+        if not _from_codex(c) or CODEX_RECEIPT not in body or not CODEX_CLEAN.search(body):
+            continue
+        m = CODEX_REVIEWED.search(body)
+        if m and str(head).lower().startswith(m.group(1).lower()):
+            return True
+    return False
+
+
+def codex_findings(review_comments, head: str) -> list[dict]:
+    """Codex's inline findings made on this head. A finding with no readable priority counts as P0."""
+    out = []
+    for c in review_comments:
+        body = c.get("body") or ""
+        if not _from_codex(c) or CODEX_FINDING not in body:
+            continue
+        if str(c.get("original_commit_id") or c.get("commit_id") or "").lower() != str(head).lower():
+            continue
+        m = CODEX_PRIORITY.search(body)
+        title = re.search(r"\*\*([^*\n]{1,200})\*\*\s*$", body.split("\n", 1)[0])
+        out.append({"priority": m.group(1) if m else "P0", "title": title.group(1).strip() if title else "(untitled finding)",
+                    "file": c.get("path") or "?", "line": c.get("line") or c.get("original_line"),
+                    "url": c.get("html_url") or ""})
+    return out
+
+
+def reviewer_instruction_edits(paths, pattern: str = "") -> list[str]:
+    """Files Codex reads as review instructions. A caller's pattern adds to AGENTS.md, never replaces it."""
+    rxs = [re.compile(REVIEWER_INSTRUCTIONS, re.I)] + ([re.compile(pattern, re.I)] if pattern else [])
+    return [p for p in paths if any(rx.search(p) for rx in rxs)]
+
+
+def failed_checks(check_runs) -> list[str]:
+    """Checks with any run on the head that failed, was cancelled or was not reviewed. No run is set aside for a
+    newer one: neither a name nor an app proves two runs are the same check, so a stray cancel is fixed at its source."""
+    return sorted({r.get("name") or "?" for r in check_runs
+                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK})
+
+
+def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
+    """Turn Codex's review of the head into a ruling, failing closed. state is codex_review_for's answer."""
+    at = str(head_sha)[:8]
+
+    def none(why: str) -> dict:
+        return {"ruled": False, "verdict": None, "conclusion": "action_required", "title": f"No PM ruling on {at}",
+                "body": f"{why}\n\nThis is not a ruling and not a CLEAR. Any review timeout keeps running from the HANDOFF."}
+
+    def where(f: dict) -> str:
+        loc = f"{f['file']}" + (f":{f['line']}" if isinstance(f.get("line"), int) else "")
+        return f"- **{f['priority']}** [{loc}]({f['url']}) {f['title']}" if f.get("url") else f"- **{f['priority']}** {loc} {f['title']}"
+
+    if instruction_edits:
+        return {"ruled": True, "verdict": "HOLD", "conclusion": CONCLUSION["HOLD"], "title": f"PM HOLD on {at}",
+                "body": "\n".join([
+                    "This PR edits a file Codex reads as its review instructions, so Codex's review of it is not independent.",
+                    "", "### Required actions",
+                    *[f"- Move the change to `{p}` into its own PR, or have a person review this one." for p in instruction_edits[:10]]])}
+    if not state and not findings and not failed:
+        return none("Codex has not finished a review of this head.")
+    # Readable blocking evidence rules first: no flag in Codex's summary may turn a finding or a failed check
+    # into "no ruling", which the review timeout would let through. Priority is Codex's urgency, not whether a
+    # finding is wrong code, so every finding withholds a CLEAR until it is fixed on a new head.
+    any_findings = (state or {}).get("has_any_findings")
+    if not findings and not failed:
+        if any_findings is True and not clean_receipt:
+            return none("Codex reports findings on this PR, but the PM found none on this head and no clean receipt for it yet.")
+        if any_findings is not True and any_findings is not False:
+            return none(f"Codex's review state is unreadable (has_any_findings={json.dumps(any_findings)}).")
+    verdict = "CORRECT" if findings or failed else "CLEAR"
+
+    lines = [f"Codex code review of this exact head: {len(findings)} finding(s)." +
+             (f" Failed checks on the head: {', '.join(failed)}." if failed else ""), ""]
+    if findings:
+        lines += ["### Blocking", *[where(f) for f in findings], ""]
+    if failed:
+        lines += ["### Failed checks", *[f"- {n}" for n in failed], ""]
+    if verdict == "CORRECT":
+        lines += ["### Required actions", "- Fix each finding and failed check, push, and post a new HANDOFF for the new head. "
+                  "A finding you believe is wrong: answer it on its thread and ask the owner to waive it for this PR.", ""]
+    lines += ["### Independently verified", f"- Codex (OpenAI, on the ChatGPT plan) completed a code review of `{head_sha}`.",
+              "- The review state and findings were read from comments only Codex's GitHub app can write."]
+    return {"ruled": True, "verdict": verdict, "conclusion": CONCLUSION[verdict], "title": f"PM {verdict} on {at}",
+            "body": "\n".join(lines).strip()}
+
+
+def waiting_on(handoff_body) -> str:
+    if CODEX_ASK.search(str(handoff_body or "")):
+        return "Waiting on Codex's review of this head. The PM rules when Codex finishes."
+    return ("This HANDOFF does not ask Codex to review (`@codex review` on a line of its own), so no review is coming. "
+            "Post a new HANDOFF for this head that includes it.")
+
+
 def fence(s) -> str:
     return str(s or "").replace("```", "`​``")
 
@@ -264,7 +416,9 @@ def interpret(final_message, head_sha: str = "") -> dict:
             "body": "\n".join(lines).strip()}
 
 
-def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url) -> str:
+def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, provider: str = "api") -> str:
+    by = ("Codex's code review on the ChatGPT plan, read by the shared Dale-OS PM workflow" if provider == "chatgpt"
+          else "Independent PM review by OpenAI Codex, run by the shared Dale-OS PM workflow")
     label = "OWNER GATE" if ruling["verdict"] == "OWNER_GATE" else ruling["verdict"]
     return "\n".join([
         f"PM REVIEW — {label}",
@@ -275,7 +429,7 @@ def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url) ->
         ruling["body"],
         "",
         "---",
-        f"_Independent PM review by OpenAI Codex, run by the shared Dale-OS PM workflow ([run]({run_url})). "
+        f"_{by} ([run]({run_url})). "
         "It covers this head only; any push revokes it. The `PM Review` check on the head carries the same ruling._",
     ])
 
@@ -329,6 +483,12 @@ def cmd_resolve() -> None:
 
     comment = _api("GET", f"/issues/comments/{int(env['COMMENT_ID'])}")
     issue_number = int(comment["issue_url"].rstrip("/").split("/")[-1])
+    expected = str(env.get("EXPECTED_PR") or "")
+    if expected and (not re.fullmatch(r"[1-9][0-9]*", expected) or expected != str(issue_number)):
+        # A dispatch locks on the PR it names; a comment on another PR would run outside that lock.
+        return skip(f"comment {comment['id']} is on #{issue_number}, not the dispatched #{expected}")
+    if _from_codex(comment):
+        return _resolve_codex_finished(comment, issue_number, allowed, skip)
     issue = _api("GET", f"/issues/{issue_number}")
     c = classify(comment, issue_number, bool(issue.get("pull_request")), allowed, control)
     if not c["review"]:
@@ -362,6 +522,11 @@ def cmd_resolve() -> None:
         paths.append(f["filename"])
         if f.get("previous_filename"):
             paths.append(f["previous_filename"])
+    if env.get("PROVIDER", "api") == "chatgpt":
+        if issue_number != pr_n:
+            return skip("a mirror cannot ask Codex", "Codex reviews only when asked on the PR itself. "
+                        "Post this HANDOFF, with `@codex review`, on the PR.", pr_n)
+        return _codex_outputs(pr, head, comment["id"], comment["body"], pr_comments, paths)
     checks = _paginate(f"/commits/{head}/check-runs")
     state = {
         "number": pr["number"], "title": pr["title"], "author": pr["user"]["login"], "draft": pr["draft"],
@@ -384,6 +549,73 @@ def cmd_resolve() -> None:
     (tmp / "pm-files.json").write_text(json.dumps(paths))
     _outputs(review="true", pr=pr_n, head_sha=head, base_ref=pr["base"]["ref"], handoff_id=comment["id"],
              held=held_scope(paths, env.get("HELD_PATHS", "")))
+
+
+def _changed_paths(pr_n: int) -> list[str]:
+    paths = []
+    for f in _paginate(f"/pulls/{pr_n}/files"):
+        paths.append(f["filename"])
+        if f.get("previous_filename"):
+            paths.append(f["previous_filename"])
+    return paths
+
+
+def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, paths) -> None:
+    """Rule from Codex's review of the head if it has finished; otherwise say the PM is waiting on it."""
+    env = os.environ
+    pr_n = pr["number"]
+    if env.get("CONTRACT_PATH") or int(env.get("CONTROL_ISSUE") or 0):
+        # The `api` PM applies a contract file or control-issue body; Codex's review cannot read either.
+        ruling = {"ruled": False, "verdict": None, "conclusion": "action_required", "title": f"No PM ruling on {head[:8]}",
+                  "body": "This repository configures a PM contract (`contract_path` or `control_issue`), which Codex's review "
+                          "cannot apply. Move the contract into the `## Review guidelines` section of AGENTS.md on the default "
+                          "branch, which Codex does apply, and drop the input. This is not a ruling and not a CLEAR."}
+        _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling), base_sha=pr["base"]["sha"])
+        return
+    state = codex_review_for(pr_comments, head)
+    edits = reviewer_instruction_edits(paths, env.get("INSTRUCTION_PATHS", ""))
+    # Readable blocking evidence is read before any completion guard: a finding Codex posted on the head, or a
+    # failed check, is CORRECT even if Codex never marks its review completed.
+    findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head)
+    failed = failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all"))  # default "latest" hides older runs
+    if not state and not edits and not findings and not failed:
+        print(f"::notice::Waiting on Codex's review of {head[:8]}")
+        _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),
+                 base_sha=pr["base"]["sha"])
+        return
+    clean = codex_clean_receipt(pr_comments, head)
+    if state and not edits and not findings and not failed and state.get("has_any_findings") is True and not clean:
+        # Codex can finish its summary before its receipt for the head is visible; the receipt's own event rules.
+        print(f"::notice::Waiting on Codex's receipt for {head[:8]}")
+        _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),
+                 base_sha=pr["base"]["sha"])
+        return
+    ruling = codex_ruling(state, findings, head, edits, failed, clean)
+    print(f"::notice::{ruling['title']}")
+    _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling),
+             base_sha=pr["base"]["sha"])
+
+
+def _resolve_codex_finished(comment: dict, issue_number: int, allowed, skip) -> None:
+    """Codex's summary or receipt comment changed: if Codex finished reviewing the live head of a PR with a HANDOFF
+    waiting, rule. Completion is re-read from the PR's comments, so either comment arriving last can rule."""
+    env = os.environ
+    if env.get("PROVIDER", "api") != "chatgpt":
+        return skip("this repository's PM does not read Codex's review")
+    if not codex_state(comment) and CODEX_RECEIPT not in (comment.get("body") or ""):
+        return skip("not Codex's review summary or receipt")
+    pr = _api("GET", f"/pulls/{issue_number}")
+    if pr["state"] != "open" or not pr["head"].get("repo") or pr["head"]["repo"]["full_name"] != env["GITHUB_REPOSITORY"]:
+        return skip(f"#{issue_number} is not an open same-repository PR")
+    head = pr["head"]["sha"].lower()
+    pr_comments = _paginate(f"/issues/{issue_number}/comments")
+    if prior_ruling(pr_comments, head):
+        return skip(f"already ruled on {head[:8]}")
+    waiting = [c for c in pr_comments
+               if classify(c, issue_number, True, allowed)["review"] and named_head(c.get("body"), head)]
+    if not waiting:
+        return skip(f"no HANDOFF names {head[:8]}")
+    _codex_outputs(pr, head, waiting[-1]["id"], waiting[-1]["body"], pr_comments, _changed_paths(issue_number))
 
 
 def _git(args: list[str], cwd: Path) -> bytes:
@@ -440,6 +672,28 @@ def cmd_post() -> None:
     def say(body: str) -> None:
         _api("POST", f"/issues/{pr}/comments", {"body": body})
 
+    if env.get("REVIEW") in ("waiting", "codex") and prior_ruling(_paginate(f"/issues/{pr}/comments"), env["HEAD_SHA"]):
+        # Another run ruled on this head while this one was resolving: posting now would duplicate it or
+        # leave a stale "waiting" check over the ruling.
+        print(f"already ruled on {env['HEAD_SHA'][:8]}; nothing posted")
+        return
+    if env.get("REVIEW") == "waiting":
+        _api("POST", "/check-runs", {
+            "name": "PM Review", "head_sha": env["HEAD_SHA"], "status": "in_progress",
+            "external_id": f"handoff:{env.get('HANDOFF_ID', '')}", "details_url": run_url,
+            "output": {"title": f"Waiting on Codex for {env['HEAD_SHA'][:8]}", "summary": env.get("NOTICE", "")[:60000]},
+        })
+        if "no review is coming" in env.get("NOTICE", ""):
+            say(f"**PM:** {env['NOTICE']}\n\n_[run]({run_url})_")
+        return
+    if env.get("REVIEW") == "codex":
+        try:
+            ruling = json.loads(env.get("RULING") or "")
+            assert isinstance(ruling, dict) and ruling.get("conclusion") and ruling.get("title")
+        except (ValueError, AssertionError):
+            ruling = {"ruled": False, "conclusion": "action_required", "title": f"No PM ruling on {env['HEAD_SHA'][:8]}",
+                      "body": "The PM could not read its own ruling. This is not a CLEAR."}
+        return _post_ruling(ruling, pr, env["HEAD_SHA"], env.get("BASE_SHA", ""), env.get("HANDOFF_ID", ""), run_url, "chatgpt")
     if env.get("REVIEW") != "true":
         if env.get("NOTICE"):
             say(f"**PM:** {env['NOTICE']}\n\n_[run]({run_url})_")
@@ -455,15 +709,20 @@ def cmd_post() -> None:
         ruling = {"ruled": False, "conclusion": "action_required", "title": f"No PM ruling on {head[:8]}",
                   "body": f"The PM run ended ({env.get('REVIEW_RESULT')}) without a ruling. This is not a CLEAR. "
                           f"Re-run the PM workflow with comment_id {handoff}."}
+    _post_ruling(ruling, pr, head, env.get("BASE_SHA", ""), handoff, run_url)
+
+
+def _post_ruling(ruling: dict, pr: int, head: str, base: str, handoff, run_url: str, provider: str = "api") -> None:
     _api("POST", "/check-runs", {
         "name": "PM Review", "head_sha": head, "status": "completed", "conclusion": ruling["conclusion"],
         "external_id": f"handoff:{handoff}", "details_url": run_url,
         "output": {"title": ruling["title"], "summary": str(ruling["body"])[:60000]},
     })
-    if ruling["ruled"]:
-        say(ruling_comment(ruling, pr, head, env.get("BASE_SHA", ""), handoff, run_url))
+    if ruling.get("ruled"):
+        body = ruling_comment(ruling, pr, head, base, handoff, run_url, provider)
     else:
-        say(f"**PM: {ruling['title']}.** {ruling['body']}\n\n_HANDOFF {handoff} · [run]({run_url})_")
+        body = f"**PM: {ruling['title']}.** {ruling['body']}\n\n_HANDOFF {handoff} · [run]({run_url})_"
+    _api("POST", f"/issues/{pr}/comments", {"body": body})
     print(f"{ruling.get('verdict') or 'no ruling'}: {ruling['title']}")
 
 

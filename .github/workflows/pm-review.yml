@@ -1,30 +1,41 @@
-# Second-vendor PM on this repository's own PRs: every Claude `HANDOFF:` gets an
-# OpenAI review with no person relaying it. Uses the local copy of the shared
-# workflow, so the ref is this commit. Other repositories pin a Dale-OS sha.
+# Second-vendor PM on this repository's own PRs: every Claude `HANDOFF:` gets a
+# ruling from Codex's own GitHub review (ChatGPT plan, no API key), with no
+# person relaying it. The HANDOFF asks Codex (`@codex review`); the PM rules when
+# Codex's summary comment says it finished that head. Uses the local copy of the
+# shared workflow, so the ref is this commit. Other repositories pin a Dale-OS sha.
 name: pm-review
 
 on:
   issue_comment:
-    types: [created]
+    types: [created, edited]
   workflow_dispatch:
     inputs:
       comment_id:
         description: Id of an existing HANDOFF comment to review
         type: string
         required: true
+      pr:
+        description: The PR that comment is on (keys the same per-PR lock as comment events)
+        type: string
+        required: true
 
 permissions:
   contents: read
 
-# One run per HANDOFF comment: a redelivered event never bills a second review.
-concurrency:
-  group: pm-review-${{ github.event.comment.id || inputs.comment_id }}
-  cancel-in-progress: false
-
 jobs:
   pm:
     # A dispatch on any other branch would run that branch's copy of the reviewer.
-    if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
+    # Codex's summary comment wakes the PM when a review finishes; GitHub alone can post as that app.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
+      || (github.event.action == 'created' && startsWith(github.event.comment.body, 'HANDOFF:'))
+      || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && (contains(github.event.comment.body, 'codex-review-state:v1') || contains(github.event.comment.body, 'codex-review-receipt:v1')))
+    # One run at a time per PR (comment events and dispatches share the key), so a HANDOFF and Codex
+    # finishing never post two rulings. Job-level, so the PR's other comments (skipped by the `if`) never
+    # take the queue's one pending slot. Each run re-reads the PR; the resolver decides whether Codex finished.
+    concurrency:
+      group: pm-review-${{ github.event.issue.number || inputs.pr }}
+      cancel-in-progress: false
     permissions:
       contents: read
       issues: write
@@ -34,7 +45,9 @@ jobs:
     with:
       ref: ${{ github.sha }}
       comment_id: ${{ github.event.comment.id || inputs.comment_id }}
+      expected_pr: ${{ inputs.pr }}
       # CI and the PM's own caller are held: a PR that edits them gets the high bar.
       held_paths: '^(\.github/workflows/|ci/)'
-    secrets:
-      openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+      # AGENTS.md's `## Review guidelines` tell Codex to take instructions only from that section, and a PR
+      # that edits AGENTS.md is held, so the guidelines Codex applies are always the base branch's.
+      provider: chatgpt
