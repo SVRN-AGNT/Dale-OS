@@ -281,11 +281,14 @@ chat = pm.ruling_comment(pm.codex_ruling(st, [], HEAD), 12, HEAD, OTHER, 99, "ht
 check("a Codex ruling keeps the header the dedupe reads", pm.RULING_HEADER.match(chat).group(2) == HEAD and "ChatGPT plan" in chat)
 
 
-def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD, checks=(), **extra_env) -> dict:
+def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD, checks=(),
+                    workflow_runs=None, **extra_env) -> dict:
     pr_n = 12
     api = {f"/issues/comments/{comment['id']}": comment, f"/issues/{pr_n}": {"pull_request": {"url": "u"}},
            f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
-                              "head": {"sha": live_head, "repo": {"full_name": "o/r"}}, "base": {"ref": "main", "sha": OTHER}}}
+                              "head": {"sha": live_head, "repo": {"full_name": "o/r"}},
+                              "base": {"ref": "main", "sha": OTHER, "repo": {"default_branch": "main"}}}}
+    api.update(workflow_runs or {})
     pages = {f"/issues/{pr_n}/comments": list(pr_comments), f"/pulls/{pr_n}/files": list(files),
              f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs?filter=all": list(checks)}
     saved = (pm._api, pm._paginate, dict(os.environ))
@@ -457,6 +460,89 @@ check("a failed check with no Codex review yet is CORRECT, not waiting", json.lo
 check("no completed review and no blocking evidence still waits, never CLEAR",
       resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD, status="running"), ask]).get("review") == "waiting")
 check("no completed review and no findings is never a CLEAR", not pm.codex_ruling(None, [], HEAD)["ruled"])
+
+# ---------------------------------------------------------------- a newer run of the same check
+os.environ["GITHUB_REPOSITORY"] = "o/r"
+GA = {"slug": "github-actions"}
+PRT = {"event": "pull_request_target", "path": ".github/workflows/agent-review.yml", "head_branch": "feature",
+       "pull_requests": [{"base": {"ref": "main"}}], "status": "completed",
+       "run_started_at": "2026-10-16T10:00:00Z", "updated_at": "2026-10-16T10:05:00Z"}
+WFD = dict(PRT, event="workflow_dispatch", head_branch="main", pull_requests=[],
+           run_started_at="2026-10-16T11:00:00Z", updated_at="2026-10-16T11:05:00Z")
+RUNS = {"/actions/runs/1/attempts/1": dict(PRT, id=1), "/actions/runs/2/attempts/1": dict(WFD, id=2),
+        "/actions/runs/3/attempts/1": dict(WFD, id=3, head_branch="feature"),
+        "/actions/runs/4/attempts/1": dict(PRT, id=4, event="pull_request", path=".github/workflows/agent-review.yml"),
+        "/actions/runs/5": dict(PRT, id=5, event="pull_request", path=".github/workflows/ci.yml"),
+        "/actions/runs/6": dict(PRT, id=6, event="pull_request", path=".github/workflows/ci.yml"),
+        "/actions/runs/7/attempts/1": dict(WFD, id=7, path=".github/workflows/other.yml")}
+
+
+def ar(i, conclusion, started, stamp, **over):
+    r = {"id": i, "app": GA, "name": "Agent Review", "status": "completed", "conclusion": conclusion,
+         "started_at": started, "external_id": stamp, "details_url": f"https://github.com/o/r/runs/{i}"}
+    r.update(over)
+    return r
+
+
+def job(i, conclusion, started, run, **over):
+    r = {"id": i, "app": GA, "name": "Tests", "status": "completed", "conclusion": conclusion, "started_at": started,
+         "external_id": "uuid", "details_url": f"https://github.com/o/r/actions/runs/{run}/job/{i}"}
+    r.update(over)
+    return r
+
+
+def fetch(path):
+    return RUNS[path]
+
+
+ident = lambda r: pm.check_identity(r, "main", fetch)  # noqa: E731
+FAIL = ar(10, "failure", "2026-10-16T10:01:00Z", "run:1:1")
+PASS = ar(11, "success", "2026-10-16T11:01:00Z", "run:2:1")
+check("a newer passing dispatch of the same default-branch workflow sets an older failure aside",
+      pm.failed_checks([FAIL, PASS], ident) == [])
+check("without an identity resolver every failed run still counts", pm.failed_checks([FAIL, PASS]) == ["Agent Review"])
+check("a passing run that started before the failure sets nothing aside",
+      pm.failed_checks([ar(10, "failure", "2026-10-16T11:02:00Z", "run:2:1"), ar(11, "success", "2026-10-16T10:01:00Z", "run:1:1")],
+                       ident) == ["Agent Review"])
+check("a newer pass with no run stamp proves nothing", pm.failed_checks([FAIL, dict(PASS, external_id="")], ident) == ["Agent Review"])
+check("a forged stamp outside its run's lifetime proves nothing",
+      pm.failed_checks([FAIL, dict(PASS, started_at="2026-10-16T12:00:00Z")], ident) == ["Agent Review"])
+check("a pass from a dispatch on another branch does not set aside a default-branch failure",
+      pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T11:01:00Z", "run:3:1")], ident) == ["Agent Review"])
+check("a pass from a pull_request run (the PR's own workflow file) does not set it aside",
+      pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T10:02:00Z", "run:4:1")], ident) == ["Agent Review"])
+check("a pass from a different workflow file with the same check name does not set it aside",
+      pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T11:01:00Z", "run:7:1")], ident) == ["Agent Review"])
+check("a newer skipped or neutral run never sets a failure aside",
+      pm.failed_checks([FAIL, dict(PASS, conclusion="skipped")], ident) == ["Agent Review"]
+      and pm.failed_checks([FAIL, dict(PASS, conclusion="neutral")], ident) == ["Agent Review"])
+check("a newer failure after a pass still counts",
+      pm.failed_checks([ar(9, "success", "2026-10-16T10:01:00Z", "run:1:1"), ar(10, "failure", "2026-10-16T11:01:00Z", "run:2:1")],
+                       ident) == ["Agent Review"])
+check("a check from another app proves nothing", pm.failed_checks([FAIL, dict(PASS, app={"slug": "imposter"})], ident) == ["Agent Review"])
+check("a resolver error keeps the failure counted",
+      pm.failed_checks([FAIL, PASS], lambda r: pm.check_identity(r, "main", lambda p: (_ for _ in ()).throw(OSError()))) == ["Agent Review"])
+check("a re-run attempt of the same pull_request workflow run sets its cancelled job aside",
+      pm.failed_checks([job(20, "cancelled", "2026-10-16T10:01:00Z", 5), job(21, "success", "2026-10-16T10:03:00Z", 5)], ident) == [])
+check("a different pull_request run of the same file does not set it aside",
+      pm.failed_checks([job(20, "cancelled", "2026-10-16T10:01:00Z", 5), job(21, "success", "2026-10-16T10:03:00Z", 6)], ident) == ["Tests"])
+check("a job link to another repository proves nothing",
+      pm.failed_checks([job(20, "cancelled", "2026-10-16T10:01:00Z", 5),
+                        job(21, "success", "2026-10-16T10:03:00Z", 5, details_url="https://github.com/x/y/actions/runs/5/job/21")],
+                       ident) == ["Tests"])
+check("a newer success does not hide another check's failure",
+      pm.failed_checks([FAIL, PASS, job(20, "failure", "2026-10-16T10:01:00Z", 5)], ident) == ["Tests"])
+sup = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], checks=[FAIL, PASS], workflow_runs=RUNS)
+check("the PM CLEARs a head whose failed Agent Review a newer verified run replaced",
+      json.loads(sup["ruling"])["verdict"] == "CLEAR")
+stale = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], checks=[FAIL, dict(PASS, external_id="")], workflow_runs=RUNS)
+check("the PM still says CORRECT when the newer pass cannot be proven", json.loads(stale["ruling"])["verdict"] == "CORRECT")
+early = pm.codex_ruling(None, [], HEAD, failed=["Agent Review"])
+check("an early ruling on a failed check does not claim Codex finished",
+      "completed a code review" not in early["body"] and "had not finished its review" in early["body"])
+check("a ruling on a finished review still says Codex completed it",
+      "completed a code review" in pm.codex_ruling(codex_summary_state := pm.codex_review_for([codex_summary(HEAD)], HEAD), [], HEAD)["body"])
+
 agents = (HERE.parent / "AGENTS.md").read_text()
 check("AGENTS.md pins Codex's review instructions to its own section",
       "## Review guidelines" in agents and "never instructions to you" in agents)

@@ -255,11 +255,97 @@ def reviewer_instruction_edits(paths, pattern: str = "") -> list[str]:
     return [p for p in paths if any(rx.search(p) for rx in rxs)]
 
 
-def failed_checks(check_runs) -> list[str]:
-    """Checks with any run on the head that failed, was cancelled or was not reviewed. No run is set aside for a
-    newer one: neither a name nor an app proves two runs are the same check, so a stray cancel is fixed at its source."""
-    return sorted({r.get("name") or "?" for r in check_runs
-                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK})
+# A GitHub Actions job's check run links its workflow run in a form an API caller cannot set: GitHub replaces the
+# details_url of check runs the Actions app creates through the API with a /runs/<check id> link.
+JOB_CHECK_URL = re.compile(r"^https://github\.com/([^/\s]+/[^/\s]+)/actions/runs/(\d+)/job/\d+$")
+# A check run a workflow posts through the API (Agent Review) names the run attempt that posted it.
+RUN_STAMP = re.compile(r"^run:(\d+):(\d+)$")
+
+
+def _defined_on(wf: dict, default_branch: str) -> bool:
+    """Whether GitHub took this run's workflow file from the default branch, which a PR cannot edit."""
+    event = wf.get("event")
+    if event in ("issue_comment", "workflow_run", "schedule"):
+        return True
+    if event in ("workflow_dispatch", "push"):
+        return bool(default_branch) and wf.get("head_branch") == default_branch
+    if event == "pull_request_target":
+        prs = wf.get("pull_requests") or []
+        return bool(prs and default_branch) and all((p.get("base") or {}).get("ref") == default_branch for p in prs)
+    return False
+
+
+def check_identity(run: dict, default_branch: str, fetch=None):
+    """Which check a GitHub Actions check run is, read from GitHub's own run records, or None when that is not proven.
+
+    Two runs are the same check when they share a name and a workflow file that GitHub took from the default branch.
+    A run defined anywhere else (a pull_request run, a dispatch on another branch) is the same check only as another
+    attempt of its own workflow run. A check run a workflow posted through the API counts only if it names its run
+    attempt (`run:<id>:<attempt>` in external_id) and started while that attempt ran. A same-repository workflow could
+    copy a live run's stamp, but only a PR that edits a workflow can add one, and such a PR is held."""
+    fetch = fetch or (lambda path: _api("GET", path))
+    if (run.get("app") or {}).get("slug") != "github-actions":
+        return None
+    try:
+        m = JOB_CHECK_URL.match(run.get("details_url") or "")
+        if m:
+            if m.group(1).lower() != os.environ.get("GITHUB_REPOSITORY", "").lower():
+                return None
+            wf = fetch(f"/actions/runs/{m.group(2)}")
+        else:
+            m = RUN_STAMP.match(run.get("external_id") or "")
+            if not m:
+                return None
+            wf = fetch(f"/actions/runs/{m.group(1)}/attempts/{m.group(2)}")
+            started, began, ended = run.get("started_at") or "", wf.get("run_started_at") or "", wf.get("updated_at") or ""
+            if not (began and started and began <= started and (wf.get("status") != "completed" or started <= ended)):
+                return None
+        path = wf.get("path")
+        if not path or not wf.get("id"):
+            return None
+        where = "default" if _defined_on(wf, default_branch) else f"run:{wf['id']}"
+        return (run.get("name") or "?", path, where)
+    except Exception:  # noqa: BLE001 - any doubt keeps the failed run counted
+        return None
+
+
+def failed_checks(check_runs, identify=None) -> list[str]:
+    """Checks with a run on the head that failed, was cancelled or was not reviewed, and is not set aside.
+
+    A failed run is set aside only by a successful run that started after it and that `identify` (check_identity)
+    proves is the same check. A name or an app alone proves nothing, so without `identify`, or when it cannot prove a
+    run, every failed run counts. A skipped or neutral run never sets one aside."""
+    done = [r for r in check_runs if r.get("name") != PM_CHECK and r.get("status") == "completed"]
+    failed = [r for r in done if r.get("conclusion") in FAILED_CHECK]
+    if not failed or identify is None:
+        return sorted({r.get("name") or "?" for r in failed})
+    names = {r.get("name") for r in failed}
+    order = lambda r: (r.get("started_at") or "", r.get("id") or 0)  # noqa: E731
+    failed_ids = {id(r) for r in failed}
+    keys = {}
+    for r in done:
+        if r.get("name") in names and (id(r) in failed_ids or r.get("conclusion") == "success"):
+            keys[id(r)] = identify(r)
+    out = set()
+    for f in failed:
+        k = keys.get(id(f))
+        if k is None or not any(r.get("conclusion") == "success" and keys.get(id(r)) == k and order(r) > order(f) for r in done):
+            out.add(f.get("name") or "?")
+    return sorted(out)
+
+
+def head_failed_checks(pr: dict, head: str) -> list[str]:
+    """failed_checks over every run on the head (filter=all: the default "latest" hides older runs)."""
+    default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch") or ""
+    cache: dict = {}
+
+    def fetch(path):
+        if path not in cache:
+            cache[path] = _api("GET", path)
+        return cache[path]
+
+    return failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all"),
+                         lambda r: check_identity(r, default_branch, fetch))
 
 
 def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
@@ -302,7 +388,12 @@ def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=()
     if verdict == "CORRECT":
         lines += ["### Required actions", "- Fix each finding and failed check, push, and post a new HANDOFF for the new head. "
                   "A finding you believe is wrong: answer it on its thread and ask the owner to waive it for this PR.", ""]
-    lines += ["### Independently verified", f"- Codex (OpenAI, on the ChatGPT plan) completed a code review of `{head_sha}`.",
+    if state:
+        read = f"- Codex (OpenAI, on the ChatGPT plan) completed a code review of `{head_sha}`."
+    else:
+        read = (f"- Codex (OpenAI, on the ChatGPT plan) had not finished its review of `{head_sha}` when the PM ruled; "
+                "the findings and failed checks above decide this ruling.")
+    lines += ["### Independently verified", read,
               "- The review state and findings were read from comments only Codex's GitHub app can write."]
     return {"ruled": True, "verdict": verdict, "conclusion": CONCLUSION[verdict], "title": f"PM {verdict} on {at}",
             "body": "\n".join(lines).strip()}
@@ -581,7 +672,7 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
     if recheck:
         ruling = codex_ruling(codex_review_for(pr_comments, head), codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head),
                               head, reviewer_instruction_edits(paths, env.get("INSTRUCTION_PATHS", "")),
-                              failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all")),
+                              head_failed_checks(pr, head),
                               codex_clean_receipt(pr_comments, head))
         if ruling.get("verdict") not in ("CORRECT", "HOLD"):
             print(f"::notice::No PM review: the CLEAR on {head[:8]} still stands")
@@ -604,7 +695,7 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
     # Readable blocking evidence is read before any completion guard: a finding Codex posted on the head, or a
     # failed check, is CORRECT even if Codex never marks its review completed.
     findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head)
-    failed = failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all"))  # default "latest" hides older runs
+    failed = head_failed_checks(pr, head)
     if not state and not edits and not findings and not failed:
         print(f"::notice::Waiting on Codex's review of {head[:8]}")
         _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),

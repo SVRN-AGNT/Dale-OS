@@ -80,7 +80,14 @@ own. The PM reads only comments written by `chatgpt-codex-connector[bot]`, an
 app login GitHub reserves. No findings on the head and no failed check is
 `CLEAR`; any finding, of any priority, or a failed or not-reviewed (`action_required`) check is `CORRECT`, even before Codex marks its review completed (priority
 is Codex's urgency, not whether the code is wrong; a finding the author thinks
-mistaken goes to the owner). A PR that edits an `AGENTS.md`, or a path in
+mistaken goes to the owner). A failed run stops counting only when a successful
+run that started after it is provably the same check, from GitHub's own run
+records (`check_identity` in `pm_review.py`): the same check name and workflow
+file, defined on the default branch or as a re-run attempt of the same workflow
+run. Job checks prove it through their job link; `Agent Review` stamps its run
+attempt in `external_id` and must have started while that attempt ran. A name
+or app alone proves nothing, and a skipped or neutral run sets nothing aside.
+A PR that edits an `AGENTS.md`, or a path in
 `instruction_paths` (added to AGENTS.md, never replacing it),
 gets `HOLD`, because Codex reads those as its review instructions from the PR.
 Codex's review cannot raise `OWNER GATE`, and it cannot apply a
