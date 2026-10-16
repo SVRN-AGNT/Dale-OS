@@ -195,9 +195,10 @@ jobs:
             "+refs/pull/${PR}/head:refs/remotes/pr/head" "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
           test "$(git rev-parse refs/remotes/pr/head)" = "$HEAD"
 
-      # Re-review convergence: the newest earlier head of this PR with a real
-      # verdict. review.mjs reuses it when the PR's diff is unchanged (a base
-      # merge, a rebase) and otherwise hands it to the reviewer.
+      # Re-review context: the newest earlier head of this PR with a real
+      # verdict. The reviewer sees it as untrusted text and still reviews the
+      # whole head; no verdict is ever carried over (a check by this name
+      # cannot prove which workflow wrote it).
       - name: Find the previous review
         if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
         uses: actions/github-script@v7
@@ -287,12 +288,11 @@ jobs:
             await github.rest.checks.update({
               owner, repo, check_run_id: Number(process.env.CHECK_ID),
               status: 'completed', conclusion: r.conclusion,
-              ...(r.externalId ? { external_id: r.externalId } : {}),
               output: { title: r.title, summary: r.summary },
             });
             // One comment when changes are requested, so the author session is woken
-            // with the findings. A carried-over verdict already commented on its own head.
-            if (r.conclusion === 'failure' && !r.reused) {
+            // with the findings.
+            if (r.conclusion === 'failure') {
               await github.rest.issues.createComment({
                 owner, repo, issue_number: Number(process.env.PR_NUMBER),
                 body: `**Agent Review: changes requested on \`${at}\`**\n\n${r.summary}\n\n` +
