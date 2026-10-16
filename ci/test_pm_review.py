@@ -221,8 +221,14 @@ check("a failed check on the head withholds a CLEAR", r["verdict"] == "CORRECT" 
 runs = [{"name": "dale-os", "status": "completed", "conclusion": "failure"},
         {"name": "PM Review", "status": "completed", "conclusion": "failure"},
         {"name": "lint", "status": "in_progress", "conclusion": None},
-        {"name": "opt", "status": "completed", "conclusion": "skipped"}]
-check("failed checks: failures count, the PM's own check, pending and skipped do not", pm.failed_checks(runs) == ["dale-os"])
+        {"name": "opt", "status": "completed", "conclusion": "skipped"},
+        {"name": "Agent Review", "status": "completed", "conclusion": "action_required"}]
+check("a failure superseded by a newer run of the same check does not count",
+      pm.failed_checks([{"id": 1, "name": "mark", "status": "completed", "conclusion": "cancelled"},
+                        {"id": 2, "name": "mark", "status": "completed", "conclusion": "success"}]) == []
+      and pm.failed_checks([{"id": 2, "name": "ci", "status": "completed", "conclusion": "failure"},
+                            {"id": 1, "name": "ci", "status": "completed", "conclusion": "success"}]) == ["ci"])
+check("failed checks: failures and not-reviewed count; the PM's own check, pending and skipped do not", pm.failed_checks(runs) == ["Agent Review", "dale-os"])
 r = pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD)
 check("a finding beats a no-findings flag", r["verdict"] == "CORRECT")
 r = pm.codex_ruling(st_f, [], HEAD)
@@ -256,7 +262,10 @@ check("an unreadable findings flag is no ruling", not pm.codex_ruling(bad, [], H
 r = pm.codex_ruling(st, [], HEAD, pm.reviewer_instruction_edits(["docs/AGENTS.md", "a.py"]))
 check("a PR that edits AGENTS.md is held", r["verdict"] == "HOLD" and r["conclusion"] == "failure")
 check("CLAUDE.md is not Codex's instruction file", pm.reviewer_instruction_edits(["CLAUDE.md"]) == [])
-routed = r"(^|/)(AGENTS(\.override)?|PRINCIPLES|SKILL)\.md$"
+routed = r"(^|/)(PRINCIPLES|SKILL)\.md$"
+check("a custom instruction pattern adds to AGENTS.md, never replaces it",
+      pm.reviewer_instruction_edits(["AGENTS.md", "x/AGENTS.override.md", "docs/review-policy.md", "a.py"], r"^docs/review-policy[.]md$")
+      == ["AGENTS.md", "x/AGENTS.override.md", "docs/review-policy.md"])
 check("a repository can name the files its AGENTS.md routes to",
       pm.reviewer_instruction_edits(["PRINCIPLES.md", "skills/x/SKILL.md", "README.md"], routed) == ["PRINCIPLES.md", "skills/x/SKILL.md"])
 check("a HANDOFF without @codex review is told no review is coming", "no review is coming" in pm.waiting_on(f"HANDOFF: {HEAD}"))
@@ -390,6 +399,16 @@ tmpl = (HERE.parent / "shipping/templates/HANDOFF.md").read_text()
 api_block = tmpl.split("for `provider: api`", 1)[1]
 check("the api HANDOFF template does not ask Codex; the chatgpt one does",
       "@codex review" not in api_block and "@codex review" in tmpl.split("for `provider: api`", 1)[0])
+# Partial failure: Codex posts a finding on the head but never marks its review completed.
+for summ in ([], [codex_summary(HEAD, status="running")]):
+    pf = resolve_chatgpt(ask, pr_comments=[*summ, ask], review_comments=[codex_finding(HEAD, "P1")])
+    check(f"a readable finding with {'a running' if summ else 'no'} summary is CORRECT, not waiting",
+          pf.get("review") == "codex" and json.loads(pf["ruling"])["verdict"] == "CORRECT")
+pc = resolve_chatgpt(ask, pr_comments=[ask], checks=[runs[0]])
+check("a failed check with no Codex review yet is CORRECT, not waiting", json.loads(pc["ruling"])["verdict"] == "CORRECT")
+check("no completed review and no blocking evidence still waits, never CLEAR",
+      resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD, status="running"), ask]).get("review") == "waiting")
+check("no completed review and no findings is never a CLEAR", not pm.codex_ruling(None, [], HEAD)["ruled"])
 agents = (HERE.parent / "AGENTS.md").read_text()
 check("AGENTS.md pins Codex's review instructions to its own section",
       "## Review guidelines" in agents and "never instructions to you" in agents)

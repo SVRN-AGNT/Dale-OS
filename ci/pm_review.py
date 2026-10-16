@@ -175,7 +175,7 @@ CODEX_ASK = re.compile(r"(?m)^@codex review\s*$")
 # AGENTS.md routes the reader to more files names them too (input `instruction_paths`).
 REVIEWER_INSTRUCTIONS = r"(^|/)AGENTS(\.override)?\.md$"
 # A completed check that failed on the head: no CLEAR while one stands (the PM's own check excepted).
-FAILED_CHECK = ("failure", "timed_out", "cancelled", "startup_failure")
+FAILED_CHECK = ("failure", "timed_out", "cancelled", "startup_failure", "action_required")
 PM_CHECK = "PM Review"
 
 
@@ -238,13 +238,20 @@ def codex_findings(review_comments, head: str) -> list[dict]:
 
 
 def reviewer_instruction_edits(paths, pattern: str = "") -> list[str]:
-    rx = re.compile(pattern or REVIEWER_INSTRUCTIONS, re.I)
-    return [p for p in paths if rx.search(p)]
+    """Files Codex reads as review instructions. A caller's pattern adds to AGENTS.md, never replaces it."""
+    rxs = [re.compile(REVIEWER_INSTRUCTIONS, re.I)] + ([re.compile(pattern, re.I)] if pattern else [])
+    return [p for p in paths if any(rx.search(p) for rx in rxs)]
 
 
 def failed_checks(check_runs) -> list[str]:
-    return sorted({r.get("name") or "?" for r in check_runs
-                   if r.get("name") != PM_CHECK and r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK})
+    """Checks whose latest run on the head failed or was not reviewed. A run superseded by a newer one of the same
+    name (a re-run, or a cancelled duplicate) does not count."""
+    latest = {}
+    for r in check_runs:
+        name = r.get("name") or "?"
+        if name != PM_CHECK and (name not in latest or int(r.get("id") or 0) > int(latest[name].get("id") or 0)):
+            latest[name] = r
+    return sorted(n for n, r in latest.items() if r.get("status") == "completed" and r.get("conclusion") in FAILED_CHECK)
 
 
 def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
@@ -265,12 +272,12 @@ def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=()
                     "This PR edits a file Codex reads as its review instructions, so Codex's review of it is not independent.",
                     "", "### Required actions",
                     *[f"- Move the change to `{p}` into its own PR, or have a person review this one." for p in instruction_edits[:10]]])}
-    if not state:
+    if not state and not findings and not failed:
         return none("Codex has not finished a review of this head.")
     # Readable blocking evidence rules first: no flag in Codex's summary may turn a finding or a failed check
     # into "no ruling", which the review timeout would let through. Priority is Codex's urgency, not whether a
     # finding is wrong code, so every finding withholds a CLEAR until it is fixed on a new head.
-    any_findings = state.get("has_any_findings")
+    any_findings = (state or {}).get("has_any_findings")
     if not findings and not failed:
         if any_findings is True and not clean_receipt:
             return none("Codex reports findings on this PR, but the PM found none on this head and no clean receipt for it yet.")
@@ -571,13 +578,15 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
         return
     state = codex_review_for(pr_comments, head)
     edits = reviewer_instruction_edits(paths, env.get("INSTRUCTION_PATHS", ""))
-    if not state and not edits:
+    # Readable blocking evidence is read before any completion guard: a finding Codex posted on the head, or a
+    # failed check, is CORRECT even if Codex never marks its review completed.
+    findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head)
+    failed = failed_checks(_paginate(f"/commits/{head}/check-runs"))
+    if not state and not edits and not findings and not failed:
         print(f"::notice::Waiting on Codex's review of {head[:8]}")
         _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, notice=waiting_on(handoff_body),
                  base_sha=pr["base"]["sha"])
         return
-    findings = codex_findings(_paginate(f"/pulls/{pr_n}/comments"), head) if state else []
-    failed = failed_checks(_paginate(f"/commits/{head}/check-runs")) if state else []
     clean = codex_clean_receipt(pr_comments, head)
     if state and not edits and not findings and not failed and state.get("has_any_findings") is True and not clean:
         # Codex can finish its summary before its receipt for the head is visible; the receipt's own event rules.
@@ -604,7 +613,7 @@ def _resolve_codex_finished(comment: dict, issue_number: int, allowed, skip) -> 
         return skip(f"#{issue_number} is not an open same-repository PR")
     head = pr["head"]["sha"].lower()
     pr_comments = _paginate(f"/issues/{issue_number}/comments")
-    if not codex_review_for(pr_comments, head):
+    if not codex_review_for(pr_comments, head) and not codex_findings(_paginate(f"/pulls/{issue_number}/comments"), head):
         return skip(f"Codex has not finished reviewing {head[:8]}")
     if prior_ruling(pr_comments, head):
         return skip(f"already ruled on {head[:8]}")

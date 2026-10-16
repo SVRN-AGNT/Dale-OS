@@ -78,10 +78,10 @@ review every push and spend the plan's 5-hour window; measured about 2.5% per
 review) and let the HANDOFF ask: it carries `@codex review` on a line of its
 own. The PM reads only comments written by `chatgpt-codex-connector[bot]`, an
 app login GitHub reserves. No findings on the head and no failed check is
-`CLEAR`; any finding, of any priority, or a failed check is `CORRECT` (priority
+`CLEAR`; any finding, of any priority, or a failed or not-reviewed (`action_required`) check is `CORRECT`, even before Codex marks its review completed (priority
 is Codex's urgency, not whether the code is wrong; a finding the author thinks
 mistaken goes to the owner). A PR that edits an `AGENTS.md`, or a path in
-`instruction_paths` (the files a repository's AGENTS.md routes its reader to),
+`instruction_paths` (added to AGENTS.md, never replacing it),
 gets `HOLD`, because Codex reads those as its review instructions from the PR.
 Codex's review cannot raise `OWNER GATE`, and it cannot apply a
 `contract_path` or `control_issue` contract: with either set, the PM gives no
