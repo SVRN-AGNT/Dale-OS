@@ -13,7 +13,7 @@ on 2026-10-16: "i should NEVER really need to type for you to merge things ...
 this needs to be handled via our autonomous flow". So a held PR merges here,
 from an Actions job, when both reviewers cleared the exact head:
 
-  1. Agent Review (Claude, from the merged base via `pull_request_target`)
+  1. Agent Review (Claude, from the default branch's agent-review.yml)
      passed on the head; and
   2. the second-vendor PM (Codex on the ChatGPT plan) ruled CLEAR on the head,
      AND that CLEAR still stands when re-derived from Codex's own comments and
@@ -29,7 +29,8 @@ Codex's comments can only come from Codex's GitHub app.
 
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
-HANDOFF are blocked by a CORRECT or HOLD, and wait for a ruling up to 2 hours.
+HANDOFF are blocked by a CORRECT or HOLD, wait for a ruling up to 2 hours, and
+need the same passing Agent Review.
 
   check   one PR (`--pr N [--head SHA] [--held]`): print the verdict as JSON
   scan    every open PR into the base: print {pr: verdict} as JSON
