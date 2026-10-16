@@ -1,0 +1,38 @@
+# Merges a PR whose exact head both reviewers cleared, with no person typing
+# "merge" (owner ruling 2026-10-16). Rules: ci/merge_gate.py; reusable
+# workflow: ci-merge-lane.yml. It wakes when a review or CI run finishes, so
+# the CLEAR it reads is fresh. workflow_run, not pull_request_target: the
+# latter is blocked by default in public repositories from 2026-11-02.
+name: merge-lane
+
+on:
+  workflow_run:
+    workflows: [pm-review, agent-review, validate]
+    types: [completed]
+  workflow_dispatch:
+  # Nothing else wakes the lane when a timeout passes or a hold label comes off.
+  schedule:
+    - cron: '17 */2 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  lane:
+    # A dispatch on any other branch would run that branch's copy of this file,
+    # with INTEGRATION_TOKEN and merge authority. Only the default branch's copy runs.
+    if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      checks: read
+      actions: read
+      statuses: read
+    uses: ./.github/workflows/ci-merge-lane.yml
+    with:
+      ref: ${{ github.sha }}
+      held_paths: '^(\.github/workflows/|ci/)'
+      required_workflows: .github/workflows/validate.yml
+    secrets:
+      INTEGRATION_TOKEN: ${{ secrets.INTEGRATION_TOKEN }}
