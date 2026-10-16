@@ -52,6 +52,14 @@ def run(name, conclusion="success", status="completed", started="2026-10-16T10:0
             "started_at": started, "app": {"slug": app}, "output": {"title": "t"}}
 
 
+CI = ".github/workflows/ci.yml"
+
+
+def wfrun(conclusion="success", status="completed", path=CI, head=HEAD, created="2026-10-16T10:00:00Z", wid=500):
+    return {"id": wid, "path": path, "head_sha": head, "status": status,
+            "conclusion": conclusion if status == "completed" else None, "created_at": created}
+
+
 PR = {"number": 12, "state": "open", "draft": False, "head": {"sha": HEAD}, "labels": []}
 GREEN = [run("Agent Review"), run("ci", rid=2)]
 CLEAR_COMMENTS = [handoff(), summary(), ruling()]
@@ -67,10 +75,11 @@ def proven(r):
 
 
 def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW, identify=proven,
-      failed=None, required=("ci",)):
+      failed=None, required=(CI,), workflow_runs=None):
     return mg.verdict(pr=pr, head=HEAD, held=held, pr_comments=list(comments), review_comments=list(review),
                       check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now, identify=identify,
-                      failed=failed, required=required)
+                      failed=failed, required=required,
+                      workflow_runs=[wfrun()] if workflow_runs is None else workflow_runs)
 
 
 # the happy path the owner asked for: no person types
@@ -144,16 +153,22 @@ check("an Agent Review with no provable run does not count",
 check("without an identity check, no Agent Review counts", v(identify=None)["block"])
 
 # the repository's CI must have run and passed (Codex P1 on #41: a HANDOFF can clear before CI starts)
-check("a required check that has not started: wait", v(checks=[run("Agent Review")])["state"] == "wait")
-check("a required check that was skipped blocks", v(checks=[run("Agent Review"), run("ci", "skipped", rid=2)])["block"])
-check("a required check still running: wait",
-      v(checks=[run("Agent Review"), run("ci", status="in_progress", rid=2)])["state"] == "wait")
-check("non-held scope needs the required check too", v(held=False, checks=[run("Agent Review")])["state"] == "wait")
-os.environ["REQUIRED_CHECKS"] = "build\n Tests, audits, generator drift, build \n"
-check("REQUIRED_CHECKS is one name per line, commas kept",
-      mg.required_checks() == ["build", "Tests, audits, generator drift, build"])
-os.environ.pop("REQUIRED_CHECKS")
-check("no REQUIRED_CHECKS means none", mg.required_checks() == [])
+check("a required workflow that has not started: wait", v(workflow_runs=[])["state"] == "wait")
+check("a required workflow that was skipped blocks", v(workflow_runs=[wfrun("skipped")])["block"])
+check("a required workflow still running: wait", v(workflow_runs=[wfrun(status="in_progress")])["state"] == "wait")
+check("non-held scope needs the required workflow too", v(held=False, workflow_runs=[])["state"] == "wait")
+check("the newest run of the workflow decides",
+      v(workflow_runs=[wfrun(), wfrun("failure", created="2026-10-16T11:00:00Z", wid=501)])["block"])
+check("a run of another workflow file does not stand in", v(workflow_runs=[wfrun(path=".github/workflows/x.yml")])["state"] == "wait")
+check("a run on another head does not stand in", v(workflow_runs=[wfrun(head=OTHER)])["state"] == "wait")
+# Codex P1 on #41: a check named like the CI job, posted by any workflow, is not the CI
+check("a forged success check named like the CI does not stand in for a failed CI run",
+      v(checks=GREEN + [run("ci", rid=8)], workflow_runs=[wfrun("failure")], failed=[])["block"])
+os.environ["REQUIRED_WORKFLOWS"] = ".github/workflows/ci.yml\n .github/workflows/b.yml \n"
+check("REQUIRED_WORKFLOWS is one path per line",
+      mg.required_workflows() == [".github/workflows/ci.yml", ".github/workflows/b.yml"])
+os.environ.pop("REQUIRED_WORKFLOWS")
+check("no REQUIRED_WORKFLOWS means none", mg.required_workflows() == [])
 
 # an abandoned in-progress run, superseded by a newer completed run of the same proven check, is not running
 check("an abandoned run superseded by a newer completed one does not hold the merge",

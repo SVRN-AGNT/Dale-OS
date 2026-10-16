@@ -205,7 +205,7 @@ person typing "merge". The lane merges a PR when, on its exact head:
 2. the PM's latest ruling is CLEAR **and** re-deriving it now from Codex's own
    comments and the head's checks (the PM's own functions) still gives CLEAR,
    so a Codex finding posted after the CLEAR blocks the merge;
-3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`), each `required_checks` CI check ran on the head and passed, and no check other than the PM's own is still running, held or not.
+3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`), the newest run of each `required_workflows` file on the head passed (GitHub's workflow-run record, not a check by name), and no check other than the PM's own is still running, held or not.
 
 A held PR never merges on the 2-hour timeout. A PR with no HANDOFF is left to
 the repository's own rule. An `owner-hold`, `do-not-merge` or `integration-hold`
@@ -227,15 +227,16 @@ jobs:
     with:
       ref: <sha>
       held_paths: '<the same regex the PM caller passes>'
-      required_checks: |                   # the repository's CI check names, one per line; '' only with no CI
-        <CI check name>
+      required_workflows: |                # the repository's CI workflow files, one per line; '' only with no CI
+        .github/workflows/<ci>.yml
     secrets:
       merge_token: ${{ secrets.INTEGRATION_TOKEN }}
 ```
 
-Known limits, accepted because held scope also needs Codex's CLEAR on the same head: an `Agent Review` or
-`required_checks` check is proven by the run that posted it, not by who last set its conclusion, so a workflow a PR
-adds could restate one; that PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. The
+Known limit, accepted because held scope also needs Codex's CLEAR on the same head: the `Agent Review` check is
+proven by the run that posted it, not by who last set its conclusion, so a workflow a PR adds could restate it; that
+PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. CI is read from GitHub's
+workflow-run records, which no posted check can stand in for. The
 merge token may bypass branch rules, so the lane itself refuses a conflicted, behind or draft PR.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default

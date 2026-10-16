@@ -30,8 +30,8 @@ Codex's comments can only come from Codex's GitHub app.
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
 HANDOFF are blocked by a CORRECT or HOLD, wait for a ruling up to 2 hours, and
-need the same passing Agent Review. Every PR also needs each REQUIRED_CHECKS
-check to have run on the head and passed.
+need the same passing Agent Review. Every PR also needs the newest run of each
+REQUIRED_WORKFLOWS file on the head to have passed.
 
   check   one PR (`--pr N [--head SHA] [--held]`): print the verdict as JSON
   scan    every open PR into the base: print {pr: verdict} as JSON
@@ -88,12 +88,13 @@ def newest(runs, name: str):
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
-            identify=None, required=()) -> dict:
+            identify=None, required=(), workflow_runs=()) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
-    `required` names the repository's CI checks: each must have run on the head and passed (Codex P1 on #41: a
-    HANDOFF can clear before CI has even started, and an absent or skipped CI is not a pass).
+    `required` names the repository's CI workflow files: the newest run of each on the head (from `workflow_runs`,
+    GitHub's own workflow-run records, which no check a PR's workflow posts can stand in for) must have passed
+    (Codex P1s on #41: a HANDOFF can clear before CI starts; a check is only a name a workflow can post).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts."""
     now = now or dt.datetime.now(dt.timezone.utc)
@@ -163,12 +164,15 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
                              f"{AGENT_REVIEW_PATH}")
     if ar.get("conclusion") != "success":
         return done("block", f"Agent Review on {head[:8]} is {ar.get('conclusion')}: {(ar.get('output') or {}).get('title') or ''}".rstrip(": "))
-    for name in required:
-        ci = newest(check_runs, name)
+    for path in required:
+        runs = [w for w in workflow_runs
+                if str(w.get("path") or "").split("@")[0] == path and str(w.get("head_sha") or "").lower() == head]
+        ci = max(runs, key=lambda w: (w.get("created_at") or "", w.get("id") or 0, w.get("run_attempt") or 0),
+                 default=None)
         if not ci or ci.get("status") != "completed":
-            return done("wait", f"waiting on required check {name} for {head[:8]}")
+            return done("wait", f"waiting on required workflow {path} for {head[:8]}")
         if ci.get("conclusion") != "success":
-            return done("block", f"required check {name} on {head[:8]} is {ci.get('conclusion')}")
+            return done("block", f"required workflow {path} on {head[:8]} is {ci.get('conclusion')}")
     # The PM's own check is left out: its ruling is re-derived above, and its "waiting" check is never completed
     # (the ruling posts a new one), so it would read as running forever (Codex P1 on #41).
     # An abandoned in-progress run is set aside only by a newer completed run that `identify` proves is the same check.
@@ -230,13 +234,24 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
                    failed=pm.head_failed_checks(pr, head), identify=_identify(pr),
-                   required=required_checks()) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
+                   required=required_workflows(),
+                   workflow_runs=_workflow_runs(head)) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
                                                                                       "mergeable": pr.get("mergeable")}
 
 
-def required_checks() -> list[str]:
-    """REQUIRED_CHECKS: the caller's CI check names, one per line (a check name may contain commas)."""
-    return [c.strip() for c in os.environ.get("REQUIRED_CHECKS", "").splitlines() if c.strip()]
+def _workflow_runs(head: str) -> list[dict]:
+    out, page = [], 1
+    while True:
+        batch = (pm._api("GET", f"/actions/runs?head_sha={head}&per_page=100&page={page}") or {}).get("workflow_runs") or []
+        out += batch
+        if len(batch) < 100:
+            return out
+        page += 1
+
+
+def required_workflows() -> list[str]:
+    """REQUIRED_WORKFLOWS: the caller's CI workflow files (.github/workflows/<name>.yml), one per line."""
+    return [c.strip() for c in os.environ.get("REQUIRED_WORKFLOWS", "").splitlines() if c.strip()]
 
 
 def _open_prs(base: str) -> list[dict]:
