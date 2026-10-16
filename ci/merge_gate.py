@@ -43,6 +43,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 from pathlib import Path
 
@@ -50,6 +51,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pm_review as pm  # noqa: E402  the PM's own reading of Codex's evidence
 
 AGENT_REVIEW = "Agent Review"
+# Codex's summary, its review and its inline findings arrive as separate events. A merge reads the evidence twice,
+# this many seconds apart, and merges only if the second read still allows the same head.
+SETTLE_SECONDS = 90
 # The only workflow whose Agent Review check counts, and only as defined on the default branch.
 AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
@@ -213,6 +217,7 @@ def main(argv=None) -> int:
     ap.add_argument("--pr", type=int)
     ap.add_argument("--head")
     ap.add_argument("--held", choices=("true", "false"))
+    ap.add_argument("--settle", action="store_true", help="on an allow, read again SETTLE_SECONDS later (before a merge)")
     ap.add_argument("--base", default=env.get("BASE_REF", ""))
     a = ap.parse_args(argv)
     allowed = [s.strip() for s in env.get("ALLOWED_AUTHORS", "Tataku").split(",") if s.strip()]
@@ -221,6 +226,8 @@ def main(argv=None) -> int:
 
     if a.command == "check":
         v = evaluate(a.pr, a.head, held_rx, held_flag, allowed, instr)
+        if a.settle and v["allow"]:
+            v = settled(a.pr, v, lambda: evaluate(a.pr, v["head"], held_rx, held_flag, allowed, instr))
         print(json.dumps(v))
         if env.get("GITHUB_OUTPUT"):
             pm._outputs(allow=str(v["allow"]).lower(), state=v["state"], reason="; ".join(v["reasons"]))
@@ -265,6 +272,11 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         if v.get("mergeable") is not True:
             lines.append(f"#{n}: not merged, GitHub reports mergeable={v.get('mergeable')}")
             continue
+        v2 = settled(n, v, lambda: evaluate(n, v["head"], held_rx, None, allowed, instr))
+        if not v2["allow"]:
+            lines.append(f"#{n}: not merged, the second read {SETTLE_SECONDS}s later says {v2['state'].upper()} — "
+                         f"{'; '.join(v2['reasons'])}")
+            continue
         msg = (f"Merged by the merge lane (Dale-OS ci/merge_gate.py) on both reviewers' evidence for {v['head']}:\n"
                f"{'; '.join(v['reasons'])}.\nNo person typed this merge (owner ruling 2026-10-16).")
         try:
@@ -282,6 +294,18 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         with open(env["GITHUB_STEP_SUMMARY"], "a") as f:
             f.write(f"## Merge lane: {merged} merged\n\n```text\n{report}\n```\n")
     return 0
+
+
+def settled(n: int, first: dict, read) -> dict:
+    """The gate's answer SETTLE_SECONDS after a first allow, for the same head; anything else is not an allow."""
+    time.sleep(SETTLE_SECONDS)
+    try:
+        again = read()
+    except (urllib.error.URLError, KeyError, ValueError) as e:
+        return {"allow": False, "state": "block", "reasons": [f"gate could not re-read #{n} ({e})"]}
+    if again.get("head") != first.get("head"):
+        return dict(again, allow=False, state="block", reasons=[f"the head moved past {first['head'][:8]}"])
+    return again
 
 
 def _merge(n: int, head: str, title: str, message: str, token: str) -> None:

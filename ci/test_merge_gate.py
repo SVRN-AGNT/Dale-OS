@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -138,6 +139,32 @@ check("a draft is not merged", v(pr=dict(PR, draft=True))["state"] == "wait")
 check("a hold label stops it", v(pr=dict(PR, labels=[{"name": "owner-hold"}]))["block"])
 check("a moved head is not merged", v(pr=dict(PR, head={"sha": OTHER}))["block"])
 check("a closed PR is not merged", v(pr=dict(PR, state="closed"))["block"])
+
+# a merge reads the evidence twice, SETTLE_SECONDS apart (Codex P1 on #41: late inline findings)
+naps = []
+mg.time.sleep = lambda s: naps.append(s)
+ALLOW = {"allow": True, "state": "allow", "head": HEAD, "reasons": ["ok"]}
+check("the second read waits SETTLE_SECONDS", mg.settled(12, ALLOW, lambda: ALLOW)["allow"] and naps == [mg.SETTLE_SECONDS])
+check("a finding that lands between the reads stops the merge",
+      not mg.settled(12, ALLOW, lambda: {"allow": False, "state": "block", "head": HEAD, "reasons": ["CORRECT"]})["allow"])
+check("a head that moved between the reads stops the merge", not mg.settled(12, ALLOW, lambda: dict(ALLOW, head=OTHER))["allow"])
+
+
+def unreadable():
+    raise ValueError("boom")
+
+
+check("an unreadable second read stops the merge", not mg.settled(12, ALLOW, unreadable)["allow"])
+merged = []
+mg._open_prs = lambda base: [{"number": 12, "title": "t"}]
+mg._merge = lambda *a: merged.append(a)
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True),
+              {"allow": False, "state": "block", "head": HEAD, "reasons": ["late CORRECT"], "handoff": True}])
+mg.evaluate = lambda *a, **k: next(reads)
+os.environ.setdefault("GITHUB_TOKEN", "t")
+os.environ.pop("GITHUB_STEP_SUMMARY", None)
+mg.lane("main", "", ["Tataku"], "")
+check("the lane does not merge when the second read blocks", merged == [])
 
 # workflow shape
 wf = (HERE.parent / ".github" / "workflows" / "ci-merge-lane.yml").read_text()
