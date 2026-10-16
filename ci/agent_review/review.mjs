@@ -244,20 +244,22 @@ export function buildPrompt({ pr, title, body, author, baseRef = 'main', baseSha
 }
 
 /**
- * The PR's change as a stable identity: `git patch-id --verbatim` (stable, whitespace kept) of the diff
- * from the merge base. Merging the base branch in, or rebasing without changing the
- * PR's own edits, keeps it the same; any edit to the PR's lines changes it.
- * `--verbatim` matters: plain patch-id strips whitespace, so a re-indented
- * YAML key or an edited string literal would inherit the old verdict. Git
- * older than 2.39 rejects the flag, which yields '' and so never reuses.
- * Empty string when there is no diff or git fails, which never matches.
+ * What was reviewed, as an identity: the merge base and the head's tree. A
+ * verdict carries over only to a head with the same base and byte-identical
+ * files, e.g. a re-push of the same commit or an amend that changed only the
+ * message. Merging the base in changes the tree, so it always gets a fresh
+ * review: the PR's own lines can be unchanged while the code they call was
+ * removed underneath them (PM CORRECT on Dale-OS #35). The version tag means
+ * identities written by an earlier reviewer (`diff:<patch-id>`) never match.
+ * Empty string when git fails, which never matches.
  */
-export function diffIdentity(baseSha, headSha, exec = execFileSync) {
+export const IDENTITY_VERSION = 'v2';
+
+export function reviewIdentity(baseSha, headSha, exec = execFileSync) {
   try {
-    const diff = exec('git', ['diff', '--no-color', '--full-index', baseSha, headSha], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
-    if (!diff.trim()) return '';
-    const out = exec('git', ['patch-id', '--verbatim'], { input: diff, encoding: 'utf8' });
-    return String(out).trim().split(/\s+/)[0] || '';
+    const tree = String(exec('git', ['rev-parse', `${headSha}^{tree}`], { encoding: 'utf8' })).trim();
+    if (!/^[0-9a-f]{40}$/.test(tree) || !/^[0-9a-f]{40}$/.test(String(baseSha))) return '';
+    return `${IDENTITY_VERSION}:base=${baseSha}:tree=${tree}`;
   } catch {
     return '';
   }
@@ -267,23 +269,23 @@ export function diffIdentity(baseSha, headSha, exec = execFileSync) {
 export const REUSABLE_CONCLUSIONS = Object.freeze(['success', 'failure']);
 
 /**
- * Re-review convergence. When the PR's diff is identical to one already judged,
- * reuse that verdict instead of asking a fresh model, which could flip on
+ * Re-review convergence. When the base and the head's files are identical to
+ * ones already judged, reuse that verdict instead of asking a fresh model, which could flip on
  * nothing and keep a lane busy forever. Pure.
  *
- * @param {{ diffId: string, previous?: { sha: string, conclusion: string, externalId: string, title: string, summary: string } }} args
+ * @param {{ identity: string, previous?: { sha: string, conclusion: string, externalId: string, title: string, summary: string } }} args
  * @returns {null | { conclusion: string, title: string, summary: string, verdict: null, reused: true, highStakes: boolean }}
  */
-export function reuseVerdict({ diffId, previous }) {
-  if (!diffId || !previous) return null;
-  const [identity, ...tags] = String(previous.externalId || '').split(';');
-  if (identity !== `diff:${diffId}`) return null;
+export function reuseVerdict({ identity, previous }) {
+  if (!identity || !identity.startsWith(`${IDENTITY_VERSION}:`) || !previous) return null;
+  const [prior, ...tags] = String(previous.externalId || '').split(';');
+  if (prior !== identity) return null;
   if (!REUSABLE_CONCLUSIONS.includes(previous.conclusion)) return null;
   const at = String(previous.sha || '').slice(0, 8);
   return {
     conclusion: previous.conclusion,
-    title: `Unchanged diff since ${at}: ${String(previous.title || '').slice(0, 200)}`,
-    summary: `The PR's diff is identical to the one reviewed at ${at} (patch-id ${diffId.slice(0, 12)}), so that verdict carries over and no new review ran. Any change to the PR's own lines triggers a full review.\n\n${String(previous.summary || '')}`.slice(0, 60000),
+    title: `Unchanged since ${at}: ${String(previous.title || '').slice(0, 200)}`,
+    summary: `The base and every file are identical to the head reviewed at ${at}, so that verdict carries over and no new review ran. Any change to the PR or to its base, including a base merge, triggers a full review.\n\n${String(previous.summary || '')}`.slice(0, 60000),
     verdict: null,
     reused: true,
     // The stakes call rides along, so a reused HIGH verdict retries marking.
@@ -294,11 +296,11 @@ export function reuseVerdict({ diffId, previous }) {
 const HIGH_STAKES_TAG = 'stakes=HIGH';
 
 /**
- * The check run's `external_id`: the diff identity reuseVerdict matches on,
+ * The check run's `external_id`: the review identity reuseVerdict matches on,
  * plus the reviewer's stakes call so a reused verdict keeps it.
  */
-export function diffExternalId(diffId, highStakes) {
-  return `diff:${diffId}${highStakes ? `;${HIGH_STAKES_TAG}` : ''}`;
+export function reviewExternalId(identity, highStakes) {
+  return `${identity}${highStakes ? `;${HIGH_STAKES_TAG}` : ''}`;
 }
 
 /**
@@ -385,14 +387,14 @@ function main() {
   const baseRef = env.BASE_REF || 'main';
   const baseSha = execFileSync('git', ['merge-base', `origin/${baseRef}`, headSha], { encoding: 'utf8' }).trim();
   const files = JSON.parse(env.CHANGED_FILES || '[]');
-  const diffId = diffIdentity(baseSha, headSha);
+  const identity = reviewIdentity(baseSha, headSha);
   let previous;
   try { previous = env.PREVIOUS_REVIEW_PATH ? JSON.parse(fs.readFileSync(env.PREVIOUS_REVIEW_PATH, 'utf8')) : undefined; } catch { previous = undefined; }
-  const reused = reuseVerdict({ diffId, previous });
+  const reused = reuseVerdict({ identity, previous });
   const priorSha = previous && REUSABLE_CONCLUSIONS.includes(previous.conclusion) ? String(previous.sha || '') : '';
   if (!reused) materializePr({ baseSha, headSha, files, previousSha: /^[0-9a-f]{40}$/.test(priorSha) ? priorSha : '' });
   if (reused) {
-    fs.writeFileSync(env.RESULT_PATH, JSON.stringify({ ...reused, externalId: diffExternalId(diffId, reused.highStakes) }));
+    fs.writeFileSync(env.RESULT_PATH, JSON.stringify({ ...reused, externalId: reviewExternalId(identity, reused.highStakes) }));
     console.log(`${reused.conclusion}: ${reused.title}`);
     return;
   }
@@ -450,7 +452,7 @@ function main() {
   result.title = redactSecrets(result.title, secrets);
   result.summary = redactSecrets(result.summary, secrets);
   // Only a real verdict is tagged, so only a real verdict can be reused.
-  if (diffId && REUSABLE_CONCLUSIONS.includes(result.conclusion)) result.externalId = diffExternalId(diffId, result.highStakes);
+  if (identity && REUSABLE_CONCLUSIONS.includes(result.conclusion)) result.externalId = reviewExternalId(identity, result.highStakes);
   fs.writeFileSync(env.RESULT_PATH, JSON.stringify(result));
   console.log(`${result.conclusion}: ${result.title}`);
 }
