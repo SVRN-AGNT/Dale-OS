@@ -2,6 +2,25 @@
 
 Dale OS is modular. Install the smallest skill set that solves the failure class in front of you.
 
+## Claude Code plugins
+
+This repository is a Claude Code plugin marketplace named `dale-os` (`.claude-plugin/marketplace.json`). It ships two plugins, one per skill family:
+
+```bash
+claude plugin marketplace add SVRN-AGNT/Dale-OS
+claude plugin install dale-os-operator@dale-os
+claude plugin install dale-os-financial-truth@dale-os
+```
+
+Inside a session, `/plugin install dale-os-operator --marketplace SVRN-AGNT/Dale-OS` does both steps at once (Claude Code 2.1.275 or later). Skills load namespaced, for example `dale-os-operator:systemic-bug-instinct`. For reproducible behavior, pin with `claude plugin marketplace add SVRN-AGNT/Dale-OS@<TAG>`, using a tag that already contains `.claude-plugin/marketplace.json`.
+
+## Other Agent Skills hosts
+
+```bash
+npx skills add SVRN-AGNT/Dale-OS            # list and pick skills interactively
+npx skills add SVRN-AGNT/Dale-OS --skill truth-boundary
+```
+
 ## Inspect before installing
 
 With GitHub CLI 2.90.0 or newer:

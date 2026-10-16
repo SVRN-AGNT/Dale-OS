@@ -2,6 +2,7 @@
 
 ## 0.2.0-dev — development
 
+- The repository is now a Claude Code plugin marketplace (`.claude-plugin/marketplace.json`, marketplace `dale-os`) with two plugins, `dale-os-operator` (19 skills) and `dale-os-financial-truth` (12 skills). Verified with `claude plugin validate` and a local install that loaded all 31 skills. README and INSTALL carry the install lines.
 - Added `ci-pm-review.yml` and `ci/pm_review.py` to the shared CI layer: every Claude `HANDOFF:` comment gets a second-vendor PM review from OpenAI Codex (read-only, sudo dropped), posted as a `PM REVIEW —` comment and a `PM Review` check on the exact head. "No ruling" is never a CLEAR. This replaces pasting HANDOFFs into ChatGPT by hand: ChatGPT event tasks fire on supported pull request activity, not comments. Dale-OS calls it on its own PRs.
 - Added a shared CI layer under `ci/`: a reusable red-alert workflow that keeps
   one issue open while a scheduled or trunk run is red, and a zero-dependency

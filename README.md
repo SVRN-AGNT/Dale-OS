@@ -11,6 +11,15 @@
 
 Dale OS is a portable control plane for AI agents doing consequential software and financial work. It turns recurring failure modes into small falsifiable skills, deterministic checks, narrow compositions, machine-readable receipts, and reproducible evals.
 
+**Install in Claude Code** (two plugins, so you load only the half you need):
+
+```text
+/plugin install dale-os-operator --marketplace SVRN-AGNT/Dale-OS
+/plugin install dale-os-financial-truth --marketplace SVRN-AGNT/Dale-OS
+```
+
+**Any Agent Skills host** (Codex, Cursor, and others): `npx skills add SVRN-AGNT/Dale-OS`, or one skill at a time with `gh skill install SVRN-AGNT/Dale-OS <skill>`. Details, pinning, and preview-before-install are in [INSTALL.md](INSTALL.md).
+
 **If you are an agent:** read [`AGENTS.md`](AGENTS.md). If you already know what is broken, start with `machine/failure-classes.json`. If the work spans multiple failure classes, use `machine/compositions.json`. Do not load the whole repo.
 
 I did not start this as a framework. I kept running into the same expensive failure modes while building real software: agents fixing symptoms instead of mechanisms, reopening decisions I had already made, wandering outside scope, calling a PR "shipped," or producing a financially clean-looking number from dirty underlying records.
