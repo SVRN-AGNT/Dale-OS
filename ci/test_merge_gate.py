@@ -75,11 +75,12 @@ def proven(r):
 
 
 def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW, identify=proven,
-      failed=None, required=(CI,), workflow_runs=None, foreign_edits=()):
+      failed=None, required=(CI,), workflow_runs=None, foreign_edits=(), reviewed_head=lambda r: HEAD):
     return mg.verdict(pr=pr, head=HEAD, held=held, pr_comments=list(comments), review_comments=list(review),
                       check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now, identify=identify,
                       failed=failed, required=required,
-                      workflow_runs=[wfrun()] if workflow_runs is None else workflow_runs, foreign_edits=foreign_edits)
+                      workflow_runs=[wfrun()] if workflow_runs is None else workflow_runs, foreign_edits=foreign_edits,
+                      reviewed_head=reviewed_head)
 
 
 # the happy path the owner asked for: no person types
@@ -175,6 +176,12 @@ check("so does a re-run attempt of the same run",
       v(checks=[genuine("failure", stamp="run:900:1"), dict(forged, external_id="run:900:2"), run("ci", rid=2)],
         failed=[])["allow"])
 
+# the claimed run must have been started for this head (Codex P1 on #41)
+check("a pass claiming a run started for another PR's head blocks", v(reviewed_head=lambda r: OTHER)["block"])
+check("a pass whose run cannot be read blocks", v(reviewed_head=lambda r: None)["block"])
+check("without a run reader no Agent Review counts", v(reviewed_head=None)["block"])
+check("a run started for this head (any case) counts", v(reviewed_head=lambda r: HEAD.upper())["allow"])
+
 check("a PR GitHub cannot list in full never merges (Codex P2 on #41)", mg.verdict(
     pr=PR, head=HEAD, held=True, pr_comments=list(CLEAR_COMMENTS), review_comments=[], check_runs=list(GREEN),
     paths=["a.py"], allowed=["Tataku"], now=NOW, identify=proven, required=(CI,), workflow_runs=[wfrun()],
@@ -268,7 +275,8 @@ check("an unprovable running run is never set aside",
 check("the PM's failed-check list decides, when given",
       mg.verdict(pr=PR, head=HEAD, held=True, pr_comments=CLEAR_COMMENTS, review_comments=[],
                                              check_runs=GREEN + [run("ci", "cancelled", rid=3)], paths=["a.py"],
-                                             allowed=["Tataku"], now=NOW, failed=[], identify=proven)["allow"])
+                                             allowed=["Tataku"], now=NOW, failed=[], identify=proven,
+                                             reviewed_head=lambda r: HEAD)["allow"])
 check("without the list, any failed run on the head blocks", v(checks=GREEN + [run("ci", "cancelled", rid=3)])["block"])
 
 # the PR itself

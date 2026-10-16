@@ -91,7 +91,8 @@ def newest(runs, name: str):
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
-            identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True, codex_reviews=()) -> dict:
+            identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True, codex_reviews=(),
+            reviewed_head=None) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
@@ -100,6 +101,8 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     (Codex P1s on #41: a HANDOFF can clear before CI starts; a check is only a name a workflow can post).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts.
+    `reviewed_head` reads the commit GitHub's own record of the run an Agent Review names was started for; the pass
+    counts only when that is this head. Without it, no Agent Review counts.
     `foreign_edits` lists Codex comments someone other than Codex last edited: write access can edit any comment and
     the author stays Codex, so any such edit blocks (it could have erased a finding)."""
     now = now or dt.datetime.now(dt.timezone.utc)
@@ -187,6 +190,14 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     # The run stamp a check carries is written by whoever posts it, so a forger can claim the trusted run. Any other
     # Agent Review check claiming the same run that failed or is still running sinks it (Codex P1 on #41): a genuine
     # pass is never contradicted by its own run.
+    # The claim must also be a run GitHub started for this head (Codex P1 on #41): otherwise a check on this head can
+    # claim a trusted run that reviewed another PR, whose own check sits on that PR's head where no twin search looks.
+    # A pull_request_target run records the PR head it was started for; a dispatch records the default branch's tip,
+    # so a dispatched review cannot be tied to a head and does not count here.
+    ran_for = reviewed_head(ar) if reviewed_head else None
+    if str(ran_for or "").lower() != head:
+        return done("block", f"the run behind the passing Agent Review on {head[:8]} was not started for {head[:8]} "
+                             "(a dispatched review cannot be tied to a head); re-run the PR's own Agent Review run")
     claim = claimed_run(ar)
     twins = [r for r in check_runs if r is not ar and r.get("name") == AGENT_REVIEW and claimed_run(r) == claim]
     if any(r.get("status") != "completed" for r in twins):
@@ -283,6 +294,19 @@ def _identify(pr: dict):
     return lambda r: pm.check_identity(r, default_branch, fetch)
 
 
+def _reviewed_head(r: dict):
+    """The head_sha of GitHub's record of the run an Agent Review check names, or None when it cannot be read."""
+    claim = claimed_run(r)
+    if not claim:
+        return None
+    rid, attempt = claim
+    try:
+        wf = pm._api("GET", f"/actions/runs/{rid}/attempts/{attempt}" if attempt else f"/actions/runs/{rid}")
+    except Exception:  # noqa: BLE001 - unreadable is not proof
+        return None
+    return (wf or {}).get("head_sha")
+
+
 def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, allowed, instruction_paths: str) -> dict:
     pr = pm._api("GET", f"/pulls/{n}")
     head = (head or pr["head"]["sha"]).lower()
@@ -296,7 +320,7 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
-                   failed=pm.head_failed_checks(pr, head), identify=_identify(pr),
+                   failed=pm.head_failed_checks(pr, head), identify=_identify(pr), reviewed_head=_reviewed_head,
                    required=required_workflows(),
                    workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n),
                    codex_reviews=pm._paginate(f"/pulls/{n}/reviews")) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),

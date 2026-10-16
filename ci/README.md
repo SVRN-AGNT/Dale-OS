@@ -259,6 +259,9 @@ readable ruling never reaches the 2-hour timeout. A caller's `--held false` cann
 `check --settle` applies the same merge-ready test to its settled read; a caller whose own rule makes another state
 normal names the full list in `MERGE_READY_STATES`. A required workflow's dispatched run counts only from the default
 branch, and an Agent Review pass is sunk by any other check claiming the same run that failed or is still running.
+The run an Agent Review claims must be one GitHub started for this head (its run record's `head_sha`), so a check
+cannot borrow a trusted run that reviewed another PR; a dispatched review records the default branch's tip, so the
+gate does not count it and the PR's own `pull_request_target` run must be re-run instead.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
 in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to
