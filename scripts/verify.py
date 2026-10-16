@@ -31,6 +31,7 @@ PYTHON_STEPS = [
     ("scan public release surface", [sys.executable, "scripts/privacy_scan.py"]),
     ("test shared CI hygiene checker", [sys.executable, "ci/test_ci_hygiene.py"]),
     ("test shared PM review", [sys.executable, "ci/test_pm_review.py"]),
+    ("test shared agent review", ["node", "--test", "ci/agent_review/review.test.mjs"]),
     ("check own workflows against the CI floor", [sys.executable, "ci/ci_hygiene.py", ".", "--strict"]),
     ("validate release gate ledger", [sys.executable, "scripts/release_gate.py", "--validate-only"]),
 ]

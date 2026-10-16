@@ -1,0 +1,41 @@
+# Independent Claude review of this repository's own PRs, billed to the Claude
+# subscription. Uses the local copy of the shared workflow, so the reviewer is
+# the merged base's (pull_request_target); other repositories pin a Dale-OS sha.
+name: agent-review
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: PR number to review
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+# One review per PR at a time; a newer head supersedes the one in flight.
+concurrency:
+  group: agent-review-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Drafts are still being built. A dispatch from any branch but the default
+    # would run that branch's copy of the reviewer.
+    if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || (github.event_name == 'pull_request_target' && github.event.pull_request.draft == false)
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+      actions: read
+    uses: ./.github/workflows/ci-agent-review.yml
+    with:
+      ref: ${{ github.sha }}
+      pr: ${{ github.event.pull_request.number || inputs.pr }}
+      # CI and the shared layer are held: a PR that edits them gets the high bar.
+      held_paths: '^(\.github/workflows/|ci/)'
+    secrets:
+      claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
