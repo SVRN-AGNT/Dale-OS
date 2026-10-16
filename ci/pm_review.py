@@ -38,6 +38,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -262,13 +263,17 @@ JOB_CHECK_URL = re.compile(r"^https://github\.com/([^/\s]+/[^/\s]+)/actions/runs
 RUN_STAMP = re.compile(r"^run:(\d+):(\d+)$")
 
 
-def _defined_on(wf: dict, default_branch: str) -> bool:
+def _defined_on(wf: dict, default_branch: str, fetch) -> bool:
     """Whether GitHub took this run's workflow file from the default branch, which a PR cannot edit."""
     event = wf.get("event")
     if event in ("issue_comment", "workflow_run", "schedule"):
         return True
     if event in ("workflow_dispatch", "push"):
-        return bool(default_branch) and wf.get("head_branch") == default_branch
+        # head_branch is only a name (a tag can share it), so the run's commit must be on the default branch.
+        if not default_branch or wf.get("head_branch") != default_branch or not wf.get("head_sha"):
+            return False
+        tip = ((fetch(f"/branches/{urllib.parse.quote(default_branch, safe='')}") or {}).get("commit") or {}).get("sha")
+        return bool(tip) and (fetch(f"/compare/{wf['head_sha']}...{tip}") or {}).get("status") in ("identical", "ahead")
     if event == "pull_request_target":
         prs = wf.get("pull_requests") or []
         return bool(prs and default_branch) and all((p.get("base") or {}).get("ref") == default_branch for p in prs)
@@ -280,9 +285,11 @@ def check_identity(run: dict, default_branch: str, fetch=None):
 
     Two runs are the same check when they share a name and a workflow file that GitHub took from the default branch.
     A run defined anywhere else (a pull_request run, a dispatch on another branch) is the same check only as another
-    attempt of its own workflow run. A check run a workflow posted through the API counts only if it names its run
-    attempt (`run:<id>:<attempt>` in external_id) and started while that attempt ran. A same-repository workflow could
-    copy a live run's stamp, but only a PR that edits a workflow can add one, and such a PR is held."""
+    attempt of its own workflow run. A job check proves its run through the job link GitHub writes. A check a workflow
+    posted through the API only claims one, by naming its run attempt (`run:<id>:<attempt>` in external_id); the claim
+    must name a real run of the same workflow file, and its start time must fall inside that attempt. That is not
+    proof against a forger: whoever holds a token that can post such a check could also update the failed one, so the
+    stamp adds no authority a workflow-editing PR (held scope) or a repository writer lacks."""
     fetch = fetch or (lambda path: _api("GET", path))
     if (run.get("app") or {}).get("slug") != "github-actions":
         return None
@@ -303,7 +310,7 @@ def check_identity(run: dict, default_branch: str, fetch=None):
         path = wf.get("path")
         if not path or not wf.get("id"):
             return None
-        where = "default" if _defined_on(wf, default_branch) else f"run:{wf['id']}"
+        where = "default" if _defined_on(wf, default_branch, fetch) else f"run:{wf['id']}"
         return (run.get("name") or "?", path, where)
     except Exception:  # noqa: BLE001 - any doubt keeps the failed run counted
         return None

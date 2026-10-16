@@ -54,7 +54,7 @@ concurrency: { group: 'pm-review-${{ github.event.comment.id || inputs.comment_i
 jobs:
   pm:
     if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
-    permissions: { contents: read, issues: write, pull-requests: write, checks: write }
+    permissions: { contents: read, issues: write, pull-requests: write, checks: write, actions: read }
     uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
     with:
       ref: <sha>
@@ -84,9 +84,14 @@ mistaken goes to the owner). A failed run stops counting only when a successful
 run that started after it is provably the same check, from GitHub's own run
 records (`check_identity` in `pm_review.py`): the same check name and workflow
 file, defined on the default branch or as a re-run attempt of the same workflow
-run. Job checks prove it through their job link; `Agent Review` stamps its run
-attempt in `external_id` and must have started while that attempt ran. A name
-or app alone proves nothing, and a skipped or neutral run sets nothing aside.
+run (a dispatch or push counts as the default branch only when its commit is
+on it). Job checks prove their run through the job link GitHub writes. `Agent
+Review` only claims its run attempt, in `external_id`, and that claim must name
+a real run of the same file and fall inside it; whoever could forge the claim
+could already rewrite the failed check, so it adds no authority. A name or app
+alone proves nothing, and a skipped or neutral run sets nothing aside. The PM
+reads run records, so its caller grants `actions: read`; without it every
+failure keeps counting.
 A PR that edits an `AGENTS.md`, or a path in
 `instruction_paths` (added to AGENTS.md, never replacing it),
 gets `HOLD`, because Codex reads those as its review instructions from the PR.
@@ -107,7 +112,7 @@ jobs:
       || (github.event.action == 'created' && startsWith(github.event.comment.body, 'HANDOFF:'))
       || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && (contains(github.event.comment.body, 'codex-review-state:v1') || contains(github.event.comment.body, 'codex-review-receipt:v1')))
     concurrency: { group: 'pm-review-${{ github.event.issue.number || inputs.pr }}', cancel-in-progress: false }
-    permissions: { contents: read, issues: write, pull-requests: write, checks: write }
+    permissions: { contents: read, issues: write, pull-requests: write, checks: write, actions: read }
     uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
     with:
       ref: <sha>

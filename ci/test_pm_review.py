@@ -467,14 +467,18 @@ GA = {"slug": "github-actions"}
 PRT = {"event": "pull_request_target", "path": ".github/workflows/agent-review.yml", "head_branch": "feature",
        "pull_requests": [{"base": {"ref": "main"}}], "status": "completed",
        "run_started_at": "2026-10-16T10:00:00Z", "updated_at": "2026-10-16T10:05:00Z"}
-WFD = dict(PRT, event="workflow_dispatch", head_branch="main", pull_requests=[],
+WFD = dict(PRT, event="workflow_dispatch", head_branch="main", pull_requests=[], head_sha="a" * 40,
            run_started_at="2026-10-16T11:00:00Z", updated_at="2026-10-16T11:05:00Z")
 RUNS = {"/actions/runs/1/attempts/1": dict(PRT, id=1), "/actions/runs/2/attempts/1": dict(WFD, id=2),
         "/actions/runs/3/attempts/1": dict(WFD, id=3, head_branch="feature"),
         "/actions/runs/4/attempts/1": dict(PRT, id=4, event="pull_request", path=".github/workflows/agent-review.yml"),
         "/actions/runs/5": dict(PRT, id=5, event="pull_request", path=".github/workflows/ci.yml"),
         "/actions/runs/6": dict(PRT, id=6, event="pull_request", path=".github/workflows/ci.yml"),
-        "/actions/runs/7/attempts/1": dict(WFD, id=7, path=".github/workflows/other.yml")}
+        "/actions/runs/7/attempts/1": dict(WFD, id=7, path=".github/workflows/other.yml"),
+        "/actions/runs/8/attempts/1": dict(WFD, id=8, head_sha="b" * 40),
+        "/branches/main": {"commit": {"sha": "c" * 40}},
+        f"/compare/{'a' * 40}...{'c' * 40}": {"status": "ahead"},
+        f"/compare/{'b' * 40}...{'c' * 40}": {"status": "diverged"}}
 
 
 def ar(i, conclusion, started, stamp, **over):
@@ -509,6 +513,8 @@ check("a forged stamp outside its run's lifetime proves nothing",
       pm.failed_checks([FAIL, dict(PASS, started_at="2026-10-16T12:00:00Z")], ident) == ["Agent Review"])
 check("a pass from a dispatch on another branch does not set aside a default-branch failure",
       pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T11:01:00Z", "run:3:1")], ident) == ["Agent Review"])
+check("a dispatch whose ref is named like the default branch but whose commit is not on it does not set it aside",
+      pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T11:01:00Z", "run:8:1")], ident) == ["Agent Review"])
 check("a pass from a pull_request run (the PR's own workflow file) does not set it aside",
       pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T10:02:00Z", "run:4:1")], ident) == ["Agent Review"])
 check("a pass from a different workflow file with the same check name does not set it aside",

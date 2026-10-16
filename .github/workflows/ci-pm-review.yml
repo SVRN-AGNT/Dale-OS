@@ -16,7 +16,7 @@
 #     pm:
 #       # A dispatch must run from the default branch, or the branch picks its own reviewer.
 #       if: (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch) || startsWith(github.event.comment.body, 'HANDOFF:')
-#       permissions: { contents: read, issues: write, pull-requests: write, checks: write }
+#       permissions: { contents: read, issues: write, pull-requests: write, checks: write, actions: read }
 #       uses: <owner>/Dale-OS/.github/workflows/ci-pm-review.yml@<sha>
 #       with:
 #         ref: <sha>   # the same sha, so the script matches the workflow
@@ -104,6 +104,8 @@ jobs:
       pull-requests: read
       issues: read
       checks: read
+      # Run records prove which workflow a check came from (pm_review.py check_identity).
+      actions: read
     outputs:
       review: ${{ steps.resolve.outputs.review }}
       notice: ${{ steps.resolve.outputs.notice }}

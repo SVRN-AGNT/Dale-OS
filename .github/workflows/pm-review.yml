@@ -41,6 +41,7 @@ jobs:
       issues: write
       pull-requests: write
       checks: write
+      actions: read
     uses: ./.github/workflows/ci-pm-review.yml
     with:
       ref: ${{ github.sha }}
