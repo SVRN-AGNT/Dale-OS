@@ -266,7 +266,9 @@ RUN_STAMP = re.compile(r"^run:(\d+):(\d+)$")
 def _defined_on(wf: dict, default_branch: str, fetch) -> bool:
     """Whether GitHub took this run's workflow file from the default branch, which a PR cannot edit."""
     event = wf.get("event")
-    if event in ("issue_comment", "workflow_run", "schedule"):
+    # pull_request_target takes its workflow file from the default branch whatever the PR's base (GitHub changelog
+    # 2025-11-07, in force since 2025-12-08).
+    if event in ("pull_request_target", "issue_comment", "workflow_run", "schedule"):
         return True
     if event in ("workflow_dispatch", "push"):
         # head_branch is only a name (a tag can share it), so the run's commit must be on the default branch.
@@ -274,9 +276,6 @@ def _defined_on(wf: dict, default_branch: str, fetch) -> bool:
             return False
         tip = ((fetch(f"/branches/{urllib.parse.quote(default_branch, safe='')}") or {}).get("commit") or {}).get("sha")
         return bool(tip) and (fetch(f"/compare/{wf['head_sha']}...{tip}") or {}).get("status") in ("identical", "ahead")
-    if event == "pull_request_target":
-        prs = wf.get("pull_requests") or []
-        return bool(prs and default_branch) and all((p.get("base") or {}).get("ref") == default_branch for p in prs)
     return False
 
 

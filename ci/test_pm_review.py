@@ -513,6 +513,10 @@ check("a forged stamp outside its run's lifetime proves nothing",
       pm.failed_checks([FAIL, dict(PASS, started_at="2026-10-16T12:00:00Z")], ident) == ["Agent Review"])
 check("a pass from a dispatch on another branch does not set aside a default-branch failure",
       pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T11:01:00Z", "run:3:1")], ident) == ["Agent Review"])
+check("a failed pull_request_target run into a non-default base is still the default-branch check",
+      pm.failed_checks([dict(FAIL, external_id="run:9:1"), PASS],
+                       lambda r: pm.check_identity(r, "main", lambda p: dict(RUNS, **{"/actions/runs/9/attempts/1": dict(
+                           PRT, id=9, pull_requests=[{"base": {"ref": "release"}}])})[p])) == [])
 check("a dispatch whose ref is named like the default branch but whose commit is not on it does not set it aside",
       pm.failed_checks([FAIL, ar(11, "success", "2026-10-16T11:01:00Z", "run:8:1")], ident) == ["Agent Review"])
 check("a pass from a pull_request run (the PR's own workflow file) does not set it aside",
