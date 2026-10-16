@@ -129,7 +129,12 @@ PM saw wakes nothing (review events would run the PR's own copy of the
 workflow, so the PM never listens to them). So with `provider: chatgpt`, a
 review timeout counts only after a dispatch re-run of the HANDOFF on the head,
 from the default branch, still gives no ruling; that run reads every finding
-and failed check on the head.
+and failed check on the head. The same re-run comes before merging on a
+`CLEAR`, since a finding Codex posts inline after the `CLEAR` wakes nothing.
+Only a run that concluded `success` and logged the PM's notice for that head
+(`the CLEAR on <head> still stands`, or `Waiting on Codex's review of <head>` /
+`Waiting on Codex's receipt for <head>` before a timeout) counts; a failed,
+cancelled or refused run does not.
 
 With `provider: chatgpt` a `CLEAR` is not final for its head. A later Codex
 summary or receipt, a repeat HANDOFF, or a dispatch re-reads the head, and a
