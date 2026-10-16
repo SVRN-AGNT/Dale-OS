@@ -180,6 +180,22 @@ check("a PR GitHub cannot list in full never merges (Codex P2 on #41)", mg.verdi
     paths=["a.py"], allowed=["Tataku"], now=NOW, identify=proven, required=(CI,), workflow_runs=[wfrun()],
     complete=False)["block"])
 
+def receipt(head=HEAD, clean=False):
+    return {"user": {"login": "chatgpt-codex-connector[bot]", "type": "Bot"},
+            "body": "<!-- codex-review-receipt:v1 -->\n\n" + ("Codex Review: Didn't find any major issues." if clean else
+                    "### Codex Review\n\nHere are some automated review suggestions") +
+                    f"\n\n**Reviewed commit:** `{head[:10]}`"}
+
+
+check("Codex's suggestions review of this head blocks even with its findings deleted (Codex P1 on #41)",
+      mg.verdict(pr=PR, head=HEAD, held=True, pr_comments=list(CLEAR_COMMENTS), review_comments=[],
+                 check_runs=list(GREEN), paths=["a.py"], allowed=["Tataku"], now=NOW, identify=proven,
+                 required=(CI,), workflow_runs=[wfrun()], codex_reviews=[receipt()])["block"])
+check("a suggestions review of an older head does not block this one", not mg.codex_suggested([receipt(OTHER)], HEAD))
+check("Codex's clean receipt is not a suggestions review", not mg.codex_suggested([receipt(clean=True)], HEAD))
+check("someone else's copy of the receipt does not count",
+      not mg.codex_suggested([dict(receipt(), user={"login": "Tataku", "type": "User"})], HEAD))
+
 # held scope never merges on the timeout
 r = v(comments=[handoff(at="2026-10-16T08:00:00Z")])
 check("held scope waits for a CLEAR even 4 hours after the HANDOFF", r["state"] == "wait" and not r["allow"])
@@ -293,6 +309,15 @@ check("unstable with every commit status green is merge-ready",
 for st in ("failure", "error", "pending"):
     check(f"unstable with a {st} commit status is not merge-ready",
           mg.not_ready(True, "unstable", HEAD, [{"context": "Vercel", "state": st}]) != "")
+combined = {}
+mg.pm._api, saved_api = (lambda *a, **k: combined), mg.pm._api
+combined = {"state": "pending", "total_count": 0, "statuses": []}
+check("no commit statuses at all is green", mg._statuses(HEAD) == [])
+combined = {"state": "failure", "total_count": 150, "statuses": [{"context": f"c{i}", "state": "success"} for i in range(100)]}
+check("a red status past the first page still counts (Codex P2 on #41)", mg._statuses(HEAD) != [])
+combined = {"state": "success", "total_count": 150, "statuses": []}
+check("a green combined status is green", mg._statuses(HEAD) == [])
+mg.pm._api = saved_api
 real_statuses, mg._statuses = mg._statuses, lambda h: unreadable()
 check("unstable whose statuses cannot be read is not merge-ready", mg.not_ready(True, "unstable", HEAD) != "")
 mg._statuses = real_statuses

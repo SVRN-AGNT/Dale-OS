@@ -91,7 +91,7 @@ def newest(runs, name: str):
 
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
-            identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True) -> dict:
+            identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True, codex_reviews=()) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
@@ -131,6 +131,10 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     out["handoff"] = bool(handoffs)
     ruled = pm.latest_ruling(pr_comments, head)
     out["pm"] = ruled[1] if ruled else None
+    if handoffs and codex_suggested(codex_reviews, head):
+        # Codex's review of this head reported findings. A submitted review cannot be deleted, its inline findings
+        # can, so this holds even when no finding is left to read (Codex P1 on #41).
+        return done("block", f"Codex's review of {head[:8]} reported findings; fix them on a new head")
     if handoffs and foreign_edits:
         return done("block", "a Codex comment was last edited by someone other than Codex (" +
                     ", ".join(sorted(set(foreign_edits))[:5]) + "), so Codex's evidence on this PR cannot be trusted")
@@ -250,6 +254,18 @@ def _paths(n: int) -> list[str]:
     return out
 
 
+def codex_suggested(reviews, head: str) -> bool:
+    """Codex submitted a review of this head that is not its "no major issues" receipt."""
+    for r in reviews or ():
+        body = r.get("body") or ""
+        if not pm._from_codex(r) or pm.CODEX_RECEIPT not in body or pm.CODEX_CLEAN.search(body):
+            continue
+        m = pm.CODEX_REVIEWED.search(body)
+        if m and str(head).lower().startswith(m.group(1).lower()):
+            return True
+    return False
+
+
 class _PathList(list):
     records = 0
 
@@ -282,7 +298,8 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
                    failed=pm.head_failed_checks(pr, head), identify=_identify(pr),
                    required=required_workflows(),
-                   workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n)) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
+                   workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n),
+                   codex_reviews=pm._paginate(f"/pulls/{n}/reviews")) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
                                                                                       "mergeable": pr.get("mergeable")}
 
 
@@ -484,8 +501,14 @@ def not_ready(mergeable, state, head: str, statuses=None, ready=MERGE_READY_STAT
 
 
 def _statuses(head: str) -> list[dict]:
-    """The newest commit status per context on `head` (GitHub's combined status)."""
-    return (pm._api("GET", f"/commits/{head}/status?per_page=100") or {}).get("statuses") or []
+    """The commit statuses on `head` that are not green, from GitHub's combined status. The combined `state` covers
+    every context, past the 100 one page lists (Codex P2 on #41); with no statuses at all it reads pending, so
+    total_count decides that case."""
+    combined = pm._api("GET", f"/commits/{head}/status?per_page=100") or {}
+    if not combined.get("total_count") or combined.get("state") == "success":
+        return []
+    red = [st for st in combined.get("statuses") or [] if st.get("state") != "success"]
+    return red or [{"context": "combined status", "state": combined.get("state")}]
 
 
 def mergeable_now(n: int, pr: dict, read=None) -> tuple:
