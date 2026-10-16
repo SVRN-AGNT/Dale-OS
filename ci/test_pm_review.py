@@ -278,7 +278,7 @@ check("a repository can name the files its AGENTS.md routes to",
 check("a HANDOFF without @codex review is told no review is coming", "no review is coming" in pm.waiting_on(f"HANDOFF: {HEAD}"))
 check("a HANDOFF with @codex review waits", "Waiting on Codex" in pm.waiting_on(f"HANDOFF: {HEAD}\n@codex review\n"))
 chat = pm.ruling_comment(pm.codex_ruling(st, [], HEAD), 12, HEAD, OTHER, 99, "https://x", "chatgpt")
-check("a Codex ruling keeps the header the dedupe reads", pm.RULING_HEADER.match(chat).group(1) == HEAD and "ChatGPT plan" in chat)
+check("a Codex ruling keeps the header the dedupe reads", pm.RULING_HEADER.match(chat).group(2) == HEAD and "ChatGPT plan" in chat)
 
 
 def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD, checks=(), **extra_env) -> dict:
@@ -342,6 +342,22 @@ for env in ({"CONTROL_ISSUE": "5506"}, {"CONTRACT_PATH": "docs/pm.md"}):
           g.get("review") == "codex" and not json.loads(g["ruling"])["ruled"])
 h = resolve_chatgpt(ask, pr_comments=[ask], files=[{"filename": "AGENTS.md"}])
 check("a PR editing AGENTS.md is held without waiting", h.get("review") == "codex" and json.loads(h["ruling"])["verdict"] == "HOLD")
+# A CLEAR is not final under chatgpt: a later Codex finding or failed check on the same head replaces it.
+for label, kw in (("finding", {"review_comments": [codex_finding(HEAD, "P1")]}), ("failed check", {"checks": [runs[0]]})):
+    late_done = codex_summary(HEAD, any_findings=True)
+    lc = resolve_chatgpt(late_done, pr_comments=[ask, codex_summary(HEAD), ruled, late_done], **kw)
+    check(f"a same-head Codex {label} after a CLEAR rules CORRECT over it", lc.get("review") == "codex"
+          and json.loads(lc["ruling"])["verdict"] == "CORRECT" and lc.get("supersede") == "true")
+    ld = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask, ruled], EXPECTED_PR="12", **kw)
+    check(f"a dispatch after a CLEAR re-reads the head and rules CORRECT on a {label}", ld.get("review") == "codex"
+          and json.loads(ld["ruling"])["verdict"] == "CORRECT" and ld.get("supersede") == "true")
+still = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask, ruled], EXPECTED_PR="12")
+check("a dispatch after a CLEAR with no new evidence posts nothing", still.get("review") == "false")
+corrected = bot(ruled["body"].replace("PM REVIEW — CLEAR", "PM REVIEW — CORRECT"))
+check("a standing CORRECT is final: a clean review cannot turn it into CLEAR",
+      resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask, corrected], EXPECTED_PR="12").get("review") == "false")
+check("a CLEAR on an older head gives no recheck of this one",
+      resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask, bot(ruled["body"].replace(HEAD, OTHER))]).get("supersede") is None)
 
 
 def post_chatgpt(**env) -> list:
@@ -374,6 +390,17 @@ check("a HANDOFF that never asked Codex is told so on the PR",
 cl = post_chatgpt(REVIEW="codex", RULING=json.dumps(pm.codex_ruling(st, [], HEAD)))
 check("a Codex CLEAR posts a success check and a PM REVIEW comment", posted_check(cl)["conclusion"] == "success"
       and any(path.endswith("/comments") and body["body"].startswith("PM REVIEW — CLEAR") for _, path, body in cl))
+bad_ruling = json.dumps(pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD))
+pm._paginate = lambda path: [ruled] if path == "/issues/12/comments" else []
+over = post_chatgpt(REVIEW="codex", SUPERSEDE="true", RULING=bad_ruling)
+kept = post_chatgpt(REVIEW="codex", SUPERSEDE="true", RULING=json.dumps(pm.codex_ruling(st, [], HEAD)))
+pm._paginate = lambda path: [ruled, bot(ruled["body"].replace("PM REVIEW — CLEAR", "PM REVIEW — CORRECT"))] if path == "/issues/12/comments" else []
+twice = post_chatgpt(REVIEW="codex", SUPERSEDE="true", RULING=bad_ruling)
+pm._paginate = saved_pag
+check("a superseding CORRECT posts a failure check and comment over the CLEAR", posted_check(over)["conclusion"] == "failure"
+      and any(path.endswith("/comments") and body["body"].startswith("PM REVIEW — CORRECT") for _, path, body in over))
+check("a superseding run never posts another CLEAR", not any(m == "POST" for m, _, _ in kept))
+check("a second superseding run after the CORRECT posts nothing", not any(m == "POST" for m, _, _ in twice))
 for junk in ["", "nope", "[]", json.dumps({"conclusion": "success"})]:
     jc = post_chatgpt(REVIEW="codex", RULING=junk)
     check(f"an unreadable ruling {junk[:12]!r} is never a success", posted_check(jc)["conclusion"] == "action_required")

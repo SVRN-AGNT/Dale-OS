@@ -115,6 +115,7 @@ jobs:
       final_message: ${{ steps.codex.outputs.final-message }}
       ruling: ${{ steps.resolve.outputs.ruling }}
       resolved_base_sha: ${{ steps.resolve.outputs.base_sha }}
+      supersede: ${{ steps.resolve.outputs.supersede }}
     steps:
       - name: Checkout the caller's merged default branch (never the PR)
         if: inputs.provider == 'api'
@@ -230,6 +231,7 @@ jobs:
           BASE_SHA: ${{ needs.review.outputs.base_sha || needs.review.outputs.resolved_base_sha }}
           RULING: ${{ needs.review.outputs.ruling }}
           HANDOFF_ID: ${{ needs.review.outputs.handoff_id }}
+          SUPERSEDE: ${{ needs.review.outputs.supersede }}
           FINAL_MESSAGE: ${{ needs.review.outputs.final_message }}
           REVIEW_RESULT: ${{ needs.review.result }}
         run: python3 shared/ci/pm_review.py post
