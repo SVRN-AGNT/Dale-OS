@@ -157,6 +157,9 @@ jobs:
             core.setOutput('capped', String(capped));
             const check = await github.rest.checks.create({
               owner, repo, name: 'Agent Review', head_sha: pr.head.sha, status: 'in_progress',
+              // The run attempt that posts this check, so the PM can prove that a newer run of this
+              // workflow is the same check as an older one (ci/pm_review.py check_identity).
+              external_id: `run:${context.runId}:${process.env.GITHUB_RUN_ATTEMPT}`,
               output: { title: 'Reviewing', summary: `Independent agent review of ${pr.head.sha.slice(0, 8)} in progress.` },
             });
             // Only same-repository PRs by an allowlisted author into the reviewed base reach
