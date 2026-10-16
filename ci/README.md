@@ -233,6 +233,21 @@ jobs:
       merge_token: ${{ secrets.INTEGRATION_TOKEN }}
 ```
 
+**Threat model.** The gate decides on evidence; this is what it defends and what it trusts.
+
+- *Defends against the PR itself:* everything on the PR head, including code its workflows run. Every
+  `pull_request` workflow in these repositories gets a read-only `GITHUB_TOKEN`; a PR can only change that by
+  changing `.github/workflows/`, which is held scope and needs Codex's CLEAR on that exact diff.
+- *Defends against timing:* findings that land after a CLEAR, pushes between reads, mergeability changing, and
+  re-runs (two reads 90s apart, the exact head on the merge call, live re-derivation of the PM ruling).
+- *Trusts the default branch's workflows* (`agent-review.yml`, `pm-review.yml`, the required CI files), GitHub's own
+  records (workflow runs, check-run app, comment editor), and Codex's app as the author of Codex's comments.
+- *Does not defend against a repository writer deliberately forging evidence* (Dale, the Claude app, agent
+  sessions): a writer can run a modified workflow on another branch whose `GITHUB_TOKEN` posts a check as
+  `github-actions` on any sha. GitHub has no native way to tell workflows apart inside that app. Closing this needs a
+  dedicated review GitHub App whose key lives only in an environment limited to the default branch, the review
+  checks posted as that App, and the gate (plus a ruleset) requiring that App's id; that is an owner action.
+
 Known limit, accepted because held scope also needs Codex's CLEAR on the same head: the `Agent Review` check is
 proven by the run that posted it, not by who last set its conclusion, so a workflow a PR adds could restate it; that
 PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. CI is read from GitHub's
