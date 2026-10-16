@@ -416,7 +416,9 @@ wf = (HERE.parent / ".github" / "workflows" / "ci-merge-lane.yml").read_text()
 code = re.sub(r"(?m)^\s*#.*$", "", wf)
 check("the lane never checks out or runs the PR", "refs/pull" not in code and "github.event.pull_request.head" not in code)
 check("the lane's merge token is optional and passed only to the lane step",
-      code.count("merge_token") >= 2 and "MERGE_TOKEN: ${{ secrets.merge_token }}" in code)
+      "MERGE_TOKEN: ${{ secrets.INTEGRATION_TOKEN }}" in code and code.count("secrets.INTEGRATION_TOKEN") == 1)
+check("the merge token is read only in the default-branch-only environment",
+      "environment: merge-lane" in code and "merge_token" not in code)
 check("the job has a timeout", code.count("runs-on:") == 1 and "timeout-minutes:" in code)
 check("one lane run at a time per repository, never cancelled mid-merge",
       "cancel-in-progress: false" in code)

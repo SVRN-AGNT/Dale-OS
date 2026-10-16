@@ -230,8 +230,12 @@ jobs:
       required_workflows: |                # the repository's CI workflow files, one per line; '' only with no CI
         .github/workflows/<ci>.yml
     secrets:
-      merge_token: ${{ secrets.INTEGRATION_TOKEN }}
+      INTEGRATION_TOKEN: ${{ secrets.INTEGRATION_TOKEN }}   # stored ONLY in the `merge-lane` environment
 ```
+
+Store `INTEGRATION_TOKEN` only as a secret of a `merge-lane` environment whose deployment branches are the
+default branch alone, never as a repository or organization secret: same-repository `pull_request` runs receive
+every repository secret, so a PR adding a workflow could use the token to merge itself before any review.
 
 **Threat model.** The gate decides on evidence; this is what it defends and what it trusts.
 

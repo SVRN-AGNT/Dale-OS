@@ -35,4 +35,4 @@ jobs:
       held_paths: '^(\.github/workflows/|ci/)'
       required_workflows: .github/workflows/validate.yml
     secrets:
-      merge_token: ${{ secrets.INTEGRATION_TOKEN }}
+      INTEGRATION_TOKEN: ${{ secrets.INTEGRATION_TOKEN }}
