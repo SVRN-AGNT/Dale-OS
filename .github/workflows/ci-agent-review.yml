@@ -223,9 +223,11 @@ jobs:
 
       - name: Install the reviewer CLI
         if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
-        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2
+        # Exact version: this job holds the subscription token, so no floating major.
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.296
 
       - name: Review
+        id: review
         if: steps.pr.outputs.eligible == 'true' && steps.cred.outputs.available == 'true'
         working-directory: caller
         env:
@@ -256,6 +258,7 @@ jobs:
           ELIGIBLE: ${{ steps.pr.outputs.eligible }}
           CAPPED: ${{ steps.pr.outputs.capped }}
           HAS_CRED: ${{ steps.cred.outputs.available }}
+          REVIEW_OUTCOME: ${{ steps.review.outcome }}
         with:
           script: |
             const fs = require('fs');
@@ -269,8 +272,13 @@ jobs:
               r = { conclusion: 'action_required', title: 'Not eligible for autonomous review',
                     summary: 'Only same-repository PRs by an allowlisted author into the reviewed branch are reviewed by the agent. A person must review this PR.' };
             } else if (process.env.HAS_CRED !== 'true') {
-              r = { conclusion: 'neutral', title: 'Agent review not configured',
+              // action_required, not neutral: GitHub counts neutral as passing for a required check.
+              r = { conclusion: 'action_required', title: 'Agent review not configured',
                     summary: 'No CLAUDE_CODE_OAUTH_TOKEN secret reaches this repository, so no review ran. This PR is UNREVIEWED.' };
+            } else if (process.env.REVIEW_OUTCOME !== 'success') {
+              // A verdict file from a step that did not finish cleanly is not trusted.
+              r = { conclusion: 'action_required', title: `Agent review did not reach a verdict on ${at}`,
+                    summary: `The review step ended ${process.env.REVIEW_OUTCOME || 'without running'}. This is not an approval; re-run this workflow.` };
             } else {
               try { r = JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/verdict.json`, 'utf8')); }
               catch { r = { conclusion: 'action_required', title: `Agent review did not reach a verdict on ${at}`,

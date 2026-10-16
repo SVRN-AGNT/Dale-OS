@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  credentialAttempts, interpretResult, reuseVerdict, buildPrompt, diffExternalId,
+  credentialAttempts, interpretResult, reuseVerdict, buildPrompt, diffExternalId, redactSecrets,
   ALLOWED_TOOLS, DISALLOWED_TOOLS,
 } from './review.mjs';
 import { capReached, paidRuns, DAY_MS } from './spendCap.mjs';
@@ -58,12 +58,23 @@ test('the prompt names the caller base branch and fences the PR text as data', (
   assert.match(p, /into `main`/);
   assert.doesNotMatch(p, /preview/);
   assert.match(p, /untrusted text/);
+  assert.match(p, /there is no shell/);
+  assert.doesNotMatch(p, /git (show|grep|diff|log) /);
   assert.doesNotMatch(p, /ignore previous ```/);
 });
 
-test('the reviewer has no write, network or agent tools', () => {
-  for (const t of ['Edit', 'Write', 'WebFetch', 'WebSearch', 'Agent']) assert.ok(DISALLOWED_TOOLS.includes(t));
-  for (const t of ALLOWED_TOOLS) assert.ok(/^(Read|Grep|Glob|Bash\(git (diff|show|log|grep) \*\))$/.test(t), t);
+test('the reviewer reads files only: no shell (git -O and --output run and write), network or agent', () => {
+  assert.deepEqual([...ALLOWED_TOOLS], ['Read', 'Grep', 'Glob']);
+  for (const t of ['Bash', 'Edit', 'Write', 'WebFetch', 'WebSearch', 'Agent', 'Read(//proc/**)']) assert.ok(DISALLOWED_TOOLS.includes(t), t);
+});
+
+test('a credential never rides out in the public verdict', () => {
+  // Built at run time so the repository's own secret scan never sees a key shape.
+  const prefix = ['sk', 'ant'].join('-');
+  const token = `${prefix}-oat01-abcdefghijklmnop`;
+  assert.equal(redactSecrets(`leak ${token} here`, [token]), 'leak [redacted] here');
+  assert.equal(redactSecrets(`key ${prefix}-api03-zzzzzzzzzzzz`, []), 'key [redacted]');
+  assert.equal(redactSecrets('nothing to hide', [token]), 'nothing to hide');
 });
 
 test('the run cap counts every non-skipped run and fails closed on re-runs', () => {

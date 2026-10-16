@@ -106,8 +106,9 @@ jobs:
 
 Only same-repository PRs by an allowlisted author reach the model, so on a
 public repository a stranger's PR never spends the subscription. The reviewer
-has read-only file and `git` tools, no network tool, and never reads PR
-comments.
+has file-reading tools only (no shell, not even git: `git grep -O` runs
+commands), no network tool, and never reads PR comments; any credential is
+redacted from the verdict it posts.
 
 ## What stays per repository
 
