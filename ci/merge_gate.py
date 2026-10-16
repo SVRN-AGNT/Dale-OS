@@ -54,6 +54,7 @@ AGENT_REVIEW = "Agent Review"
 # Codex's summary, its review and its inline findings arrive as separate events. A merge reads the evidence twice,
 # this many seconds apart, and merges only if the second read still allows the same head.
 SETTLE_SECONDS = 90
+MERGEABLE_POLLS, MERGEABLE_WAIT = 6, 5
 # The only workflow whose Agent Review check counts, and only as defined on the default branch.
 AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
@@ -270,13 +271,18 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         lines.append(f"#{n} {v['head'][:8]} {'held' if v['held'] else 'ordinary'}: {v['state'].upper()} — {'; '.join(v['reasons'])}")
         if not v["allow"]:
             continue
-        if v.get("mergeable") is not True:
-            lines.append(f"#{n}: not merged, GitHub reports mergeable={v.get('mergeable')}")
+        if v.get("mergeable") is False:
+            lines.append(f"#{n}: not merged, GitHub reports it not mergeable")
             continue
         v2 = settled(n, v, lambda: evaluate(n, v["head"], held_rx, None, allowed, instr))
         if not v2["allow"]:
             lines.append(f"#{n}: not merged, the second read {SETTLE_SECONDS}s later says {v2['state'].upper()} — "
                          f"{'; '.join(v2['reasons'])}")
+            continue
+        # null means GitHub has not finished computing it yet: poll, as its REST docs say (Codex P1 on #41).
+        mergeable = mergeable_now(n, v2.get("mergeable"))
+        if mergeable is not True:
+            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable}")
             continue
         msg = (f"Merged by the merge lane (Dale-OS ci/merge_gate.py) on both reviewers' evidence for {v['head']}:\n"
                f"{'; '.join(v['reasons'])}.\nNo person typed this merge (owner ruling 2026-10-16).")
@@ -295,6 +301,20 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         with open(env["GITHUB_STEP_SUMMARY"], "a") as f:
             f.write(f"## Merge lane: {merged} merged\n\n```text\n{report}\n```\n")
     return 0
+
+
+def mergeable_now(n: int, mergeable, read=None):
+    """GitHub's mergeable for PR n, polled while it is still null (computed asynchronously), MERGEABLE_POLLS times."""
+    read = read or (lambda: pm._api("GET", f"/pulls/{n}").get("mergeable"))
+    for _ in range(MERGEABLE_POLLS):
+        if mergeable is not None:
+            break
+        time.sleep(MERGEABLE_WAIT)
+        try:
+            mergeable = read()
+        except (urllib.error.URLError, KeyError, ValueError):
+            mergeable = None
+    return mergeable
 
 
 def settled(n: int, first: dict, read) -> dict:

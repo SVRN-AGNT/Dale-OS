@@ -163,6 +163,11 @@ def unreadable():
 
 
 check("an unreadable second read stops the merge", not mg.settled(12, ALLOW, unreadable)["allow"])
+answers = iter([None, None, True])
+check("a null mergeable is polled until GitHub computes it (Codex P1 on #41)",
+      mg.mergeable_now(12, None, lambda: next(answers)) is True)
+check("a known mergeable is not re-read", mg.mergeable_now(12, False, unreadable) is False)
+check("a mergeable that stays null is not a merge", mg.mergeable_now(12, None, lambda: None) is None)
 merged = []
 mg._open_prs = lambda base: [{"number": 12, "title": "t"}]
 mg._merge = lambda *a: merged.append(a)
@@ -173,6 +178,10 @@ os.environ.setdefault("GITHUB_TOKEN", "t")
 os.environ.pop("GITHUB_STEP_SUMMARY", None)
 mg.lane("main", "", ["Tataku"], "")
 check("the lane does not merge when the second read blocks", merged == [])
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=None), dict(ALLOW, mergeable=None)])
+mg.pm._api = lambda *a, **k: {"mergeable": True}
+mg.lane("main", "", ["Tataku"], "")
+check("the lane merges once a null mergeable resolves to true", len(merged) == 1)
 
 # workflow shape
 wf = (HERE.parent / ".github" / "workflows" / "ci-merge-lane.yml").read_text()
