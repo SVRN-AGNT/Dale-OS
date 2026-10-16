@@ -1,0 +1,98 @@
+# Reusable: merge a reviewed-by-both PR with no person typing "merge".
+#
+# Owner, 2026-10-16: "i should NEVER really need to type for you to merge
+# things ..... this needs to be handled via our autonomous flow". Held PRs
+# (workflows, merge tooling, authority sources) waited for that typed word
+# because a Claude session merged them through the owner's admin bypass, and
+# its safety check rightly refuses that without him. This job merges them
+# instead, from Actions, on evidence: a PR whose exact head carries a HANDOFF
+# merges when Agent Review passed on that head and the PM's CLEAR on it still
+# stands when re-derived from Codex's own comments at merge time. Logic and
+# rationale: ci/merge_gate.py. A timeout alone never merges held scope.
+#
+# A PR without a HANDOFF is left alone: ordinary PRs keep their repository's
+# own rule. The lane only adds the reviewed-by-both path.
+#
+# Caller (one small file per repository; ci/README.md has the full block):
+#
+#   on:
+#     workflow_run: { workflows: [pm-review, agent-review, <CI>], types: [completed] }
+#     workflow_dispatch:
+#   permissions: { contents: read }
+#   jobs:
+#     lane:
+#       permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read }
+#       uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-merge-lane.yml@<sha>
+#       with: { ref: <sha>, held_paths: '<the PM caller's regex>' }
+#       secrets: { merge_token: ${{ secrets.INTEGRATION_TOKEN }} }
+#
+# MERGE TOKEN. GitHub refuses to let GITHUB_TOKEN merge a PR that changes
+# `.github/workflows/` ("refusing to allow a GitHub App to create or update
+# workflow ... without `workflows` permission"), and GITHUB_TOKEN can never hold
+# that permission. `merge_token` is a fine-grained token with Contents, Pull
+# requests and Workflows (read and write). Without it, the lane still merges
+# PRs that touch no workflow file and says plainly which ones it could not.
+#
+# It never reviews, approves, marks ready, deploys, or runs anything from a PR.
+name: ci-merge-lane
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Dale-OS ref to take the gate from; pin it to the same sha as `uses:`
+        type: string
+        required: true
+      held_paths:
+        description: Regex of paths the repository holds (the same one its PM caller passes)
+        type: string
+        default: '^\.github/workflows/'
+      allowed_authors:
+        description: Comma-separated GitHub logins whose HANDOFFs count
+        type: string
+        default: Tataku
+      instruction_paths:
+        description: The PM caller's instruction_paths, if it sets one
+        type: string
+        default: ''
+    secrets:
+      merge_token:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  lane:
+    name: Merge reviewed-by-both PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # One lane run per repository at a time. Never cancelled: a cancelled run
+    # could stop between the gate's read and the merge.
+    concurrency:
+      group: merge-lane-${{ github.repository }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      checks: read
+      actions: read   # the PM's check_identity reads workflow runs; without it every old failure keeps counting
+    steps:
+      - name: Checkout the shared gate (never the PR)
+        uses: actions/checkout@v4
+        with:
+          repository: SVRN-AGNT/Dale-OS
+          ref: ${{ inputs.ref }}
+          path: shared
+          sparse-checkout: ci
+          persist-credentials: false
+      - name: Merge what both reviewers cleared
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_TOKEN: ${{ secrets.merge_token }}
+          MERGE_LANE: ${{ vars.MERGE_LANE }}
+          HELD_PATHS: ${{ inputs.held_paths }}
+          ALLOWED_AUTHORS: ${{ inputs.allowed_authors }}
+          INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
+        run: python3 shared/ci/merge_gate.py lane
