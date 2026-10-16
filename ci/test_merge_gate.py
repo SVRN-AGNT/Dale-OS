@@ -218,10 +218,22 @@ check("a mergeable that stays null is not a merge", mg.mergeable_now(12, {"merge
 answers = iter([{"mergeable": True, "mergeable_state": "behind"}])
 check("the state comes from the same read as the mergeable it resolves (Codex P1 on #41)",
       mg.mergeable_now(12, {"mergeable": None, "mergeable_state": "unknown"}, lambda: next(answers)) == (True, "behind"))
+check("clean is merge-ready", mg.not_ready(True, "clean", HEAD, []) == "")
+for state in ("blocked", "behind", "dirty", "draft", "unknown", None, "something-new"):
+    check(f"{state} is never merge-ready on a bypass token (Codex P1 on #41)", mg.not_ready(True, state, HEAD, []) != "")
+check("unstable with every commit status green is merge-ready",
+      mg.not_ready(True, "unstable", HEAD, [{"context": "Vercel", "state": "success"}]) == "")
+for st in ("failure", "error", "pending"):
+    check(f"unstable with a {st} commit status is not merge-ready",
+          mg.not_ready(True, "unstable", HEAD, [{"context": "Vercel", "state": st}]) != "")
+real_statuses, mg._statuses = mg._statuses, lambda h: unreadable()
+check("unstable whose statuses cannot be read is not merge-ready", mg.not_ready(True, "unstable", HEAD) != "")
+mg._statuses = real_statuses
+check("a null mergeable is never merge-ready", mg.not_ready(None, "clean", HEAD, []) != "")
 merged = []
 mg._open_prs = lambda base: [{"number": 12, "title": "t"}]
 mg._merge = lambda *a: merged.append(a)
-reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True),
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state="clean"),
               {"allow": False, "state": "block", "head": HEAD, "reasons": ["late CORRECT"], "handoff": True}])
 mg.evaluate = lambda *a, **k: next(reads)
 os.environ.setdefault("GITHUB_TOKEN", "t")
@@ -255,10 +267,23 @@ reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_sta
 mg.lane("main", "", ["Tataku"], "")
 check("a final read that turned behind is not merged", len(merged) == 2)
 mg.evaluate = lambda *a, **k: next(reads)
-for state in ("behind", "dirty"):
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state="clean"),
+              dict(ALLOW, mergeable=True, mergeable_state="blocked")])
+mg.lane("main", "", ["Tataku"], "")
+check("a final read that turned blocked is not merged on a bypass token (Codex P1 on #41)", len(merged) == 2)
+mg._statuses = lambda h: [{"context": "Vercel", "state": "failure"}]
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state="unstable")])
+mg.lane("main", "", ["Tataku"], "")
+check("an unstable PR with a failed commit status is not merged", len(merged) == 2)
+mg._statuses = lambda h: [{"context": "Vercel", "state": "success"}]
+reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state="unstable"),
+              dict(ALLOW, mergeable=True, mergeable_state="unstable")])
+mg.lane("main", "", ["Tataku"], "")
+check("an unstable PR whose statuses are all green merges (its check runs are the gate's evidence)", len(merged) == 3)
+for state in ("behind", "dirty", "blocked"):
     reads = iter([dict(ALLOW, handoff=True, held=True, mergeable=True, mergeable_state=state)])
     mg.lane("main", "", ["Tataku"], "")
-    check(f"the lane never merges a {state} PR on a bypass token", len(merged) == 2)
+    check(f"the lane never merges a {state} PR on a bypass token", len(merged) == 3)
 
 # workflow shape
 wf = (HERE.parent / ".github" / "workflows" / "ci-merge-lane.yml").read_text()

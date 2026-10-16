@@ -57,9 +57,10 @@ AGENT_REVIEW = "Agent Review"
 # this many seconds apart, and merges only if the second read still allows the same head.
 SETTLE_SECONDS = 90
 MERGEABLE_POLLS, MERGEABLE_WAIT = 6, 5
-# The merge token may bypass branch rules, so the lane itself refuses what a rule would: a conflict, a branch behind a
-# base that requires it to be current, and a draft.
-REFUSED_STATES = ("dirty", "behind", "draft")
+# The merge token may bypass branch rules, and GitHub's merge endpoint runs none of them, so the lane merges only from a
+# merge-ready state (Codex P1 on #41): clean, has_hooks, or unstable when every commit status is green (the gate itself
+# has already proven every check run). blocked, behind, dirty, draft, unknown and anything new are refused.
+MERGE_READY_STATES = ("clean", "has_hooks", "unstable")
 # The only workflow whose Agent Review check counts, and only as defined on the default branch.
 AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
@@ -323,8 +324,9 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         # runs BEFORE the settled read, so nothing but that read stands between the evidence and the merge call: a
         # finding that lands while GitHub computes mergeability is still seen (Codex P1 on #41).
         mergeable, state = mergeable_now(n, v)
-        if mergeable is not True or state in REFUSED_STATES:
-            lines.append(f"#{n}: not merged, GitHub reports mergeable={mergeable} ({state})")
+        why = not_ready(mergeable, state, v["head"])
+        if why:
+            lines.append(f"#{n}: not merged, {why}")
             continue
         v2 = settled(n, v, lambda: evaluate(n, v["head"], held_rx, None, allowed, instr))
         if not v2["allow"]:
@@ -333,9 +335,9 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
             continue
         # The final read must itself say mergeable and not refused; a null here waits for the next lane run rather than
         # polling again after the evidence was read.
-        if v2.get("mergeable") is not True or v2.get("mergeable_state") in REFUSED_STATES:
-            lines.append(f"#{n}: not merged, the second read reports mergeable={v2.get('mergeable')} "
-                         f"({v2.get('mergeable_state')}); the next lane run retries")
+        why = not_ready(v2.get("mergeable"), v2.get("mergeable_state"), v["head"])
+        if why:
+            lines.append(f"#{n}: not merged, on the second read {why}; the next lane run retries")
             continue
         msg = (f"Merged by the merge lane (Dale-OS ci/merge_gate.py) on both reviewers' evidence for {v['head']}:\n"
                f"{'; '.join(v['reasons'])}.\nNo person typed this merge (owner ruling 2026-10-16).")
@@ -354,6 +356,27 @@ def lane(base: str, held_rx: str, allowed, instr: str) -> int:
         with open(env["GITHUB_STEP_SUMMARY"], "a") as f:
             f.write(f"## Merge lane: {merged} merged\n\n```text\n{report}\n```\n")
     return 0
+
+
+def not_ready(mergeable, state, head: str, statuses=None) -> str:
+    """Why GitHub's mergeability for `head` is not merge-ready, or "" when it is (see MERGE_READY_STATES)."""
+    if mergeable is not True or state not in MERGE_READY_STATES:
+        return f"GitHub reports mergeable={mergeable} ({state})"
+    if state == "unstable":
+        # unstable = a non-passing commit status or check. Check runs are the gate's own evidence; statuses are not.
+        try:
+            statuses = _statuses(head) if statuses is None else statuses
+        except (urllib.error.URLError, KeyError, ValueError) as e:
+            return f"GitHub reports unstable and its commit statuses could not be read ({e})"
+        red = sorted(f"{s.get('context')}={s.get('state')}" for s in statuses if s.get("state") != "success")
+        if red:
+            return f"GitHub reports unstable: commit status {', '.join(red)}"
+    return ""
+
+
+def _statuses(head: str) -> list[dict]:
+    """The newest commit status per context on `head` (GitHub's combined status)."""
+    return (pm._api("GET", f"/commits/{head}/status?per_page=100") or {}).get("statuses") or []
 
 
 def mergeable_now(n: int, pr: dict, read=None) -> tuple:

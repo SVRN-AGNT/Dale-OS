@@ -237,7 +237,7 @@ Known limit, accepted because held scope also needs Codex's CLEAR on the same he
 proven by the run that posted it, not by who last set its conclusion, so a workflow a PR adds could restate it; that
 PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. CI is read from GitHub's
 workflow-run records, which no posted check can stand in for. The
-merge token may bypass branch rules, so the lane itself refuses a conflicted, behind or draft PR.
+merge token may bypass branch rules, so the lane itself merges only from a merge-ready state: `clean`, `has_hooks`, or `unstable` with every commit status green. `blocked`, `behind`, `dirty`, `draft` and `unknown` are refused.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
 in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to
