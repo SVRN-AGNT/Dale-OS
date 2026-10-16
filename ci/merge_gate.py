@@ -86,7 +86,7 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
-    `identify` is the PM's check_identity for this repository; held scope counts an Agent Review only when it proves
+    `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts."""
     now = now or dt.datetime.now(dt.timezone.utc)
     head = str(head or "").lower()
@@ -141,10 +141,8 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
         else:
             return done("wait", f"waiting on the PM's ruling for {head[:8]} (2-hour timeout from the HANDOFF)")
 
-    if not held:
-        return done("allow", f"PM {out['pm'] or 'timeout'} on {head[:8]}, re-derived now")
-
-    # Held scope: the first reviewer too, and nothing on the head still running.
+    # The first reviewer too, and nothing on the head still running, held or not (Codex P1 on #41: a non-held
+    # HANDOFF must not merge on the PM alone while Agent Review is missing or running).
     ar = newest(check_runs, AGENT_REVIEW)
     if not ar or ar.get("status") != "completed":
         return done("wait", f"waiting on Agent Review of {head[:8]}")
@@ -154,10 +152,13 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
                              f"{AGENT_REVIEW_PATH}")
     if ar.get("conclusion") != "success":
         return done("block", f"Agent Review on {head[:8]} is {ar.get('conclusion')}: {(ar.get('output') or {}).get('title') or ''}".rstrip(": "))
-    running = sorted({r.get("name") or "?" for r in check_runs if r.get("status") != "completed"})
+    # The PM's own check is left out: its ruling is re-derived above, and its "waiting" check is never completed
+    # (the ruling posts a new one), so it would read as running forever (Codex P1 on #41).
+    running = sorted({r.get("name") or "?" for r in check_runs
+                      if r.get("status") != "completed" and r.get("name") != pm.PM_CHECK})
     if running:
         return done("wait", f"checks still running on {head[:8]}: {', '.join(running)}")
-    return done("allow", f"Agent Review passed and the PM's CLEAR on {head[:8]} still stands")
+    return done("allow", f"Agent Review passed and the PM's {out['pm'] or 'timeout'} on {head[:8]} still stands")
 
 
 def _ts(s):

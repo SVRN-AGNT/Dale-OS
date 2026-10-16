@@ -103,6 +103,12 @@ check("held scope waits for a CLEAR even 4 hours after the HANDOFF", r["state"] 
 check("non-held scope waits inside 2 hours", v(held=False, comments=[handoff()])["state"] == "wait")
 check("non-held scope may merge on the 2-hour timeout",
       v(held=False, comments=[handoff(at="2026-10-16T09:59:00Z")])["allow"])
+check("non-held scope with a HANDOFF still needs Agent Review (Codex P1 on #41)",
+      not v(held=False, checks=[run("ci", rid=2)])["allow"])
+check("non-held scope with a HANDOFF waits while Agent Review runs",
+      v(held=False, checks=[run("Agent Review", status="in_progress"), run("ci", rid=2)])["state"] == "wait")
+check("non-held scope with a HANDOFF is blocked by a failed Agent Review",
+      v(held=False, checks=[run("Agent Review", "failure"), run("ci", rid=2)])["block"])
 check("non-held scope with a CORRECT is blocked whatever the clock",
       v(held=False, comments=[handoff(at="2026-10-16T01:00:00Z"), summary(), ruling("CORRECT")])["block"])
 check("non-held scope with no HANDOFF is left to its own rule", v(held=False, comments=[])["allow"])
@@ -114,6 +120,8 @@ check("Agent Review changes requested blocks", v(checks=[run("Agent Review", "fa
 check("a newer Agent Review from another app does not stand in",
       v(checks=[run("Agent Review", status="in_progress"), run("Agent Review", started="2026-10-16T11:00:00Z", rid=9, app="x")])["state"] == "wait")
 check("a check still running on a held head: wait", v(checks=GREEN + [run("build", status="queued", rid=4)])["state"] == "wait")
+check("the PM's own never-completed waiting check does not hold the merge forever (Codex P1 on #41)",
+      v(checks=GREEN + [run("PM Review", status="in_progress", rid=5)])["allow"])
 
 # only the trusted reviewer workflow's check counts (Codex P1 on #41)
 late = "2026-10-16T11:00:00Z"

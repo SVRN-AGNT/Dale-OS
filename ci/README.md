@@ -205,7 +205,7 @@ person typing "merge". The lane merges a PR when, on its exact head:
 2. the PM's latest ruling is CLEAR **and** re-deriving it now from Codex's own
    comments and the head's checks (the PM's own functions) still gives CLEAR,
    so a Codex finding posted after the CLEAR blocks the merge;
-3. for held scope, the newest `Agent Review` passed and no check is still running.
+3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`) and no check other than the PM's own is still running, held or not.
 
 A held PR never merges on the 2-hour timeout. A PR with no HANDOFF is left to
 the repository's own rule. An `owner-hold`, `do-not-merge` or `integration-hold`
