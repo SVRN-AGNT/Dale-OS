@@ -142,6 +142,7 @@ Dale-OS/
 ├── ci/                      # shared CI layer other repositories call
 ├── tools/                   # deterministic, read-only financial checks
 ├── evals/                   # activation, behavior, composition, fixtures
+├── plugin-evals/            # activation routes as claude plugin eval cases
 ├── cases/                   # sanitized incidents that paid for rules
 ├── machine/                 # routing, composition, discovery contracts
 ├── adapters/                # host-specific distributions/guidance

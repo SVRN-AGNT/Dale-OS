@@ -14,6 +14,22 @@ claude plugin install dale-os-financial-truth@dale-os
 
 Inside a session, `/plugin install dale-os-operator --marketplace SVRN-AGNT/Dale-OS` does both steps at once (Claude Code 2.1.275 or later). Skills load namespaced, for example `dale-os-operator:systemic-bug-instinct`. For reproducible behavior, pin with `claude plugin marketplace add SVRN-AGNT/Dale-OS@<TAG>`, using a tag that already contains `.claude-plugin/marketplace.json`.
 
+To try a family from a checkout without installing it, load its directory directly. Each family folder carries its own `.claude-plugin/plugin.json` for this:
+
+```bash
+claude --plugin-dir skills/operator
+```
+
+### Measure whether the skills fire
+
+`plugin-evals/activation/` holds one `claude plugin eval` case per activation route: each positive checks that its skill fires, and each confuser checks that it does not. `scripts/build_plugin_evals.py` generates the cases from `evals/activation/corpus.jsonl`. Run them from a checkout:
+
+```bash
+claude plugin eval . --eval-dir plugin-evals --ablation none --runs 3
+```
+
+Each run is a real model session on your own credential. A full pass is 62 cases. `PROOF.md` records the last measured rates and what they do and do not show.
+
 ## Other Agent Skills hosts
 
 ```bash

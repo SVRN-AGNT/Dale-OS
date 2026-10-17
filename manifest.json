@@ -190,7 +190,7 @@
       "name": "memory-promotion",
       "family": "operator",
       "path": "skills/operator/memory-promotion/SKILL.md",
-      "description": "Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when an agent is about to \"remember\" a lesson, rule, preference, or pattern; at the end of a session or a long autonomous run; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.",
+      "description": "Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when asked to remember, save, or record what was learned; when a session or long autonomous run is wrapping up; when an agent is about to store a lesson, rule, preference, or pattern; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.",
       "rule": "**The inbox can be messy. Memory cannot be. Remember less, better.** Durable memory steers every future session, so a wrong or noisy note is a bug that repeats. Keep four things apart: raw context, verified evidence, durable memory, and authorized action. Most of what an agent notices belongs in the first two.",
       "falsify": "Take the last five notes added and run each through the gate. Count how many fail a check. Then search the store for two notes that disagree, or one that the current code contradicts. Either finding means the gate or the collection is not running.",
       "deterministic_companion": false
@@ -208,7 +208,7 @@
       "name": "operator-ui-audit",
       "family": "operator",
       "path": "skills/operator/operator-ui-audit/SKILL.md",
-      "description": "Audit dense operational or financial UI without jumping straight to restyling. Use for screenshots, confusing dashboards, wrong displayed values, hierarchy problems, inconsistent modes, or requests to make an interface clearer while preserving workflows and data truth.",
+      "description": "Audit dense operational or financial UI before restyling or patching it. Use first when a dashboard, screen, or screenshot shows a wrong or confusing value, a hierarchy problem, or inconsistent modes, to decide whether source data, state, or presentation is responsible; or when asked to make an interface clearer while preserving workflows and data truth. Do not use once the cause is known to be a code defect behind the screen (use systemic-bug-instinct).",
       "rule": "**A wrong value in the UI is usually a data problem wearing a costume.**",
       "falsify": "Try to prove the problem is actually visual. Trace the displayed value and state to their authority first; if the underlying truth is wrong, do not call it a styling problem.",
       "deterministic_companion": false
@@ -271,7 +271,7 @@
       "name": "systemic-bug-instinct",
       "family": "operator",
       "path": "skills/operator/systemic-bug-instinct/SKILL.md",
-      "description": "Diagnose bugs as potentially systemic failures. Use when a defect, wrong value, stale state, edge-case failure, broken workflow, or misleading UI is found and you need the root mechanism, failure class, blast radius, root fix location, and regression guard.",
+      "description": "Diagnose a found bug as a possibly systemic failure before patching it. Use first, before searching or editing code, when a defect, wrong value or balance, stale state, edge-case failure, broken workflow, or misleading UI is reported and needs a fix, to find the root mechanism, failure class, blast radius across sibling consumers, fix location, and regression guard. Do not use for a one-line typo or syntax fix, for two components that disagree about one concept (use seam-audit), for a dense screen whose value may be a presentation problem (use operator-ui-audit), or for financial records that contradict each other (use accounting-integrity).",
       "rule": "**The visible bug is a witness, not the crime scene.**",
       "falsify": "Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open. Two tripwires mean the diagnosis is not finished: a count that does not match its population, and two paths that should agree but do not.",
       "deterministic_companion": false

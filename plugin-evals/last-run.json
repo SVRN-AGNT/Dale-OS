@@ -1,0 +1,324 @@
+{
+  "schema": "dale-os/plugin-eval-run/v1",
+  "claude_code": "2.1.302",
+  "started_at": "2026-10-17T21:20:08.728Z",
+  "model": "the eval's default child model",
+  "families_loaded": [
+    "operator",
+    "financial-truth"
+  ],
+  "routes_fired": "93/93",
+  "confusers_silent": "93/93",
+  "cases": {
+    "activate-accounting-integrity": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-basis-proof": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-cash-truth": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-close-books": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-completion-contract": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-corporate-action": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-diff-scope": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 2
+    },
+    "activate-execution-charter": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-false-competence-check": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-financial-evidence": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-intent-drift": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-latest-authority": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-ledger-repair": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-loop-closure": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 1
+    },
+    "activate-memory-promotion": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-merge-authority": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-model-sanity": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-money-trail": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-operator-ui": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 2
+    },
+    "activate-performance-truth": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-protected-boundary": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-reachability-proof": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 3
+    },
+    "activate-risk-kernel": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-seam-audit": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-shipping-lanes": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-swarm": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-systemic-bug": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 2
+    },
+    "activate-tax-character": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-transfer-neutrality": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-truth-boundary": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "activate-verify-before-cite": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-accounting-integrity": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-basis-proof": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-cash-truth": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-close-books": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-completion-contract": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-corporate-action": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-diff-scope": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-execution-charter": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-false-competence-check": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-financial-evidence": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-intent-drift": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-latest-authority": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-ledger-repair": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-loop-closure": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-memory-promotion": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-merge-authority": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-model-sanity": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-money-trail": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-operator-ui": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-performance-truth": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-protected-boundary": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-reachability-proof": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-risk-kernel": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-seam-audit": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-shipping-lanes": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-swarm": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-systemic-bug": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-tax-character": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-transfer-neutrality": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-truth-boundary": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    },
+    "confuse-verify-before-cite": {
+      "passed": 3,
+      "runs": 3,
+      "errored": 0
+    }
+  }
+}

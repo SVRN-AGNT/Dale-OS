@@ -1,0 +1,19 @@
+{
+  "name": "dale-os-financial-truth",
+  "description": "Financial truth skills: money trails, accounting integrity, cost basis, transfers, cash, tax character, corporate actions, performance, and close-the-books gates. Read-only doctrine; no ledger mutation.",
+  "author": {
+    "name": "SVRN-AGNT",
+    "url": "https://github.com/SVRN-AGNT"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/SVRN-AGNT/Dale-OS",
+  "repository": "https://github.com/SVRN-AGNT/Dale-OS",
+  "keywords": [
+    "agent-skills",
+    "accounting",
+    "reconciliation",
+    "cost-basis",
+    "finance"
+  ],
+  "skills": "./"
+}

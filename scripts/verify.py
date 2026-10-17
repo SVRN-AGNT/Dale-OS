@@ -14,6 +14,7 @@ PYTHON_STEPS = [
     ("build Eve skill adapter", [sys.executable, "adapters/eve/scripts/build_skills.py"]),
     ("build manifest", [sys.executable, "scripts/build_manifest.py"]),
     ("build library catalog", [sys.executable, "scripts/build_catalog.py"]),
+    ("build plugin eval cases", [sys.executable, "scripts/build_plugin_evals.py"]),
     ("validate repository", [sys.executable, "scripts/validate_repo.py"]),
     ("validate model eval contracts", [sys.executable, "scripts/validate_eval_contracts.py"]),
     (

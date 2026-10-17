@@ -1,0 +1,6 @@
+---
+type: tool_used
+tool: Skill
+input_match: '"skill"\s*:\s*"(?:[\w-]+:)?diff-scope-audit"'
+min: 1
+---

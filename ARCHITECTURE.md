@@ -48,6 +48,7 @@ A rule is more credible when there is a case that can break it.
 - `scripts/run_evals.py` checks deterministic behavior.
 - `evals/behavioral/` defines model-level expectations.
 - `evals/activation/` measures whether skills trigger and stay out of the way correctly.
+- `plugin-evals/activation/` runs those routes as `claude plugin eval` cases, and `plugin-evals/last-run.json` records the last measured result.
 
 ## Layer 6 — Machine routing and composition
 

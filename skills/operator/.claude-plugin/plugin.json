@@ -1,0 +1,19 @@
+{
+  "name": "dale-os-operator",
+  "description": "Operator skills for agents doing consequential work: authority before autonomy, evidence before confidence, scope discipline, reachability proof, merge authority, and multi-agent orchestration.",
+  "author": {
+    "name": "SVRN-AGNT",
+    "url": "https://github.com/SVRN-AGNT"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/SVRN-AGNT/Dale-OS",
+  "repository": "https://github.com/SVRN-AGNT/Dale-OS",
+  "keywords": [
+    "agent-skills",
+    "verification",
+    "code-review",
+    "multi-agent",
+    "ai-safety"
+  ],
+  "skills": "./"
+}
