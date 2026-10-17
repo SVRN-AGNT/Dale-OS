@@ -11,6 +11,7 @@ only owns the parts that should never differ between repositories.
 | [`ci-hygiene.yml`](../.github/workflows/ci-hygiene.yml) + [`ci_hygiene.py`](ci_hygiene.py) | Checks the repository's workflows against the floor below | Add a `hygiene` job; report-only until `strict: true` |
 | [`ci-pm-review.yml`](../.github/workflows/ci-pm-review.yml) + [`pm_review.py`](pm_review.py) | Answers every Claude `HANDOFF:` comment with a second-vendor (OpenAI Codex) PM review: a `PM REVIEW —` comment and a `PM Review` check on the exact head | Add the caller below, with `provider: chatgpt` (no key) or an `OPENAI_API_KEY` repository secret |
 | [`ci-agent-review.yml`](../.github/workflows/ci-agent-review.yml) + [`agent_review/`](agent_review/review.mjs) | An independent Claude instance reviews every non-draft PR by an allowlisted author and posts an `Agent Review` check on the exact head, billed to the Claude subscription only | Add the caller below; the `CLAUDE_CODE_OAUTH_TOKEN` organization secret reaches every repository |
+| [`ci-merge-lane.yml`](../.github/workflows/ci-merge-lane.yml) + [`merge_gate.py`](merge_gate.py) | Merges a PR whose exact head carries a HANDOFF once Agent Review passed on it and the PM's CLEAR still stands when re-derived at merge time; held scope never merges on the 2-hour timeout | Add the caller below; an `INTEGRATION_TOKEN` with the Workflows permission lets it merge PRs that change workflow files |
 
 ## The floor
 
@@ -194,6 +195,83 @@ public repository a stranger's PR never spends the subscription. The reviewer
 has file-reading tools only (no shell, not even git: `git grep -O` runs
 commands), no network tool, and never reads PR comments; any credential is
 redacted from the verdict it posts.
+
+## The merge-lane caller
+
+Owner ruling, 2026-10-16: held PRs must merge "via our autonomous flow", with no
+person typing "merge". The lane merges a PR when, on its exact head:
+
+1. a HANDOFF names the head (posted through the `claude` app);
+2. the PM's latest ruling is CLEAR **and** re-deriving it now from Codex's own
+   comments and the head's checks (the PM's own functions) still gives CLEAR,
+   so a Codex finding posted after the CLEAR blocks the merge;
+3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`), the newest run of each `required_workflows` file on the head passed (GitHub's workflow-run record, not a check by name), and no check other than the PM's own is still running, held or not.
+
+A held PR never merges on the 2-hour timeout. A PR with no HANDOFF is left to
+the repository's own rule. An `owner-hold`, `do-not-merge` or `integration-hold`
+label stops it; the repository variable `MERGE_LANE=off` switches the lane off.
+
+```yaml
+name: merge-lane
+on:
+  workflow_run: { workflows: [pm-review, agent-review, <CI workflow name>], types: [completed] }
+  workflow_dispatch:
+  schedule: [{ cron: '17 */2 * * *' }]   # wakes it after a timeout passes or a hold label comes off
+permissions: { contents: read }
+jobs:
+  lane:
+    # Only the default branch's copy may run on a dispatch: it holds INTEGRATION_TOKEN.
+    if: github.event_name != 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
+    permissions: { contents: write, pull-requests: write, issues: read, checks: read, actions: read, statuses: read }
+    uses: SVRN-AGNT/Dale-OS/.github/workflows/ci-merge-lane.yml@<sha>
+    with:
+      ref: <sha>
+      held_paths: '<the same regex the PM caller passes>'
+      required_workflows: |                # the repository's CI workflow files, one per line; '' only with no CI
+        .github/workflows/<ci>.yml
+    secrets:
+      INTEGRATION_TOKEN: ${{ secrets.INTEGRATION_TOKEN }}   # stored ONLY in the `merge-lane` environment
+```
+
+Store `INTEGRATION_TOKEN` only as a secret of a `merge-lane` environment whose deployment branches are the
+default branch alone, never as a repository or organization secret: same-repository `pull_request` runs receive
+every repository secret, so a PR adding a workflow could use the token to merge itself before any review.
+
+**Threat model.** The gate decides on evidence; this is what it defends and what it trusts.
+
+- *Defends against the PR itself:* everything on the PR head, including code its workflows run. Every
+  `pull_request` workflow in these repositories gets a read-only `GITHUB_TOKEN`; a PR can only change that by
+  changing `.github/workflows/`, which is held scope and needs Codex's CLEAR on that exact diff.
+- *Defends against timing:* findings that land after a CLEAR, pushes between reads, mergeability changing, and
+  re-runs (two reads 90s apart, the exact head on the merge call, live re-derivation of the PM ruling).
+- *Trusts the default branch's workflows* (`agent-review.yml`, `pm-review.yml`, the required CI files), GitHub's own
+  records (workflow runs, check-run app, comment editor), and Codex's app as the author of Codex's comments.
+- *Does not defend against a repository writer deliberately forging evidence* (Dale, the Claude app, agent
+  sessions): a writer can run a modified workflow on another branch whose `GITHUB_TOKEN` posts a check as
+  `github-actions` on any sha. GitHub has no native way to tell workflows apart inside that app. Closing this needs a
+  dedicated review GitHub App whose key lives only in an environment limited to the default branch, the review
+  checks posted as that App, and the gate (plus a ruleset) requiring that App's id; that is an owner action.
+
+Known limit, accepted because held scope also needs Codex's CLEAR on the same head: the `Agent Review` check is
+proven by the run that posted it, not by who last set its conclusion, so a workflow a PR adds could restate it; that
+PR changes `.github/workflows/`, is held, and Codex reviews the workflow it adds. CI is read from GitHub's
+workflow-run records, which no posted check can stand in for. The
+merge token may bypass branch rules, so the lane itself merges only from a merge-ready state: `clean`, `has_hooks`, or `unstable` with every commit status green. `blocked`, `behind`, `dirty`, `draft` and `unknown` are refused.
+Write access can edit any comment and the author stays Codex, so a Codex comment, review or finding last edited by
+anyone else blocks the PR (read through GraphQL's `editor`). A completed Codex review of the head that yields no
+readable ruling never reaches the 2-hour timeout. A caller's `--held false` cannot override the gate's own held paths.
+`check --settle` applies the same merge-ready test to its settled read; a caller whose own rule makes another state
+normal names the full list in `MERGE_READY_STATES`. A required workflow's dispatched run counts only from the default
+branch, and an Agent Review pass is sunk by any other check claiming the same run that failed or is still running.
+The run an Agent Review claims must be one GitHub started for this head (its run record's `head_sha`), so a check
+cannot borrow a trusted run that reviewed another PR; a dispatched review records the default branch's tip, so the
+gate does not count it and the PR's own `pull_request_target` run must be re-run instead.
+
+`workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
+in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to
+let `GITHUB_TOKEN` merge a PR that changes `.github/workflows/`, so the lane
+merges with `INTEGRATION_TOKEN` (Contents, Pull requests and Workflows: read and
+write) and says plainly when a merge was refused for lack of it.
 
 ## What stays per repository
 
