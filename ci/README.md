@@ -38,6 +38,15 @@ another repository's CI without that repository taking the new sha in a
 reviewed PR. `ci-hygiene.yml` takes the same sha as its `ref` input, so the
 workflow and the checker it runs always come from the same commit.
 
+## Runners
+
+`ci-hygiene.yml`, `ci-agent-review.yml` and `ci-pm-review.yml` take a `runner`
+input (default `ubuntu-latest`). Private repositories may pass
+`ubicloud-standard-2`: their jobs mostly run under a minute, and GitHub bills
+each one as a full minute, so a runner a third of the price cuts those
+callers' bill the most. Public repositories keep the default, since GitHub
+bills them nothing.
+
 ## The PM caller
 
 GitHub runs `issue_comment` workflows from the default branch, so the caller
