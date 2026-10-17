@@ -475,7 +475,11 @@ RUNS = {"/actions/runs/1/attempts/1": dict(PRT, id=1), "/actions/runs/2/attempts
         "/actions/runs/3/attempts/1": dict(WFD, id=3, head_branch="feature"),
         "/actions/runs/4/attempts/1": dict(PRT, id=4, event="pull_request", path=".github/workflows/agent-review.yml"),
         "/actions/runs/5": dict(PRT, id=5, event="pull_request", path=".github/workflows/ci.yml"),
-        "/actions/runs/6": dict(PRT, id=6, event="pull_request", path=".github/workflows/ci.yml"),
+        "/actions/runs/6": dict(PRT, id=6, event="pull_request", path=".github/workflows/ci.yml", conclusion="success"),
+        "/actions/runs/10": dict(PRT, id=10, event="pull_request", path=".github/workflows/ci.yml", status="in_progress"),
+        "/actions/runs/11": dict(PRT, id=11, path=".github/workflows/ci.yml", conclusion="success"),
+        "/actions/runs/12": dict(PRT, id=12, event="pull_request", path=".github/workflows/ci.yml", conclusion="cancelled"),
+        "/actions/runs/13": dict(PRT, id=13, event="pull_request", path=".github/workflows/other.yml", conclusion="success"),
         "/actions/runs/7/attempts/1": dict(WFD, id=7, path=".github/workflows/other.yml"),
         "/actions/runs/8/attempts/1": dict(WFD, id=8, head_sha="b" * 40),
         "/branches/main": {"commit": {"sha": "c" * 40}},
@@ -544,6 +548,42 @@ check("a job link to another repository proves nothing",
                        ident) == ["Tests"])
 check("a newer success does not hide another check's failure",
       pm.failed_checks([FAIL, PASS, job(20, "failure", "2026-10-16T10:01:00Z", 5)], ident) == ["Tests"])
+# A concurrency group cancels a superseded run; the newer run of that file and event on the head is the verdict (ACF #5692).
+wof = lambda r: pm.job_workflow(r, fetch)  # noqa: E731
+CANCELLED = job(20, "cancelled", "2026-10-16T10:01:00Z", 5)
+later = lambda conclusion, run, **over: job(21, conclusion, "2026-10-16T10:03:00Z", run, **over)  # noqa: E731
+check("a cancelled job is set aside by a skipped job of the same name in a newer concluded run of its file and event",
+      pm.failed_checks([CANCELLED, later("skipped", 6)], ident, wof) == [])
+check("a cancelled job is set aside by a newer concluded run's passing job",
+      pm.failed_checks([CANCELLED, later("success", 6)], ident, wof) == [])
+check("a newer run's failing job is counted on its own",
+      pm.failed_checks([CANCELLED, later("failure", 6)], ident, wof) == ["Tests"])
+check("a newer run that has not concluded sets nothing aside",
+      pm.failed_checks([CANCELLED, later("skipped", 10)], ident, wof) == ["Tests"])
+check("a newer run that was itself cancelled sets nothing aside",
+      pm.failed_checks([CANCELLED, later("skipped", 12)], ident, wof) == ["Tests"])
+check("a newer run of the same file from another event sets nothing aside",
+      pm.failed_checks([CANCELLED, later("success", 11)], ident, wof) == ["Tests"])
+check("a newer run of another workflow file sets nothing aside",
+      pm.failed_checks([CANCELLED, later("success", 13)], ident, wof) == ["Tests"])
+check("a newer job with another name sets nothing aside",
+      pm.failed_checks([CANCELLED, later("success", 6, name="Lint")], ident, wof) == ["Tests"])
+check("a job that started before the cancelled one sets nothing aside",
+      pm.failed_checks([CANCELLED, later("success", 6, started_at="2026-10-16T10:00:00Z")], ident, wof) == ["Tests"])
+check("a newer job linked to another repository proves nothing",
+      pm.failed_checks([CANCELLED, later("success", 6, details_url="https://github.com/x/y/actions/runs/6/job/21")], ident, wof)
+      == ["Tests"])
+check("a newer job from another app proves nothing",
+      pm.failed_checks([CANCELLED, later("success", 6, app={"slug": "imposter"})], ident, wof) == ["Tests"])
+check("only a cancelled job is ever set aside this way: a real failure still counts",
+      pm.failed_checks([job(20, "failure", "2026-10-16T10:01:00Z", 5), later("success", 6)], ident, wof) == ["Tests"])
+check("an unreadable run record keeps the cancelled job counted",
+      pm.failed_checks([CANCELLED, later("success", 6)], ident,
+                       lambda r: pm.job_workflow(r, lambda p: (_ for _ in ()).throw(OSError()))) == ["Tests"])
+check("without a workflow resolver a cancelled job still counts", pm.failed_checks([CANCELLED, later("skipped", 6)], ident) == ["Tests"])
+sup_c = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], checks=[CANCELLED, later("skipped", 6)], workflow_runs=RUNS)
+check("the PM CLEARs a head whose only failed check is a job a newer concluded run superseded",
+      json.loads(sup_c["ruling"])["verdict"] == "CLEAR")
 sup = resolve_chatgpt(ask, pr_comments=[codex_summary(HEAD), ask], checks=[FAIL, PASS], workflow_runs=RUNS)
 check("the PM CLEARs a head whose failed Agent Review a newer verified run replaced",
       json.loads(sup["ruling"])["verdict"] == "CLEAR")
