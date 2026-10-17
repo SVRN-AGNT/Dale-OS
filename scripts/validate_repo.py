@@ -33,6 +33,8 @@ for family in found:
         if name!=p.parent.name: fail(f'{p}: name does not match folder')
         if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*',name or ''): fail(f'{p}: invalid name')
         if not desc or len(desc)<60: fail(f'{p}: description too weak')
+        if desc and desc[0] not in '"\'' and (': ' in desc or ' #' in desc or desc[0] in '-?:,[]{}#&*!|>%@`'):
+            fail(f'{p}: description is not a valid plain YAML scalar (": ", " #" or a leading indicator); strict parsers such as npx skills and Eve reject it')
         body=p.read_text()
         if len(body.splitlines())>500: fail(f'{p}: exceeds 500 lines')
         if '## Falsify it' not in body: fail(f'{p}: missing falsification section')
@@ -178,8 +180,41 @@ try:
 except (OSError, json.JSONDecodeError, KeyError, TypeError, AttributeError, SystemExit) as exc:
     fail(f'machine/library.json invalid: {exc!r}')
 
+# Strict YAML, when a parser is available: lenient loaders hide front matter that portable installers reject.
+try:
+    import yaml
+except ImportError:
+    yaml=None
+if yaml:
+    for p in sorted(ROOT.glob('skills/*/*/SKILL.md')):
+        try: yaml.safe_load(p.read_text(encoding='utf-8').split('---\n',2)[1])
+        except Exception as exc: fail(f'{p.relative_to(ROOT)}: front matter is not valid YAML: {str(exc).splitlines()[0]}')
+
+# Family plugin manifests mirror the marketplace entries they load for.
+_market={x['name']:x for x in json.loads((ROOT/'.claude-plugin'/'marketplace.json').read_text())['plugins']}
+for _fam in ('operator','financial-truth'):
+    _pj=ROOT/'skills'/_fam/'.claude-plugin'/'plugin.json'
+    if not _pj.exists(): fail(f'{_pj.relative_to(ROOT)}: missing family plugin manifest'); continue
+    _m=json.loads(_pj.read_text()); _e=_market.get(_m.get('name'))
+    if not _e or _e.get('skills')!=[f'./skills/{_fam}/']: fail(f'{_pj.relative_to(ROOT)}: name does not match the marketplace plugin for skills/{_fam}/')
+    else:
+        for _k in ('description','license','homepage','repository','keywords'):
+            if _m.get(_k)!=_e.get(_k): fail(f'{_pj.relative_to(ROOT)}: {_k} differs from .claude-plugin/marketplace.json')
+    if _m.get('skills')!='./': fail(f'{_pj.relative_to(ROOT)}: skills must be "./"')
+
+# Generated plugin eval cases must be committed: git diff --exit-code does not see untracked files.
+import subprocess as _sp
+try:
+    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
+except Exception:
+    _tracked=None
+if _tracked is not None:
+    _gen={str(q.relative_to(ROOT)) for q in (ROOT/'plugin-evals'/'activation').rglob('*') if q.is_file()}
+    if _gen-_tracked: fail(f'plugin-evals: generated cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
+
 if errors:
     print('VALIDATION FAILED')
     for e in errors: print('-',e)
     raise SystemExit(1)
 print(f'VALIDATION PASS: {EXPECTED_COUNT} skills, failure routing + behavioral coverage, eve parity, read-only finance tools, deterministic evals green')
+

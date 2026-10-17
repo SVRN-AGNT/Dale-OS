@@ -25,12 +25,27 @@ The current tree is `0.2.0-dev`.
 - 31 canonical skills are present, including `swarm`, the post-v0.1 verification and loop skills `reachability-proof`, `loop-closure`, and `false-competence-check`, the autonomy and state skills `risk-kernel`, `verify-before-cite`, and `memory-promotion`, the run and merge skills `completion-contract` and `merge-authority`, `seam-audit`, and `shipping-lanes`.
 - Every skill is shelved exactly once in the library catalog (`machine/library.json`), and the validator fails on a missing or unknown entry.
 - Every current skill includes an explicit falsification section.
-- Current activation coverage contains one positive route and one confuser per skill.
+- Current activation coverage contains one positive route and one confuser per skill, and the same routes run as `claude plugin eval` cases (below).
 - Current behavioral coverage contains one flagship case per skill.
 - SWARM has a standalone packaged skill that passed the ChatGPT skill validator before repository integration.
 - Generated Eve skills and deterministic financial companions are rebuilt from canonical sources and parity-checked.
 - Repository validation covers routing, behavioral contracts, receipt transitions, discovery, hygiene, privacy, release-ledger integrity, and the low-context control surface.
 - `python scripts/verify.py` is the canonical local verification entrypoint; `--with-eve` adds the frozen Node/Eve compile.
+
+### Measured skill activation (Claude Code plugin eval)
+
+On 2026-10-17, `claude plugin eval` (Claude Code 2.1.302, the eval's default child model, 3 runs per case) ran the 62 cases in `plugin-evals/activation/`. Every case loaded both families, all 31 skills, as the install lines do. The per-case record is [`plugin-evals/last-run.json`](plugin-evals/last-run.json). Raw transcripts are not published.
+
+- **Positive routes:** in 93 of 93 runs, the expected skill fired and no other Dale OS skill did. In 10 of those runs the session hit its turn limit after the skill fired; those are listed as errored in the record.
+- **Confusers:** in 93 of 93 runs, the forbidden skill stayed silent and the agent gave an answer.
+- **Before the rewrites:** an earlier pass loaded one family per case. In it, `systemic-bug-instinct`, `operator-ui-audit` and `memory-promotion` did not fire on their own routes, 0 of 3 runs each. On each prompt the agent went straight to searching an empty workspace. Their descriptions were rewritten to name the moment of use, after which each fired in 3 of 3. That earlier pass is not in the record; only the final run is.
+
+What this does and does not show:
+
+- The corpus prompts name their triggers plainly, and the three rewrites were checked against the same prompts that exposed them. This measures routing on clear requests, not on vague ones. In a separate spot check, a bare "remember that I prefer tabs" did not fire `memory-promotion`.
+- The confusers are easy, so the confuser figure says little about false activation between neighbouring skills. The positive cases do check that no neighbour fires instead.
+- This is one model. Results may differ on others.
+- Firing is not compliance. A skill that loads can still be ignored. Behavioral ablation (the same prompts with and without the plugin) is the next measurement, and it has not been done yet.
 
 These checks prove structure and deterministic contracts for the current tree. They do **not** retroactively add SWARM to the frozen v0.1.0 provider-backed model matrix.
 

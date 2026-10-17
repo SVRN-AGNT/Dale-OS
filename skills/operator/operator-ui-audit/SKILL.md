@@ -1,6 +1,6 @@
 ---
 name: operator-ui-audit
-description: Audit dense operational or financial UI without jumping straight to restyling. Use for screenshots, confusing dashboards, wrong displayed values, hierarchy problems, inconsistent modes, or requests to make an interface clearer while preserving workflows and data truth.
+description: Audit dense operational or financial UI before restyling or patching it. Use first when a dashboard, screen, or screenshot shows a wrong or confusing value, a hierarchy problem, or inconsistent modes, to decide whether source data, state, or presentation is responsible; or when asked to make an interface clearer while preserving workflows and data truth. Do not use once the cause is known to be a code defect behind the screen (use systemic-bug-instinct).
 ---
 
 # Operator Ui Audit

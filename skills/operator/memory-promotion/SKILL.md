@@ -1,6 +1,6 @@
 ---
 name: memory-promotion
-description: Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when an agent is about to "remember" a lesson, rule, preference, or pattern; at the end of a session or a long autonomous run; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.
+description: Gate what an agent saves to durable memory and keep that memory small, current, and correct. Use when asked to remember, save, or record what was learned; when a session or long autonomous run is wrapping up; when an agent is about to store a lesson, rule, preference, or pattern; when memory files contradict each other or the repo; or when a memory store keeps growing. Do not use for project documentation, decision records, or task tracking.
 ---
 
 # Memory Promotion

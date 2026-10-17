@@ -1,6 +1,6 @@
 ---
 name: systemic-bug-instinct
-description: Diagnose bugs as potentially systemic failures. Use when a defect, wrong value, stale state, edge-case failure, broken workflow, or misleading UI is found and you need the root mechanism, failure class, blast radius, root fix location, and regression guard.
+description: Diagnose a found bug as a possibly systemic failure before patching it. Use first, before searching or editing code, when a defect, wrong value or balance, stale state, edge-case failure, broken workflow, or misleading UI is reported and needs a fix, to find the root mechanism, failure class, blast radius across sibling consumers, fix location, and regression guard. Do not use for a one-line typo or syntax fix, for two components that disagree about one concept (use seam-audit), for a dense screen whose value may be a presentation problem (use operator-ui-audit), or for financial records that contradict each other (use accounting-integrity).
 ---
 
 # Systemic Bug Instinct
