@@ -182,6 +182,34 @@ check("a pass whose run cannot be read blocks", v(reviewed_head=lambda r: None)[
 check("without a run reader no Agent Review counts", v(reviewed_head=None)["block"])
 check("a run started for this head (any case) counts", v(reviewed_head=lambda r: HEAD.upper())["allow"])
 
+# _reviewed_head on GitHub's own run records (Codex P1 on #41: "bind pull_request_target reviews through their PR
+# payload"). Recorded 2026-10-17 from GET /actions/runs/{id}, trimmed to the fields read. A run's pull_requests[]
+# head is the PR's head *now*, not the head the run reviewed: run 38977044284 reviewed 2c636321 and its payload
+# already reads 33efaa99. Binding through it would let an older head's pass count, so head_sha stays the binding.
+RECORDED = {
+    "/actions/runs/38977044284": {"event": "pull_request_target", "head_sha": "2c63632102abdaaa916014039a7e743570bc115e",
+                                  "pull_requests": [{"number": 41, "head": {"sha": "33efaa9925eedfead28974493ba15f5c3dff615d"}}]},
+    "/actions/runs/38978021996": {"event": "pull_request_target", "head_sha": "33efaa9925eedfead28974493ba15f5c3dff615d",
+                                  "pull_requests": [{"number": 41, "head": {"sha": "33efaa9925eedfead28974493ba15f5c3dff615d"}}]},
+    # a dispatch records the default branch's tip and no PR
+    "/actions/runs/38953200612": {"event": "workflow_dispatch", "head_sha": "3c8b2f417e66f6c65a5276a06057ada84441aea3",
+                                  "pull_requests": []},
+}
+LIVE_HEAD = "33efaa9925eedfead28974493ba15f5c3dff615d"
+
+
+def stamped(rid):
+    return dict(run(mg.AGENT_REVIEW, rid=rid), external_id=f"run:{rid}:1")
+
+
+mg.pm._api, saved_api = (lambda method, path, *a, **k: RECORDED.get(path.split("/attempts/")[0])), mg.pm._api
+check("a pull_request_target run that reviewed an older head binds to that head, not the PR's live head",
+      mg._reviewed_head(stamped(38977044284)) == "2c63632102abdaaa916014039a7e743570bc115e")
+check("a pull_request_target run started for this head binds to it", mg._reviewed_head(stamped(38978021996)) == LIVE_HEAD)
+check("a dispatched run is never this head's review", mg._reviewed_head(stamped(38953200612)) != LIVE_HEAD)
+check("a run GitHub has no record of binds to nothing", mg._reviewed_head(stamped(1)) is None)
+mg.pm._api = saved_api
+
 check("a PR GitHub cannot list in full never merges (Codex P2 on #41)", mg.verdict(
     pr=PR, head=HEAD, held=True, pr_comments=list(CLEAR_COMMENTS), review_comments=[], check_runs=list(GREEN),
     paths=["a.py"], allowed=["Tataku"], now=NOW, identify=proven, required=(CI,), workflow_runs=[wfrun()],
