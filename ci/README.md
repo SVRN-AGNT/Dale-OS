@@ -47,6 +47,10 @@ each one as a full minute, so a runner a third of the price cuts those
 callers' bill the most. Public repositories keep the default, since GitHub
 bills them nothing.
 
+A job that holds `INTEGRATION_TOKEN` or a GitHub App key stays on GitHub-hosted
+runners, which is why `ci-merge-lane.yml` has no `runner` input. Only jobs that
+hold `GITHUB_TOKEN` or the review OAuth token may move.
+
 ## The PM caller
 
 GitHub runs `issue_comment` workflows from the default branch, so the caller
