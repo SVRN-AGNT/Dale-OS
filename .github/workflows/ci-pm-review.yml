@@ -101,7 +101,8 @@ permissions:
 jobs:
   review:
     name: PM review
-    runs-on: ${{ inputs.runner }}
+    # provider api hands this job openai_api_key, so it never leaves GitHub-hosted runners (Codex P1 on #42).
+    runs-on: ${{ inputs.provider == 'chatgpt' && inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 40
     permissions:
       contents: read

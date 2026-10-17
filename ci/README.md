@@ -49,7 +49,9 @@ bills them nothing.
 
 A job that holds `INTEGRATION_TOKEN` or a GitHub App key stays on GitHub-hosted
 runners, which is why `ci-merge-lane.yml` has no `runner` input. Only jobs that
-hold `GITHUB_TOKEN` or the review OAuth token may move.
+hold `GITHUB_TOKEN` or the review OAuth token may move. The PM's review job
+takes the runner only with `provider: chatgpt`; with `provider: api` it holds
+the OpenAI key and stays on `ubuntu-latest`.
 
 ## The PM caller
 
