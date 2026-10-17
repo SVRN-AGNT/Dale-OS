@@ -13,6 +13,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "evals" / "activation" / "corpus.jsonl"
 OUT = ROOT / "plugin-evals" / "activation"
+FLAGSHIP = ROOT / "evals" / "behavioral" / "flagship.jsonl"
+CRITERIA = ROOT / "plugin-evals" / "behavioral-criteria.json"
+BEHAVIORAL = ROOT / "plugin-evals" / "behavioral"
+PLUGINS = '["../../../skills/operator", "../../../skills/financial-truth"]'
 
 
 def families():
@@ -47,7 +51,7 @@ def main():
             "---\n"
             f"description: {yaml_str(('Should fire ' if positive else 'Should not fire ') + skill)}\n"
             "tags: [activation]\n"
-            'plugins: ["../../../skills/operator", "../../../skills/financial-truth"]\n'
+            f"plugins: {PLUGINS}\n"
             "max_turns: 4\n"
             "allowed_tools: [Skill]\n"
             "---\n\n"
@@ -85,6 +89,46 @@ def main():
                 "---\n",
                 encoding="utf-8",
             )
+    build_behavioral(fam)
+
+
+def build_behavioral(fam):
+    """One two-arm case per flagship row: the same prompt with and without the plugins, judged on criteria."""
+    criteria = json.loads(CRITERIA.read_text(encoding="utf-8"))
+    rows = [json.loads(l) for l in FLAGSHIP.read_text(encoding="utf-8").splitlines() if l.strip()]
+    ids = [r["id"] for r in rows]
+    if set(ids) != set(criteria):
+        raise SystemExit(f"{CRITERIA.relative_to(ROOT)}: criteria must cover exactly the flagship ids; differs on {sorted(set(ids) ^ set(criteria))}")
+    if BEHAVIORAL.exists():
+        shutil.rmtree(BEHAVIORAL)
+    for row in rows:
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", row["id"]) or row["skill"] not in fam:
+            raise SystemExit(f"{FLAGSHIP.relative_to(ROOT)}: bad id or unknown skill in {row['id']!r}")
+        case = BEHAVIORAL / row["id"]
+        (case / "graders").mkdir(parents=True)
+        (case / "prompt.md").write_text(
+            "---\n"
+            f"description: {yaml_str('Does ' + row['skill'] + ' change the answer?')}\n"
+            "tags: [behavioral]\n"
+            f"plugins: {PLUGINS}\n"
+            "max_turns: 6\n"
+            "allowed_tools: [Skill]\n"
+            "---\n\n"
+            f"{row['prompt']}\n",
+            encoding="utf-8",
+        )
+        (case / "graders" / "judge.md").write_text(
+            f"---\ntype: llm\n---\n\n{criteria[row['id']]}\n", encoding="utf-8"
+        )
+        # In a two-arm run this is reported as a plugin-fired indicator, not scored.
+        (case / "graders" / "skill.md").write_text(
+            "---\n"
+            "type: tool_used\n"
+            "tool: Skill\n"
+            f"input_match: '\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?{row['skill']}\"'\n"
+            "---\n",
+            encoding="utf-8",
+        )
 
 
 if __name__ == "__main__":

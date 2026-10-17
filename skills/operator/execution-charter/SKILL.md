@@ -1,6 +1,6 @@
 ---
 name: execution-charter
-description: Create a compact execution contract before non-trivial agent work. Use for coding, audit, refactor, migration, research, or operational tasks that need explicit objective, authority, scope, context budget, stop conditions, verification, and writeback before action.
+description: Create a compact execution contract before non-trivial agent work. Use for coding, audit, refactor, migration, research, or operational tasks that need explicit objective, authority, scope, context budget, stop conditions, verification, and writeback before action, including when told to skip scope and start at once on a broad request.
 ---
 
 # Execution Charter
@@ -12,7 +12,7 @@ description: Create a compact execution contract before non-trivial agent work. 
 ## Workflow
 
 1. Classify the task by risk and breadth. Prefer the smallest class that fits the known work.
-2. Extract authority from the user or governing task. Never infer a higher permission level from urgency or enthusiasm.
+2. Extract authority from the user or governing task. Never infer a higher permission level from urgency or enthusiasm. A request to skip the charter on broad work is urgency, not authority: state a short charter first.
 3. Write OBJECTIVE, AUTHORITY, SCOPE-IN, SCOPE-OUT, REQUIRED READS, VERIFY, STOP-IF, and WRITEBACK.
 4. Keep context bounded. Broaden only when an explicit expansion trigger fires: protected boundary, authority conflict, unclear root cause, schema/state risk, data-loss risk, or evidence contradicting the charter.
 5. If the charter expands, record the trigger and the newly added scope before continuing.

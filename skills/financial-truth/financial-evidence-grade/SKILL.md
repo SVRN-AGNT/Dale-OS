@@ -1,6 +1,6 @@
 ---
 name: financial-evidence-grade
-description: Grade financial evidence by provenance and constrain what each grade is allowed to drive. Use when financial data comes from statements, filings, user input, deterministic derivation, vendor estimates, LLM research, reconstructed history, or missing sources.
+description: Grade financial evidence by provenance and constrain what each grade is allowed to drive. Use when financial data comes from statements, filings, user input, deterministic derivation, vendor estimates, LLM research, reconstructed history, or missing sources. Do not use when the values are not financial (use truth-boundary).
 ---
 
 # Financial Evidence Grade

@@ -205,12 +205,28 @@ for _fam in ('operator','financial-truth'):
 # Generated plugin eval cases must be committed: git diff --exit-code does not see untracked files.
 import subprocess as _sp
 try:
-    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
+    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation','plugin-evals/behavioral'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
 except Exception:
     _tracked=None
 if _tracked is not None:
-    _gen={str(q.relative_to(ROOT)) for q in (ROOT/'plugin-evals'/'activation').rglob('*') if q.is_file()}
+    _gen={str(q.relative_to(ROOT)) for d in ('activation','behavioral') for q in (ROOT/'plugin-evals'/d).rglob('*') if q.is_file()}
     if _gen-_tracked: fail(f'plugin-evals: generated cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
+
+# Hand-written held-out cases: same shape as the generated behavioral cases, naming a real skill.
+_skill_names={s['name'] for s in manifest.get('skills',[])}
+for _case in sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is_dir()):
+    _rel=_case.relative_to(ROOT)
+    _pm=_case/'prompt.md'; _judge=_case/'graders'/'judge.md'; _sk=_case/'graders'/'skill.md'
+    if not (_pm.exists() and _judge.exists() and _sk.exists()):
+        fail(f'{_rel}: needs prompt.md, graders/judge.md and graders/skill.md'); continue
+    if not re.search(r'^tags: \[holdout\]$',_pm.read_text(),re.M): fail(f'{_rel}/prompt.md: tags must be [holdout]')
+    if not re.search(r'^type: llm$',_judge.read_text(),re.M): fail(f'{_rel}/graders/judge.md: type must be llm')
+    _m2=re.search(r'\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"',_sk.read_text())
+    if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: input_match must name a manifest skill')
+    if yaml:
+        for _f in (_pm,_judge,_sk):
+            try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
+            except Exception as _e: fail(f'{_f.relative_to(ROOT)}: front matter is not strict YAML ({_e})')
 
 if errors:
     print('VALIDATION FAILED')

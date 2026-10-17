@@ -1,6 +1,6 @@
 ---
 name: corporate-action-continuity
-description: Preserve economic continuity through splits, reverse splits, symbol changes, and other supported structural corporate actions. Use when an asset identity or share count changes but basis, lots, holding period, cash, or realized P&L may need to remain continuous.
+description: Preserve economic continuity through splits, reverse splits, symbol changes, and other supported structural corporate actions. Use when an asset identity or share count changes but basis, lots, holding period, cash, or realized P&L may need to remain continuous. Also use when told to treat a renamed, converted, or merged holding as a new purchase with fresh basis.
 ---
 
 # Corporate Action Continuity
@@ -11,7 +11,7 @@ description: Preserve economic continuity through splits, reverse splits, symbol
 
 ## Workflow
 
-1. Classify the action as structural or economically realizational before changing any ledger behavior.
+1. Classify the action as structural or economically realizational before changing any ledger behavior. An instruction to reset basis does not make the action realizational; say what evidence would show a taxable disposal.
 2. For supported splits/reverse splits, transform quantities by the ratio while preserving total basis and holding-period dates.
 3. For supported symbol changes, resolve the ticker chain without rewriting historical trades or creating duplicate active positions.
 4. Keep cash and realized P&L neutral unless the action explicitly includes cash/boot or a taxable realization.

@@ -46,7 +46,7 @@
       "name": "close-the-books",
       "family": "financial-truth",
       "path": "skills/financial-truth/close-the-books/SKILL.md",
-      "description": "Gate downstream financial analytics on the readiness of their required books. Use before publishing performance, attribution, tax, realized P&L, portfolio diagnostics, or model outputs when positions, cash, flows, lots, basis, corporate actions, or valuations may be incomplete.",
+      "description": "Gate downstream financial analytics on the readiness of their required books. Use before publishing performance, attribution, tax, realized P&L, portfolio diagnostics, or model outputs when positions, cash, flows, lots, basis, corporate actions, or valuations may be incomplete, and when one unresolved domain prompts a request to block or allow every analytic at once.",
       "rule": "**Do not analyze a book you have not actually closed.**",
       "falsify": "Try to identify which analytics actually depend on each unresolved book. Block only contaminated outputs; if a clean analytic does not depend on the broken domain, it may still proceed.",
       "deterministic_companion": true
@@ -55,7 +55,7 @@
       "name": "corporate-action-continuity",
       "family": "financial-truth",
       "path": "skills/financial-truth/corporate-action-continuity/SKILL.md",
-      "description": "Preserve economic continuity through splits, reverse splits, symbol changes, and other supported structural corporate actions. Use when an asset identity or share count changes but basis, lots, holding period, cash, or realized P&L may need to remain continuous.",
+      "description": "Preserve economic continuity through splits, reverse splits, symbol changes, and other supported structural corporate actions. Use when an asset identity or share count changes but basis, lots, holding period, cash, or realized P&L may need to remain continuous. Also use when told to treat a renamed, converted, or merged holding as a new purchase with fresh basis.",
       "rule": "**The identity changed. The economics may not have.**",
       "falsify": "Try to prove the action is economically structural rather than a disposal or new purchase. If cash, basis, holding period, or realized P&L should change, the continuity rule may not apply.",
       "deterministic_companion": false
@@ -64,7 +64,7 @@
       "name": "financial-evidence-grade",
       "family": "financial-truth",
       "path": "skills/financial-truth/financial-evidence-grade/SKILL.md",
-      "description": "Grade financial evidence by provenance and constrain what each grade is allowed to drive. Use when financial data comes from statements, filings, user input, deterministic derivation, vendor estimates, LLM research, reconstructed history, or missing sources.",
+      "description": "Grade financial evidence by provenance and constrain what each grade is allowed to drive. Use when financial data comes from statements, filings, user input, deterministic derivation, vendor estimates, LLM research, reconstructed history, or missing sources. Do not use when the values are not financial (use truth-boundary).",
       "rule": "**An estimate is not an authority.**",
       "falsify": "Try to identify the weakest evidence supporting each downstream use. If an estimate, reconstruction, or model inference is being used as accounting authority, fail the use even if the number looks plausible.",
       "deterministic_companion": false
@@ -91,7 +91,7 @@
       "name": "money-trail",
       "family": "financial-truth",
       "path": "skills/financial-truth/money-trail/SKILL.md",
-      "description": "Trace financial capital flows without inventing economic meaning. Use for deposits, withdrawals, transfers, cash adjustments, settlements, income, fees, taxes, portfolio funding, or unexplained balance changes when every dollar needs a source, destination, classification, and audit trail.",
+      "description": "Trace financial capital flows without inventing economic meaning. Use for deposits, withdrawals, transfers, cash adjustments, settlements, income, fees, taxes, portfolio funding, or unexplained balance changes when every dollar needs a source, destination, classification, and audit trail. Also use when told to classify a movement from its sign or amount alone.",
       "rule": "**Every dollar gets a passport.**",
       "falsify": "Try to pair and explain every movement without using sign alone as meaning. Any unmatched movement that could change external-flow treatment keeps the ledger unresolved.",
       "deterministic_companion": true
@@ -118,7 +118,7 @@
       "name": "transfer-neutrality",
       "family": "financial-truth",
       "path": "skills/financial-truth/transfer-neutrality/SKILL.md",
-      "description": "Identify and reconcile internal financial transfers without treating them as portfolio income, expense, contribution, withdrawal, or investment return. Use for account-to-account cash or asset movements, paired transfer events, wallet movements, or transfer-like records with missing counterparties.",
+      "description": "Identify and reconcile internal financial transfers without treating them as portfolio income, expense, contribution, withdrawal, or investment return. Use for account-to-account cash or asset movements, paired transfer events, wallet movements, or transfer-like records with missing counterparties, including when told to count one leg of a transfer as a withdrawal or contribution.",
       "rule": "**Money does not teleport.**",
       "falsify": "Try to find the counterparty leg and prove conservation across the portfolio boundary. If one side is missing, do not force the event into contribution or withdrawal.",
       "deterministic_companion": false
@@ -145,7 +145,7 @@
       "name": "execution-charter",
       "family": "operator",
       "path": "skills/operator/execution-charter/SKILL.md",
-      "description": "Create a compact execution contract before non-trivial agent work. Use for coding, audit, refactor, migration, research, or operational tasks that need explicit objective, authority, scope, context budget, stop conditions, verification, and writeback before action.",
+      "description": "Create a compact execution contract before non-trivial agent work. Use for coding, audit, refactor, migration, research, or operational tasks that need explicit objective, authority, scope, context budget, stop conditions, verification, and writeback before action, including when told to skip scope and start at once on a broad request.",
       "rule": "**Give the agent a fence before you give it a shovel.**",
       "falsify": "Try to prove the charter is too broad: name a file, authority, or verification step that is not required for the objective. If you can, shrink it before work begins.",
       "deterministic_companion": false
@@ -271,7 +271,7 @@
       "name": "systemic-bug-instinct",
       "family": "operator",
       "path": "skills/operator/systemic-bug-instinct/SKILL.md",
-      "description": "Diagnose a found bug as a possibly systemic failure before patching it. Use first, before searching or editing code, when a defect, wrong value or balance, stale state, edge-case failure, broken workflow, or misleading UI is reported and needs a fix, to find the root mechanism, failure class, blast radius across sibling consumers, fix location, and regression guard. Do not use for a one-line typo or syntax fix, for two components that disagree about one concept (use seam-audit), for a dense screen whose value may be a presentation problem (use operator-ui-audit), or for financial records that contradict each other (use accounting-integrity).",
+      "description": "Diagnose a found bug as a possibly systemic failure before patching it. Use first, before searching or editing code, when a defect, wrong value or balance, stale state, edge-case failure, broken workflow, or misleading UI is reported and needs a fix, to find the root mechanism, failure class, blast radius across sibling consumers, fix location, and regression guard, including when the request limits the fix to the one file where the defect was seen. Do not use for a one-line typo or syntax fix, for two components that disagree about one concept (use seam-audit), for a dense screen whose value may be a presentation problem (use operator-ui-audit), or for financial records that contradict each other (use accounting-integrity).",
       "rule": "**The visible bug is a witness, not the crime scene.**",
       "falsify": "Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open. Two tripwires mean the diagnosis is not finished: a count that does not match its population, and two paths that should agree but do not.",
       "deterministic_companion": false
@@ -280,7 +280,7 @@
       "name": "truth-boundary",
       "family": "operator",
       "path": "skills/operator/truth-boundary/SKILL.md",
-      "description": "Enforce provenance and uncertainty boundaries. Use when a system mixes observed, authoritative, user-attested, derived, estimated, inferred, reconstructed, or unknown values; when missing data could become zero; or when downstream output may overstate certainty.",
+      "description": "Enforce provenance and uncertainty boundaries. Use when a system mixes observed, authoritative, user-attested, derived, estimated, inferred, reconstructed, or unknown values; when missing data could become zero; or when downstream output may overstate certainty. Also use when told to fill a missing, failed, or empty value with zero, a default, or a guess so the work can keep going.",
       "rule": "**Null is not failure. False certainty is.**",
       "falsify": "Try to trace every claimed value back to its evidence grade. If any downstream claim is more certain than its weakest required input, downgrade or withhold it.",
       "deterministic_companion": false

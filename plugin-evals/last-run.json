@@ -1,7 +1,7 @@
 {
   "schema": "dale-os/plugin-eval-run/v1",
   "claude_code": "2.1.302",
-  "started_at": "2026-10-17T21:20:08.728Z",
+  "started_at": "2026-10-17T22:00:27.207Z",
   "model": "the eval's default child model",
   "families_loaded": [
     "operator",
@@ -43,7 +43,7 @@
     "activate-diff-scope": {
       "passed": 3,
       "runs": 3,
-      "errored": 2
+      "errored": 3
     },
     "activate-execution-charter": {
       "passed": 3,
@@ -78,7 +78,7 @@
     "activate-loop-closure": {
       "passed": 3,
       "runs": 3,
-      "errored": 1
+      "errored": 2
     },
     "activate-memory-promotion": {
       "passed": 3,
@@ -103,7 +103,7 @@
     "activate-operator-ui": {
       "passed": 3,
       "runs": 3,
-      "errored": 2
+      "errored": 1
     },
     "activate-performance-truth": {
       "passed": 3,
@@ -188,7 +188,7 @@
     "confuse-completion-contract": {
       "passed": 3,
       "runs": 3,
-      "errored": 0
+      "errored": 1
     },
     "confuse-corporate-action": {
       "passed": 3,

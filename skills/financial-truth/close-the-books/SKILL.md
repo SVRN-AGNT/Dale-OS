@@ -1,6 +1,6 @@
 ---
 name: close-the-books
-description: Gate downstream financial analytics on the readiness of their required books. Use before publishing performance, attribution, tax, realized P&L, portfolio diagnostics, or model outputs when positions, cash, flows, lots, basis, corporate actions, or valuations may be incomplete.
+description: Gate downstream financial analytics on the readiness of their required books. Use before publishing performance, attribution, tax, realized P&L, portfolio diagnostics, or model outputs when positions, cash, flows, lots, basis, corporate actions, or valuations may be incomplete, and when one unresolved domain prompts a request to block or allow every analytic at once.
 ---
 
 # Close The Books
@@ -15,7 +15,7 @@ description: Gate downstream financial analytics on the readiness of their requi
 2. Collect readiness states for positions, cash, trades, transfers, lots, basis, income/tax character, flows, corporate actions, and valuations as applicable.
 3. Build a dependency map from each unresolved domain to the outputs it can contaminate.
 4. Allow unaffected analytics to continue. Do not block an allocation view just because tax character is unresolved if tax character cannot affect allocation.
-5. Withhold or degrade only the outputs whose required books are not ready.
+5. Withhold or degrade only the outputs whose required books are not ready. A request to switch every analytic off over-blocks: name which outputs could stay available and why, then follow the owner's decision.
 6. Produce a close receipt that names what is safe, what is blocked, and the minimum evidence needed to reopen it.
 
 ## Deterministic companion
