@@ -87,6 +87,10 @@ on:
         description: "api: run Codex with an OpenAI API key. chatgpt: read Codex's own GitHub review (ChatGPT plan, no key)"
         type: string
         default: api
+      runner:
+        description: "Runner label for this workflow's jobs. Private repositories may pass a cheaper runner (e.g. ubicloud-standard-2); public repositories keep the default"
+        type: string
+        default: ubuntu-latest
     secrets:
       openai_api_key:
         required: false
@@ -97,7 +101,8 @@ permissions:
 jobs:
   review:
     name: PM review
-    runs-on: ubuntu-latest
+    # provider api hands this job openai_api_key, so it never leaves GitHub-hosted runners (Codex P1 on #42).
+    runs-on: ${{ inputs.provider == 'chatgpt' && inputs.runner || 'ubuntu-latest' }}
     timeout-minutes: 40
     permissions:
       contents: read
@@ -207,7 +212,7 @@ jobs:
     name: Post the PM ruling
     needs: review
     if: always() && needs.review.outputs.pr != ''
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     timeout-minutes: 5
     permissions:
       contents: read

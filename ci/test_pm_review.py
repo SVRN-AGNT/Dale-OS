@@ -79,6 +79,8 @@ check("PM is OpenAI Codex, never Claude", "uses: openai/codex-action@v1" in code
 check("Codex is read-only with sudo dropped", "permission-profile: ':read-only'" in code and "safety-strategy: drop-sudo" in code)
 check("Codex is the last step of the review job", review.rstrip().split("- name:")[-1].lstrip().startswith("PM ruling"))
 check("review job can only read", not re.search(r":\s*write", review))
+check("an API-key review never leaves GitHub-hosted runners (Codex P1 on #42)",
+      "runs-on: ${{ inputs.provider == 'chatgpt' && inputs.runner || 'ubuntu-latest' }}" in review)
 check("caller checkout is pinned to the default branch", "ref: ${{ github.event.repository.default_branch }}" in code)
 self_caller = (HERE.parent / ".github" / "workflows" / "pm-review.yml").read_text()
 check("dispatch only from the default branch", "github.ref_name == github.event.repository.default_branch" in self_caller)

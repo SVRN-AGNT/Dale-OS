@@ -38,6 +38,21 @@ another repository's CI without that repository taking the new sha in a
 reviewed PR. `ci-hygiene.yml` takes the same sha as its `ref` input, so the
 workflow and the checker it runs always come from the same commit.
 
+## Runners
+
+`ci-hygiene.yml`, `ci-agent-review.yml` and `ci-pm-review.yml` take a `runner`
+input (default `ubuntu-latest`). Private repositories may pass
+`ubicloud-standard-2`: their jobs mostly run under a minute, and GitHub bills
+each one as a full minute, so a runner a third of the price cuts those
+callers' bill the most. Public repositories keep the default, since GitHub
+bills them nothing.
+
+A job that holds `INTEGRATION_TOKEN` or a GitHub App key stays on GitHub-hosted
+runners, which is why `ci-merge-lane.yml` has no `runner` input. Only jobs that
+hold `GITHUB_TOKEN` or the review OAuth token may move. The PM's review job
+takes the runner only with `provider: chatgpt`; with `provider: api` it holds
+the OpenAI key and stays on `ubuntu-latest`.
+
 ## The PM caller
 
 GitHub runs `issue_comment` workflows from the default branch, so the caller
