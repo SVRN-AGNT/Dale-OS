@@ -214,7 +214,10 @@ if _tracked is not None:
 
 # Hand-written held-out cases: same shape as the generated behavioral cases, naming a real skill.
 _skill_names={s['name'] for s in manifest.get('skills',[])}
-for _case in sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is_dir()):
+_EXPECTED_HOLDOUT={'ho-bug','ho-charter','ho-close','ho-corp','ho-money','ho-transfer','ho-truth'}
+_holdouts=sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is_dir())
+if {q.name for q in _holdouts}!=_EXPECTED_HOLDOUT: fail(f'plugin-evals/holdout: expected exactly {sorted(_EXPECTED_HOLDOUT)}, found {sorted(q.name for q in _holdouts)}')
+for _case in _holdouts:
     _rel=_case.relative_to(ROOT)
     _pm=_case/'prompt.md'; _judge=_case/'graders'/'judge.md'; _sk=_case/'graders'/'skill.md'
     if not (_pm.exists() and _judge.exists() and _sk.exists()):
@@ -232,6 +235,9 @@ for _case in sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is
 # --scaffold runs scaffold.sh as the operator, so every case must carry the one canonical script.
 import os as _os
 _fixtures=sorted(q for q in (ROOT/'plugin-evals'/'fixture').glob('*') if q.is_dir())
+# Removing a case must fail here, not pass by shrinking the loop to nothing.
+_EXPECTED_FIXTURES={'fx-systemic-bug','fx-execution-charter'}
+if {q.name for q in _fixtures}!=_EXPECTED_FIXTURES: fail(f'plugin-evals/fixture: expected exactly {sorted(_EXPECTED_FIXTURES)}, found {sorted(q.name for q in _fixtures)}')
 _canon=(_fixtures[0]/'scaffold.sh').read_bytes() if _fixtures and (_fixtures[0]/'scaffold.sh').exists() else None
 _families={str((ROOT/'skills'/f).resolve()) for f in ('operator','financial-truth')}
 for _case in _fixtures:
