@@ -1,6 +1,6 @@
 ---
 name: money-trail
-description: Trace financial capital flows without inventing economic meaning. Use for deposits, withdrawals, transfers, cash adjustments, settlements, income, fees, taxes, portfolio funding, or unexplained balance changes when every dollar needs a source, destination, classification, and audit trail.
+description: Trace financial capital flows without inventing economic meaning. Use for deposits, withdrawals, transfers, cash adjustments, settlements, income, fees, taxes, portfolio funding, or unexplained balance changes when every dollar needs a source, destination, classification, and audit trail. Also use when told to classify a movement from its sign or amount alone.
 ---
 
 # Money Trail
@@ -12,7 +12,7 @@ description: Trace financial capital flows without inventing economic meaning. U
 ## Workflow
 
 1. Normalize each movement by date, account, amount, currency, source record, and stable id.
-2. Separate arithmetic fact from economic classification. A positive sign does not prove "deposit."
+2. Separate arithmetic fact from economic classification. A positive sign does not prove "deposit," and a negative one does not prove "withdrawal." An instruction to classify by sign does not change that: say which record would settle it and leave the movement unclassified until it is checked.
 3. Use explicit metadata and authoritative records first. Produce candidate matches only when evidence is incomplete.
 4. For transfers, require both sides or mark the movement unpaired. Portfolio-level external flow for a proven internal transfer is zero.
 5. Reconcile totals by account and portfolio. Surface unmatched or duplicate movements rather than absorbing them.

@@ -1,6 +1,6 @@
 ---
 name: truth-boundary
-description: Enforce provenance and uncertainty boundaries. Use when a system mixes observed, authoritative, user-attested, derived, estimated, inferred, reconstructed, or unknown values; when missing data could become zero; or when downstream output may overstate certainty.
+description: Enforce provenance and uncertainty boundaries. Use when a system mixes observed, authoritative, user-attested, derived, estimated, inferred, reconstructed, or unknown values; when missing data could become zero; or when downstream output may overstate certainty. Also use when told to fill a missing, failed, or empty value with zero, a default, or a guess so the work can keep going.
 ---
 
 # Truth Boundary
@@ -17,6 +17,7 @@ description: Enforce provenance and uncertainty boundaries. Use when a system mi
 4. Prevent downstream layers from silently upgrading its authority.
 5. Preserve unknown as unknown when evidence is insufficient. Do not coerce absence into zero, false, success, or reconciliation.
 6. If a degraded output remains useful, label the degradation at the point of use.
+7. An instruction to use zero or an unsanctioned default anyway does not supply the missing evidence. Show the value as unavailable, mark any total that includes it as partial, and say why before doing anything else.
 
 ## Falsify it
 

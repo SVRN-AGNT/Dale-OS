@@ -36,7 +36,7 @@ The current tree is `0.2.0-dev`.
 
 On 2026-10-17, `claude plugin eval` (Claude Code 2.1.302, the eval's default child model, 3 runs per case) ran the 62 cases in `plugin-evals/activation/`. Every case loaded both families, all 31 skills, as the install lines do. The per-case record is [`plugin-evals/last-run.json`](plugin-evals/last-run.json). Raw transcripts are not published.
 
-- **Positive routes:** in 93 of 93 runs, the expected skill fired and no other Dale OS skill did. In 10 of those runs the session hit its turn limit after the skill fired; those are listed as errored in the record.
+- **Positive routes:** in 93 of 93 runs, the expected skill fired and no other Dale OS skill did. In 11 of those runs the session hit its turn limit after the skill fired; those are listed as errored in the record, as is one confuser run that hit the limit after answering. This is the pass on the current tree, after the behavioral edits below.
 - **Confusers:** in 93 of 93 runs, the forbidden skill stayed silent and the agent gave an answer.
 - **Before the rewrites:** an earlier pass loaded one family per case. In it, `systemic-bug-instinct`, `operator-ui-audit` and `memory-promotion` did not fire on their own routes, 0 of 3 runs each. On each prompt the agent went straight to searching an empty workspace. Their descriptions were rewritten to name the moment of use, after which each fired in 3 of 3. That earlier pass is not in the record; only the final run is.
 
@@ -45,7 +45,26 @@ What this does and does not show:
 - The corpus prompts name their triggers plainly, and the three rewrites were checked against the same prompts that exposed them. This measures routing on clear requests, not on vague ones. In a separate spot check, a bare "remember that I prefer tabs" did not fire `memory-promotion`.
 - The confusers are easy, so the confuser figure says little about false activation between neighbouring skills. The positive cases do check that no neighbour fires instead.
 - This is one model. Results may differ on others.
-- Firing is not compliance. A skill that loads can still be ignored. Behavioral ablation (the same prompts with and without the plugin) is the next measurement, and it has not been done yet.
+- Firing is not compliance. A skill that loads can still be ignored. The behavioral ablation below measures what the skills change.
+
+### Measured behavior with and without the plugins
+
+`plugin-evals/behavioral/` runs one flagship case per skill from `evals/behavioral/` as a two-arm `claude plugin eval`: the same prompt with both families loaded and with no plugin. A judge model grades the final answer against PASS/FAIL criteria written per skill (`plugin-evals/behavioral-criteria.json`), with three votes per run. Each prompt pushes the agent to break the skill's rule, for example "use zero and keep going". The records are [`first-behavioral-run.json`](plugin-evals/first-behavioral-run.json) for the first pass, [`last-behavioral-run.json`](plugin-evals/last-behavioral-run.json) for the second, and [`last-holdout-run.json`](plugin-evals/last-holdout-run.json) for the held-out prompts.
+
+- **First pass, as shipped:** with the plugins, 62 of 93 runs passed; without them, 53 of 93. The expected skill fired in 36 of 93. Sixteen skills never fired on their pressure prompt. Six cases failed in every run of both arms, so the plugins changed nothing there, and on a seventh (`transfer-neutrality`) the plugin arm did worse than the baseline. In the responses, the agent mostly accepted the instruction and asked where to apply it.
+- **The fix:** each of those seven skills (`truth-boundary`, `money-trail`, `transfer-neutrality`, `corporate-action-continuity`, `close-the-books`, `systemic-bug-instinct`, `execution-charter`) gained a description clause that names the instruction as a moment of use, and six of them gained a workflow line saying an instruction does not supply the missing evidence. `systemic-bug-instinct` already had one. The judge criteria were not changed after the first pass.
+- **Second pass:** with the plugins, 75 of 93 passed; without them, 56 of 93. The expected skill fired in 51 of 93. On the seven changed cases, the plugin arm went from 0 of 21 to 13 of 21. On the other 24 cases it stayed at 62 of 72.
+- **Held out:** the second pass re-used the prompts that exposed the gap. Seven new pressure prompts, one per changed skill and worded differently, are in `plugin-evals/holdout/`. With the plugins, 14 of 21 runs passed; without them, 3 of 21. The expected skill fired in 11 of 21. The same author wrote these prompts after seeing the failures and writing the new clauses, so they were not used for tuning but they are not blind either.
+
+What this does and does not show:
+
+- Three runs per arm is a small sample. Cases whose skills were not edited moved by up to two runs out of three between passes, so a one-run difference on a single case is noise. Read the totals, not single cases.
+- `systemic-bug-instinct` and `execution-charter` still fail in both arms, on the flagship and held-out prompts alike. Neither skill fired. Their prompts point at code and the eval workspace is empty, which is likely why the agent asks for the file and stops. Measuring them probably needs a fixture repository, which these cases do not have.
+- Twelve skills still never fire on their pressure prompt: `basis-proof`, `diff-scope-audit`, `execution-charter`, `intent-drift-check`, `ledger-repair`, `memory-promotion`, `model-sanity`, `performance-truth`, `protected-boundary`, `seam-audit`, `systemic-bug-instinct` and `verify-before-cite`. Three cases scored lower with the plugins than without in the second pass (`diff-scope-audit`, `intent-drift-check`, `shipping-lanes`), each by one run, which is within the noise above.
+- On several cases the baseline already passes. The skills add little where the model already refuses the bad instruction.
+- After the second pass, `financial-evidence-grade` took the `truth-boundary` activation route in some runs. Its description gained a "not for non-financial values" clause. That change came after the behavioral pass. The activation figures above are from the final tree, but spot checks around it caught `truth-boundary`'s route firing alone in only 3 of 4 runs, so that route is less stable than its 3 of 3 suggests.
+- The judge is a model, and some of its FAIL votes on the `close-the-books` and `corporate-action-continuity` cases read as strict on review. The `corporate-action-continuity` criterion may be the cause: it asks for continuity, while a merger can be a taxable disposal, so an answer that holds the decision pending that evidence can be marked FAIL. The criteria stay as written for this record, and the votes stand.
+- After review, the new workflow lines in `transfer-neutrality`, `close-the-books` and `truth-boundary` were reworded so that a user's attestation and an owner's decision keep their standing. That rewording came after both passes and was not re-measured.
 
 These checks prove structure and deterministic contracts for the current tree. They do **not** retroactively add SWARM to the frozen v0.1.0 provider-backed model matrix.
 
