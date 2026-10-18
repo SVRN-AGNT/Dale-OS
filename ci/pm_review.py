@@ -315,12 +315,18 @@ def check_identity(run: dict, default_branch: str, fetch=None):
         return None
 
 
-def failed_checks(check_runs, identify=None) -> list[str]:
+def failed_checks(check_runs, identify=None, workflow_of=None) -> list[str]:
     """Checks with a run on the head that failed, was cancelled or was not reviewed, and is not set aside.
 
     A failed run is set aside only by a successful run that started after it and that `identify` (check_identity)
     proves is the same check. A name or an app alone proves nothing, so without `identify`, or when it cannot prove a
-    run, every failed run counts. A skipped or neutral run never sets one aside."""
+    run, every failed run counts. A skipped or neutral run never sets one aside.
+
+    A cancelled job is also set aside when `workflow_of` (job_workflow) proves that a job of the same name started
+    after it, in a pull request run of the same workflow file and event, for the same pull requests, bases and branch,
+    on this head, and that run has concluded with anything but cancelled. A concurrency group that cancels a superseded run leaves no verdict, and the newer run's own jobs are
+    the result that counts: any of them that failed is counted on its own (ACF #5692: three jobs of a superseded PR
+    Visual Evidence run read as a CORRECT with 0 findings)."""
     done = [r for r in check_runs if r.get("name") != PM_CHECK and r.get("status") == "completed"]
     failed = [r for r in done if r.get("conclusion") in FAILED_CHECK]
     if not failed or identify is None:
@@ -336,8 +342,54 @@ def failed_checks(check_runs, identify=None) -> list[str]:
     for f in failed:
         k = keys.get(id(f))
         if k is None or not any(r.get("conclusion") == "success" and keys.get(id(r)) == k and order(r) > order(f) for r in done):
-            out.add(f.get("name") or "?")
+            if not superseded(f, done, workflow_of, order):
+                out.add(f.get("name") or "?")
     return sorted(out)
+
+
+def superseded(f: dict, done, workflow_of, order) -> bool:
+    """A cancelled job that a later job of the same name, in a concluded newer run of its workflow, replaced."""
+    if f.get("conclusion") != "cancelled" or workflow_of is None:
+        return False
+    mine = workflow_of(f)
+    if not mine:
+        return False
+    for r in done:
+        if r is f or r.get("name") != f.get("name") or not order(r) > order(f):
+            continue
+        theirs = workflow_of(r)
+        if theirs and theirs[:-1] == mine[:-1] and theirs[-1]:
+            return True
+    return False
+
+
+PR_EVENTS = ("pull_request", "pull_request_target")
+
+
+def job_workflow(run: dict, fetch=None):
+    """(workflow file, event, branch, pull requests, concluded) of the pull request run a job check belongs to, or None.
+
+    Read from GitHub's run record. Only a job check counts: GitHub writes its job link, which an API caller cannot set.
+    Only a pull request run counts: a dispatch's inputs are not in its record, so two dispatches are never proven to be
+    the same invocation (Codex P1 on #44). The pull requests are the number and base branch of each one GitHub lists on
+    the run, so a run it lists for another pull request or base never replaces this one. `concluded` is true once the run has completed with any conclusion
+    but cancelled."""
+    fetch = fetch or (lambda path: _api("GET", path))
+    if (run.get("app") or {}).get("slug") != "github-actions":
+        return None
+    m = JOB_CHECK_URL.match(run.get("details_url") or "")
+    if not m or m.group(1).lower() != os.environ.get("GITHUB_REPOSITORY", "").lower():
+        return None
+    try:
+        wf = fetch(f"/actions/runs/{m.group(2)}") or {}
+    except Exception:  # noqa: BLE001 - unreadable keeps the cancelled job counted
+        return None
+    prs = tuple(sorted((p.get("number"), (p.get("base") or {}).get("ref")) for p in wf.get("pull_requests") or []))
+    if not wf.get("path") or wf.get("event") not in PR_EVENTS or not wf.get("head_branch") or not prs \
+            or any(n is None or not ref for n, ref in prs):
+        return None
+    return (wf["path"], wf["event"], wf["head_branch"], prs,
+            wf.get("status") == "completed" and wf.get("conclusion") not in (None, "cancelled"))
 
 
 def head_failed_checks(pr: dict, head: str) -> list[str]:
@@ -351,7 +403,7 @@ def head_failed_checks(pr: dict, head: str) -> list[str]:
         return cache[path]
 
     return failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all"),
-                         lambda r: check_identity(r, default_branch, fetch))
+                         lambda r: check_identity(r, default_branch, fetch), lambda r: job_workflow(r, fetch))
 
 
 def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:
