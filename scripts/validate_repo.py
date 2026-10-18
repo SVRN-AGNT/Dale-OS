@@ -245,6 +245,13 @@ for _case in _fixtures:
     if not re.search(r'^type: llm$',_judge.read_text(),re.M): fail(f'{_rel}/graders/judge.md: type must be llm')
     _m2=re.search(r'\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"',_sk.read_text())
     if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: input_match must name a manifest skill')
+    # Line-level checks run without PyYAML, which the CI job does not install.
+    _txt=_cy.read_text(encoding="utf-8")
+    if not re.search(r'^name: '+re.escape(_case.name)+r'$',_txt,re.M): fail(f'{_rel}/case.yaml: name must match the folder')
+    if not re.search(r'^tags: \[[^\]]*\bfixture\b[^\]]*\]$',_txt,re.M): fail(f'{_rel}/case.yaml: tags must include fixture')
+    if not re.search(r'^  scaffold_script: scaffold\.sh$',_txt,re.M): fail(f'{_rel}/case.yaml: context.scaffold_script must be scaffold.sh')
+    if not re.search(r'^  prompt: "\S.*"$',_txt,re.M): fail(f'{_rel}/case.yaml: execution.prompt is required')
+    if not re.search(r'^plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]$',_txt,re.M): fail(f'{_rel}/case.yaml: plugins must load both skill families')
     if not yaml: continue
     for _f in (_judge,_sk):
         try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
