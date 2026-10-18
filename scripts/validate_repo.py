@@ -260,16 +260,17 @@ for _case in _fixtures:
     _check_graders(_rel,_judge,_sk)
     # The whole file must match one template, so the check needs no PyYAML (the CI job does not
     # install it) and a key moved under the wrong parent, added or reordered fails here too.
-    # Only the description and the prompt vary between cases.
+    # Only the description and the prompt vary, as double-quoted scalars with no backslash or
+    # control character, so no YAML escape can make them invalid or change their value.
     _txt=_cy.read_text(encoding="utf-8")
     _tpl=re.compile(
         r'schema_version: "1\.1"\n'
         r'name: '+re.escape(_case.name)+r'\n'
-        r'description: "[^"\n]+"\n'
+        r'description: "[^"\\\x00-\x1f]+"\n'
         r'tags: \[fixture\]\n'
         r'plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]\n'
         r'execution:\n'
-        r'  prompt: "\S[^"\n]*"\n'
+        r'  prompt: "[^"\\\s][^"\\\x00-\x1f]*"\n'
         r'  max_turns: 8\n'
         r'  allowed_tools: \[Skill, Read, Glob, Grep, Edit, Write\]\n'
         r'context:\n'
