@@ -471,15 +471,32 @@ PRT = {"event": "pull_request_target", "path": ".github/workflows/agent-review.y
        "run_started_at": "2026-10-16T10:00:00Z", "updated_at": "2026-10-16T10:05:00Z"}
 WFD = dict(PRT, event="workflow_dispatch", head_branch="main", pull_requests=[], head_sha="a" * 40,
            run_started_at="2026-10-16T11:00:00Z", updated_at="2026-10-16T11:05:00Z")
+PR12 = [{"number": 12, "base": {"ref": "main"}}]
 RUNS = {"/actions/runs/1/attempts/1": dict(PRT, id=1), "/actions/runs/2/attempts/1": dict(WFD, id=2),
         "/actions/runs/3/attempts/1": dict(WFD, id=3, head_branch="feature"),
         "/actions/runs/4/attempts/1": dict(PRT, id=4, event="pull_request", path=".github/workflows/agent-review.yml"),
-        "/actions/runs/5": dict(PRT, id=5, event="pull_request", path=".github/workflows/ci.yml"),
-        "/actions/runs/6": dict(PRT, id=6, event="pull_request", path=".github/workflows/ci.yml", conclusion="success"),
-        "/actions/runs/10": dict(PRT, id=10, event="pull_request", path=".github/workflows/ci.yml", status="in_progress"),
-        "/actions/runs/11": dict(PRT, id=11, path=".github/workflows/ci.yml", conclusion="success"),
-        "/actions/runs/12": dict(PRT, id=12, event="pull_request", path=".github/workflows/ci.yml", conclusion="cancelled"),
-        "/actions/runs/13": dict(PRT, id=13, event="pull_request", path=".github/workflows/other.yml", conclusion="success"),
+        "/actions/runs/5": dict(PRT, id=5, event="pull_request", path=".github/workflows/ci.yml", pull_requests=PR12),
+        "/actions/runs/6": dict(PRT, id=6, event="pull_request", path=".github/workflows/ci.yml", conclusion="success",
+                                pull_requests=PR12),
+        "/actions/runs/10": dict(PRT, id=10, event="pull_request", path=".github/workflows/ci.yml", status="in_progress",
+                                 pull_requests=PR12),
+        "/actions/runs/11": dict(PRT, id=11, path=".github/workflows/ci.yml", conclusion="success", pull_requests=PR12),
+        "/actions/runs/12": dict(PRT, id=12, event="pull_request", path=".github/workflows/ci.yml", conclusion="cancelled",
+                                 pull_requests=PR12),
+        "/actions/runs/13": dict(PRT, id=13, event="pull_request", path=".github/workflows/other.yml", conclusion="success",
+                                 pull_requests=PR12),
+        "/actions/runs/14": dict(PRT, id=14, event="pull_request", path=".github/workflows/ci.yml", conclusion="success",
+                                 pull_requests=[{"number": 13, "base": {"ref": "main"}}]),
+        "/actions/runs/15": dict(PRT, id=15, event="pull_request", path=".github/workflows/ci.yml", conclusion="success",
+                                 pull_requests=[{"number": 12, "base": {"ref": "release"}}]),
+        "/actions/runs/16": dict(PRT, id=16, event="pull_request", path=".github/workflows/ci.yml", conclusion="success",
+                                 pull_requests=PR12, head_branch="other"),
+        "/actions/runs/17": dict(WFD, id=17, path=".github/workflows/ci.yml", conclusion="success", head_branch="feature"),
+        "/actions/runs/18": dict(PRT, id=18, event="pull_request", path=".github/workflows/ci.yml", conclusion="success",
+                                 pull_requests=[]),
+        "/actions/runs/19": dict(WFD, id=19, path=".github/workflows/ci.yml", conclusion="success", head_branch="feature"),
+        "/actions/runs/20": dict(PRT, id=20, event="pull_request", path=".github/workflows/ci.yml", conclusion="success",
+                                 pull_requests=[]),
         "/actions/runs/7/attempts/1": dict(WFD, id=7, path=".github/workflows/other.yml"),
         "/actions/runs/8/attempts/1": dict(WFD, id=8, head_sha="b" * 40),
         "/branches/main": {"commit": {"sha": "c" * 40}},
@@ -566,6 +583,16 @@ check("a newer run of the same file from another event sets nothing aside",
       pm.failed_checks([CANCELLED, later("success", 11)], ident, wof) == ["Tests"])
 check("a newer run of another workflow file sets nothing aside",
       pm.failed_checks([CANCELLED, later("success", 13)], ident, wof) == ["Tests"])
+check("a newer run for another pull request sets nothing aside (Codex P1 on #44)",
+      pm.failed_checks([CANCELLED, later("success", 14)], ident, wof) == ["Tests"])
+check("a newer run into another base branch sets nothing aside",
+      pm.failed_checks([CANCELLED, later("success", 15)], ident, wof) == ["Tests"])
+check("a newer run from another head branch sets nothing aside",
+      pm.failed_checks([CANCELLED, later("success", 16)], ident, wof) == ["Tests"])
+check("a dispatch never proves it replaced another invocation, even of the same file",
+      pm.failed_checks([job(20, "cancelled", "2026-10-16T10:01:00Z", 17), later("success", 19)], ident, wof) == ["Tests"])
+check("a run with no pull request on its record proves nothing",
+      pm.failed_checks([job(20, "cancelled", "2026-10-16T10:01:00Z", 18), later("success", 20)], ident, wof) == ["Tests"])
 check("a newer job with another name sets nothing aside",
       pm.failed_checks([CANCELLED, later("success", 6, name="Lint")], ident, wof) == ["Tests"])
 check("a job that started before the cancelled one sets nothing aside",
