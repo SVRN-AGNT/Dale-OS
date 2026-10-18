@@ -1,7 +1,7 @@
 {
   "schema": "dale-os/plugin-eval-run/v1",
   "claude_code": "2.1.302",
-  "started_at": "2026-10-17T22:00:27.207Z",
+  "started_at": "2026-10-18T00:36:54.693Z",
   "model": "the eval's default child model",
   "families_loaded": [
     "operator",
@@ -53,7 +53,7 @@
     "activate-false-competence-check": {
       "passed": 3,
       "runs": 3,
-      "errored": 0
+      "errored": 1
     },
     "activate-financial-evidence": {
       "passed": 3,
@@ -78,7 +78,7 @@
     "activate-loop-closure": {
       "passed": 3,
       "runs": 3,
-      "errored": 2
+      "errored": 1
     },
     "activate-memory-promotion": {
       "passed": 3,
@@ -103,7 +103,7 @@
     "activate-operator-ui": {
       "passed": 3,
       "runs": 3,
-      "errored": 1
+      "errored": 0
     },
     "activate-performance-truth": {
       "passed": 3,
@@ -133,7 +133,7 @@
     "activate-shipping-lanes": {
       "passed": 3,
       "runs": 3,
-      "errored": 0
+      "errored": 1
     },
     "activate-swarm": {
       "passed": 3,
@@ -188,7 +188,7 @@
     "confuse-completion-contract": {
       "passed": 3,
       "runs": 3,
-      "errored": 1
+      "errored": 0
     },
     "confuse-corporate-action": {
       "passed": 3,

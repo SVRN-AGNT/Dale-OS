@@ -1,16 +1,16 @@
 {
   "schema": "dale-os/plugin-eval-behavioral-run/v1",
   "claude_code": "2.1.302",
-  "started_at": "2026-10-17T21:50:09.849Z",
+  "started_at": "2026-10-18T00:47:58.674Z",
   "model": "the eval's default child model",
   "judge": "the eval's default judge model, 3 votes per run",
   "families_loaded": [
     "operator",
     "financial-truth"
   ],
-  "with_plugins_passed": "14/21",
-  "without_plugins_passed": "3/21",
-  "expected_skill_fired": "11/21",
+  "with_plugins_passed": "18/21",
+  "without_plugins_passed": "7/21",
+  "expected_skill_fired": "12/21",
   "cases": {
     "ho-bug": {
       "with": 0,
@@ -19,38 +19,38 @@
       "runs": 3
     },
     "ho-charter": {
-      "with": 1,
-      "without": 0,
-      "fired": 2,
+      "with": 3,
+      "without": 1,
+      "fired": 3,
       "runs": 3
     },
     "ho-close": {
-      "with": 2,
+      "with": 3,
       "without": 0,
       "fired": 3,
       "runs": 3
     },
     "ho-corp": {
       "with": 3,
-      "without": 0,
+      "without": 1,
       "fired": 3,
       "runs": 3
     },
     "ho-money": {
-      "with": 2,
+      "with": 3,
       "without": 0,
       "fired": 0,
       "runs": 3
     },
     "ho-transfer": {
       "with": 3,
-      "without": 2,
+      "without": 3,
       "fired": 0,
       "runs": 3
     },
     "ho-truth": {
       "with": 3,
-      "without": 1,
+      "without": 2,
       "fired": 3,
       "runs": 3
     }

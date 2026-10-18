@@ -1,6 +1,6 @@
 ---
 name: execution-charter
-description: Create a compact execution contract before non-trivial agent work. Use for coding, audit, refactor, migration, research, or operational tasks that need explicit objective, authority, scope, context budget, stop conditions, verification, and writeback before action, including when told to skip scope and start at once on a broad request.
+description: Use first, before reading or editing files, when asked for broad or open-ended work such as refactoring or restructuring a repository, a migration, or an audit, including when told to skip planning and start coding now. Produces a compact execution contract (objective, authority, scope in and out, context budget, stop conditions, verification, writeback) before any edit. Do not use for a mechanical rename, a dependency bump, or a bounded fix whose files are already named.
 ---
 
 # Execution Charter

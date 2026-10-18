@@ -205,12 +205,12 @@ for _fam in ('operator','financial-truth'):
 # Generated plugin eval cases must be committed: git diff --exit-code does not see untracked files.
 import subprocess as _sp
 try:
-    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation','plugin-evals/behavioral'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
+    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation','plugin-evals/behavioral','plugin-evals/holdout','plugin-evals/fixture'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
 except Exception:
     _tracked=None
 if _tracked is not None:
-    _gen={str(q.relative_to(ROOT)) for d in ('activation','behavioral') for q in (ROOT/'plugin-evals'/d).rglob('*') if q.is_file()}
-    if _gen-_tracked: fail(f'plugin-evals: generated cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
+    _gen={str(q.relative_to(ROOT)) for d in ('activation','behavioral','holdout','fixture') for q in (ROOT/'plugin-evals'/d).rglob('*') if q.is_file()}
+    if _gen-_tracked: fail(f'plugin-evals: eval cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
 
 # Hand-written held-out cases: same shape as the generated behavioral cases, naming a real skill.
 _skill_names={s['name'] for s in manifest.get('skills',[])}
@@ -227,6 +227,38 @@ for _case in sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is
         for _f in (_pm,_judge,_sk):
             try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
             except Exception as _e: fail(f'{_f.relative_to(ROOT)}: front matter is not strict YAML ({_e})')
+
+# Sample-repository cases: case.yaml plus a scaffold that copies repo/ into the run.
+# --scaffold runs scaffold.sh as the operator, so every case must carry the one canonical script.
+import os as _os
+_fixtures=sorted(q for q in (ROOT/'plugin-evals'/'fixture').glob('*') if q.is_dir())
+_canon=(_fixtures[0]/'scaffold.sh').read_bytes() if _fixtures and (_fixtures[0]/'scaffold.sh').exists() else None
+_families={str((ROOT/'skills'/f).resolve()) for f in ('operator','financial-truth')}
+for _case in _fixtures:
+    _rel=_case.relative_to(ROOT)
+    _cy=_case/'case.yaml'; _judge=_case/'graders'/'judge.md'; _sk=_case/'graders'/'skill.md'; _sc=_case/'scaffold.sh'
+    if not all(f.exists() for f in (_cy,_judge,_sk,_sc,_case/'repo')):
+        fail(f'{_rel}: needs case.yaml, scaffold.sh, repo/, graders/judge.md and graders/skill.md'); continue
+    if not any(q.is_file() for q in (_case/'repo').rglob('*')): fail(f'{_rel}/repo: must contain at least one file')
+    if _sc.read_bytes()!=_canon: fail(f'{_rel}/scaffold.sh: must be identical to {_fixtures[0].relative_to(ROOT)}/scaffold.sh')
+    if not _os.access(_sc,_os.X_OK): fail(f'{_rel}/scaffold.sh: must be executable')
+    if not re.search(r'^type: llm$',_judge.read_text(),re.M): fail(f'{_rel}/graders/judge.md: type must be llm')
+    _m2=re.search(r'\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"',_sk.read_text())
+    if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: input_match must name a manifest skill')
+    if not yaml: continue
+    for _f in (_judge,_sk):
+        try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
+        except Exception as _e: fail(f'{_f.relative_to(ROOT)}: front matter is not strict YAML ({_e})')
+    try: _c=yaml.safe_load(_cy.read_text(encoding="utf-8"))
+    except Exception as _e: fail(f'{_rel}/case.yaml: not strict YAML ({_e})'); continue
+    if not isinstance(_c,dict): fail(f'{_rel}/case.yaml: must be a mapping'); continue
+    _ctx=_c.get('context') if isinstance(_c.get('context'),dict) else {}
+    _ex=_c.get('execution') if isinstance(_c.get('execution'),dict) else {}
+    if _c.get('name')!=_case.name: fail(f'{_rel}/case.yaml: name must match the folder')
+    if 'fixture' not in (_c.get('tags') or []): fail(f'{_rel}/case.yaml: tags must include fixture')
+    if _ctx.get('scaffold_script')!='scaffold.sh': fail(f'{_rel}/case.yaml: context.scaffold_script must be scaffold.sh')
+    if not str(_ex.get('prompt') or '').strip(): fail(f'{_rel}/case.yaml: execution.prompt is required')
+    if {str((_case/pp).resolve()) for pp in (_c.get('plugins') or [])}!=_families: fail(f'{_rel}/case.yaml: plugins must load both skill families')
 
 if errors:
     print('VALIDATION FAILED')
