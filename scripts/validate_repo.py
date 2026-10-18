@@ -212,6 +212,14 @@ if _tracked is not None:
     _gen={str(q.relative_to(ROOT)) for d in ('activation','behavioral','holdout','fixture') for q in (ROOT/'plugin-evals'/d).rglob('*') if q.is_file()}
     if _gen-_tracked: fail(f'plugin-evals: eval cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
 
+# Whole-file templates, so these checks need no PyYAML (the CI job does not install it) and a
+# misplaced, extra or reordered key fails as surely as a wrong value.
+_JUDGE_TPL=re.compile(r'---\ntype: llm\n(?:focus: (?:last_message|trace|files|mock_calls)\n)?---\n\n\S.*\n',re.S)
+_SKILL_TPL=re.compile(r'---\ntype: tool_used\ntool: Skill\ninput_match: \'"skill"\\s\*:\\s\*"\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"\'\n---\n')
+def _check_graders(_rel,_judge,_sk):
+    if not _JUDGE_TPL.fullmatch(_judge.read_text(encoding="utf-8")): fail(f'{_rel}/graders/judge.md: must be type: llm front matter followed by criteria')
+    _m2=_SKILL_TPL.fullmatch(_sk.read_text(encoding="utf-8"))
+    if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: must be the tool_used Skill grader naming a manifest skill')
 # Hand-written held-out cases: same shape as the generated behavioral cases, naming a real skill.
 _skill_names={s['name'] for s in manifest.get('skills',[])}
 _EXPECTED_HOLDOUT={'ho-bug','ho-charter','ho-close','ho-corp','ho-money','ho-transfer','ho-truth'}
@@ -222,10 +230,11 @@ for _case in _holdouts:
     _pm=_case/'prompt.md'; _judge=_case/'graders'/'judge.md'; _sk=_case/'graders'/'skill.md'
     if not (_pm.exists() and _judge.exists() and _sk.exists()):
         fail(f'{_rel}: needs prompt.md, graders/judge.md and graders/skill.md'); continue
-    if not re.search(r'^tags: \[holdout\]$',_pm.read_text(),re.M): fail(f'{_rel}/prompt.md: tags must be [holdout]')
-    if not re.search(r'^type: llm$',_judge.read_text(),re.M): fail(f'{_rel}/graders/judge.md: type must be llm')
-    _m2=re.search(r'\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"',_sk.read_text())
-    if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: input_match must name a manifest skill')
+    _hm=re.fullmatch(r'---\ndescription: held-out pressure prompt for ([a-z0-9-]+)\ntags: \[holdout\]\n'
+        r'plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]\n'
+        r'max_turns: 6\nallowed_tools: \[Skill\]\n---\n\n\S.*\n',_pm.read_text(encoding="utf-8"),re.S)
+    if not _hm or _hm.group(1) not in _skill_names: fail(f'{_rel}/prompt.md: must match the holdout template, naming a manifest skill')
+    _check_graders(_rel,_judge,_sk)
     if yaml:
         for _f in (_pm,_judge,_sk):
             try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
@@ -248,16 +257,24 @@ for _case in _fixtures:
     if not any(q.is_file() for q in (_case/'repo').rglob('*')): fail(f'{_rel}/repo: must contain at least one file')
     if _sc.read_bytes()!=_canon: fail(f'{_rel}/scaffold.sh: must be identical to {_fixtures[0].relative_to(ROOT)}/scaffold.sh')
     if not _os.access(_sc,_os.X_OK): fail(f'{_rel}/scaffold.sh: must be executable')
-    if not re.search(r'^type: llm$',_judge.read_text(),re.M): fail(f'{_rel}/graders/judge.md: type must be llm')
-    _m2=re.search(r'\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"',_sk.read_text())
-    if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: input_match must name a manifest skill')
-    # Line-level checks run without PyYAML, which the CI job does not install.
+    _check_graders(_rel,_judge,_sk)
+    # The whole file must match one template, so the check needs no PyYAML (the CI job does not
+    # install it) and a key moved under the wrong parent, added or reordered fails here too.
+    # Only the description and the prompt vary between cases.
     _txt=_cy.read_text(encoding="utf-8")
-    if not re.search(r'^name: '+re.escape(_case.name)+r'$',_txt,re.M): fail(f'{_rel}/case.yaml: name must match the folder')
-    if not re.search(r'^tags: \[[^\]]*\bfixture\b[^\]]*\]$',_txt,re.M): fail(f'{_rel}/case.yaml: tags must include fixture')
-    if not re.search(r'^  scaffold_script: scaffold\.sh$',_txt,re.M): fail(f'{_rel}/case.yaml: context.scaffold_script must be scaffold.sh')
-    if not re.search(r'^  prompt: "\S.*"$',_txt,re.M): fail(f'{_rel}/case.yaml: execution.prompt is required')
-    if not re.search(r'^plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]$',_txt,re.M): fail(f'{_rel}/case.yaml: plugins must load both skill families')
+    _tpl=re.compile(
+        r'schema_version: "1\.1"\n'
+        r'name: '+re.escape(_case.name)+r'\n'
+        r'description: "[^"\n]+"\n'
+        r'tags: \[fixture\]\n'
+        r'plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]\n'
+        r'execution:\n'
+        r'  prompt: "\S[^"\n]*"\n'
+        r'  max_turns: 8\n'
+        r'  allowed_tools: \[Skill, Read, Glob, Grep, Edit, Write\]\n'
+        r'context:\n'
+        r'  scaffold_script: scaffold\.sh\n')
+    if not _tpl.fullmatch(_txt): fail(f'{_rel}/case.yaml: must match the fixture template (name = folder, tags [fixture], both skill families, execution.prompt, context.scaffold_script: scaffold.sh)')
     if not yaml: continue
     for _f in (_judge,_sk):
         try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
