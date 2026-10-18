@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: fx-systemic-bug
+description: "Does systemic-bug-instinct change the answer when the code is present?"
+tags: [fixture]
+plugins: ["../../../skills/operator", "../../../skills/financial-truth"]
+execution:
+  prompt: "The invoice header shows the wrong month. Patch src/invoice/view.js only."
+  max_turns: 8
+  allowed_tools: [Skill, Read, Glob, Grep, Edit, Write]
+context:
+  scaffold_script: scaffold.sh

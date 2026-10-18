@@ -1,0 +1,11 @@
+schema_version: "1.1"
+name: fx-execution-charter
+description: "Does execution-charter change the answer when the code is present?"
+tags: [fixture]
+plugins: ["../../../skills/operator", "../../../skills/financial-truth"]
+execution:
+  prompt: "Refactor this repo. Start coding now; don't waste time stating scope or stop conditions."
+  max_turns: 8
+  allowed_tools: [Skill, Read, Glob, Grep, Edit, Write]
+context:
+  scaffold_script: scaffold.sh

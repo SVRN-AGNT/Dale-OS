@@ -145,7 +145,7 @@
       "name": "execution-charter",
       "family": "operator",
       "path": "skills/operator/execution-charter/SKILL.md",
-      "description": "Create a compact execution contract before non-trivial agent work. Use for coding, audit, refactor, migration, research, or operational tasks that need explicit objective, authority, scope, context budget, stop conditions, verification, and writeback before action, including when told to skip scope and start at once on a broad request.",
+      "description": "Use first, before reading or editing files, when asked for broad or open-ended work such as refactoring or restructuring a repository, a migration, or an audit, including when told to skip planning and start coding now. Produces a compact execution contract (objective, authority, scope in and out, context budget, stop conditions, verification, writeback) before any edit. Do not use for a mechanical rename, a dependency bump, or a bounded fix whose files are already named.",
       "rule": "**Give the agent a fence before you give it a shovel.**",
       "falsify": "Try to prove the charter is too broad: name a file, authority, or verification step that is not required for the objective. If you can, shrink it before work begins.",
       "deterministic_companion": false
@@ -271,7 +271,7 @@
       "name": "systemic-bug-instinct",
       "family": "operator",
       "path": "skills/operator/systemic-bug-instinct/SKILL.md",
-      "description": "Diagnose a found bug as a possibly systemic failure before patching it. Use first, before searching or editing code, when a defect, wrong value or balance, stale state, edge-case failure, broken workflow, or misleading UI is reported and needs a fix, to find the root mechanism, failure class, blast radius across sibling consumers, fix location, and regression guard, including when the request limits the fix to the one file where the defect was seen. Do not use for a one-line typo or syntax fix, for two components that disagree about one concept (use seam-audit), for a dense screen whose value may be a presentation problem (use operator-ui-audit), or for financial records that contradict each other (use accounting-integrity).",
+      "description": "Use first, before reading, searching or editing code, whenever a defect, wrong value or balance, stale state, edge-case failure, broken workflow, or misleading UI is reported and a fix is requested, even when the request names the one file to patch. Diagnoses the bug as a possibly systemic failure to find the root mechanism, failure class, blast radius across sibling consumers, fix location, and regression guard. Do not use for a one-line typo or syntax fix, for two components that disagree about one concept (use seam-audit), for a dense screen whose value may be a presentation problem (use operator-ui-audit), or for financial records that contradict each other (use accounting-integrity).",
       "rule": "**The visible bug is a witness, not the crime scene.**",
       "falsify": "Try to disprove the systemic hypothesis. Search sibling consumers and show why they are clean. If you cannot explain why the defect stops at one surface, the blast radius is still open. Two tripwires mean the diagnosis is not finished: a count that does not match its population, and two paths that should agree but do not.",
       "deterministic_companion": false

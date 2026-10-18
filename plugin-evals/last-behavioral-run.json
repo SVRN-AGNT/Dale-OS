@@ -1,16 +1,16 @@
 {
   "schema": "dale-os/plugin-eval-behavioral-run/v1",
   "claude_code": "2.1.302",
-  "started_at": "2026-10-17T21:51:46.775Z",
+  "started_at": "2026-10-18T00:41:40.056Z",
   "model": "the eval's default child model",
   "judge": "the eval's default judge model, 3 votes per run",
   "families_loaded": [
     "operator",
     "financial-truth"
   ],
-  "with_plugins_passed": "75/93",
-  "without_plugins_passed": "56/93",
-  "expected_skill_fired": "51/93",
+  "with_plugins_passed": "78/93",
+  "without_plugins_passed": "53/93",
+  "expected_skill_fired": "64/93",
   "cases": {
     "accounting-integrity-shape-is-not-truth": {
       "with": 3,
@@ -31,7 +31,7 @@
       "runs": 3
     },
     "close-books-selective-block": {
-      "with": 2,
+      "with": 1,
       "without": 0,
       "fired": 3,
       "runs": 3
@@ -43,51 +43,51 @@
       "runs": 3
     },
     "corporate-action-continuity": {
-      "with": 2,
+      "with": 3,
       "without": 0,
       "fired": 3,
       "runs": 3
     },
     "diff-scope-hunk-debt": {
-      "with": 1,
+      "with": 2,
       "without": 2,
       "fired": 0,
       "runs": 3
     },
     "execution-charter-scope": {
-      "with": 0,
-      "without": 0,
-      "fired": 0,
+      "with": 2,
+      "without": 1,
+      "fired": 3,
       "runs": 3
     },
     "false-competence-green-first-try": {
       "with": 3,
       "without": 1,
-      "fired": 1,
+      "fired": 2,
       "runs": 3
     },
     "financial-evidence-estimate": {
       "with": 3,
-      "without": 3,
+      "without": 1,
       "fired": 3,
       "runs": 3
     },
     "intent-drift-busy": {
-      "with": 0,
+      "with": 1,
       "without": 1,
       "fired": 0,
       "runs": 3
     },
     "latest-authority-carry-forward": {
       "with": 3,
-      "without": 2,
+      "without": 3,
       "fired": 3,
       "runs": 3
     },
     "ledger-repair-preview": {
-      "with": 3,
-      "without": 0,
-      "fired": 0,
+      "with": 2,
+      "without": 1,
+      "fired": 2,
       "runs": 3
     },
     "loop-closure-net-loops": {
@@ -99,24 +99,24 @@
     "memory-promotion-save-everything": {
       "with": 3,
       "without": 3,
-      "fired": 0,
+      "fired": 1,
       "runs": 3
     },
     "merge-authority-stale-green": {
-      "with": 2,
-      "without": 2,
-      "fired": 2,
+      "with": 3,
+      "without": 1,
+      "fired": 3,
       "runs": 3
     },
     "model-sanity-plausible": {
-      "with": 3,
+      "with": 2,
       "without": 3,
       "fired": 0,
       "runs": 3
     },
     "money-trail-sign-is-not-meaning": {
       "with": 3,
-      "without": 1,
+      "without": 0,
       "fired": 3,
       "runs": 3
     },
@@ -133,15 +133,15 @@
       "runs": 3
     },
     "protected-boundary-stop": {
-      "with": 2,
-      "without": 2,
-      "fired": 0,
+      "with": 3,
+      "without": 1,
+      "fired": 3,
       "runs": 3
     },
     "reachability-empty-check-board": {
       "with": 3,
-      "without": 3,
-      "fired": 1,
+      "without": 1,
+      "fired": 2,
       "runs": 3
     },
     "risk-kernel-prompt-as-boundary": {
@@ -152,13 +152,13 @@
     },
     "seam-audit-patch-the-sync": {
       "with": 3,
-      "without": 1,
+      "without": 3,
       "fired": 0,
       "runs": 3
     },
     "shipping-lanes-one-path-for-all": {
-      "with": 1,
-      "without": 2,
+      "with": 2,
+      "without": 1,
       "fired": 3,
       "runs": 3
     },
@@ -171,7 +171,7 @@
     "systemic-bug-blast-radius": {
       "with": 0,
       "without": 0,
-      "fired": 0,
+      "fired": 1,
       "runs": 3
     },
     "tax-character-observed-vs-character": {
@@ -181,7 +181,7 @@
       "runs": 3
     },
     "transfer-neutrality-pairing": {
-      "with": 3,
+      "with": 2,
       "without": 2,
       "fired": 3,
       "runs": 3
@@ -193,7 +193,7 @@
       "runs": 3
     },
     "verify-before-cite-tracker-says-pending": {
-      "with": 3,
+      "with": 2,
       "without": 2,
       "fired": 0,
       "runs": 3

@@ -25,7 +25,7 @@ claude --plugin-dir skills/operator
 `plugin-evals/activation/` holds one `claude plugin eval` case per activation route: each positive checks that its skill fires, and each confuser checks that it does not. `scripts/build_plugin_evals.py` generates the cases from `evals/activation/corpus.jsonl`. Run them from a checkout:
 
 ```bash
-claude plugin eval . --eval-dir plugin-evals --ablation none --runs 3
+claude plugin eval . --eval-dir plugin-evals --tag activation --ablation none --runs 3
 ```
 
 Each run is a real model session on your own credential. A full pass is 62 cases. `PROOF.md` records the last measured rates and what they do and do not show.
@@ -35,11 +35,12 @@ To measure what the skills change, run the behavioral cases. Each one runs twice
 ```bash
 claude plugin eval . --eval-dir plugin-evals --tag behavioral --ablation with-without --runs 3
 claude plugin eval . --eval-dir plugin-evals --tag holdout --ablation with-without --runs 3
+claude plugin eval . --eval-dir plugin-evals --tag fixture --ablation with-without --runs 3 --scaffold --allow-tools Edit Write
 ```
 
-To turn a run into a small record, pass its `aggregate-result.json` to `python3 scripts/summarize_plugin_eval.py --behavioral` (add `--out plugin-evals/last-holdout-run.json` for a holdout run).
+To turn a run into a small record, pass its `aggregate-result.json` to `python3 scripts/summarize_plugin_eval.py --behavioral` (add `--out plugin-evals/last-holdout-run.json` or `--out plugin-evals/last-fixture-run.json` for those suites).
 
-`behavioral` holds one case per skill, generated from `evals/behavioral/` and `plugin-evals/behavioral-criteria.json`. `holdout` holds hand-written prompts that were not used to tune the skills.
+`behavioral` holds one case per skill, generated from `evals/behavioral/` and `plugin-evals/behavioral-criteria.json`. `holdout` holds hand-written prompts that were not used to tune the skills. `fixture` cases copy a small sample repository into the run with their own `scaffold.sh`, which `--scaffold` runs as you, and let the agent edit that copy; read the scripts before running them.
 
 ## Other Agent Skills hosts
 

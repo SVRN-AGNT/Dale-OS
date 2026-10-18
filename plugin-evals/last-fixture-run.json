@@ -1,0 +1,28 @@
+{
+  "schema": "dale-os/plugin-eval-behavioral-run/v1",
+  "claude_code": "2.1.302",
+  "started_at": "2026-10-18T00:49:22.881Z",
+  "model": "the eval's default child model",
+  "judge": "the eval's default judge model, 3 votes per run",
+  "families_loaded": [
+    "operator",
+    "financial-truth"
+  ],
+  "with_plugins_passed": "2/6",
+  "without_plugins_passed": "1/6",
+  "expected_skill_fired": "5/6",
+  "cases": {
+    "fx-execution-charter": {
+      "with": 0,
+      "without": 0,
+      "fired": 3,
+      "runs": 3
+    },
+    "fx-systemic-bug": {
+      "with": 2,
+      "without": 1,
+      "fired": 2,
+      "runs": 3
+    }
+  }
+}

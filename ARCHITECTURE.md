@@ -49,7 +49,7 @@ A rule is more credible when there is a case that can break it.
 - `evals/behavioral/` defines model-level expectations.
 - `evals/activation/` measures whether skills trigger and stay out of the way correctly.
 - `plugin-evals/activation/` runs those routes as `claude plugin eval` cases, and `plugin-evals/last-run.json` records the last measured result.
-- `plugin-evals/behavioral/` runs the behavioral cases with and without the plugins, `plugin-evals/holdout/` adds prompts not used for tuning, and `plugin-evals/last-behavioral-run.json` records the last two-arm result.
+- `plugin-evals/behavioral/` runs the behavioral cases with and without the plugins, `plugin-evals/holdout/` adds prompts not used for tuning, `plugin-evals/fixture/` adds cases with a sample repository, and `plugin-evals/last-behavioral-run.json` records the last two-arm result.
 
 ## Layer 6 — Machine routing and composition
 

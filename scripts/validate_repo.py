@@ -205,28 +205,114 @@ for _fam in ('operator','financial-truth'):
 # Generated plugin eval cases must be committed: git diff --exit-code does not see untracked files.
 import subprocess as _sp
 try:
-    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation','plugin-evals/behavioral'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
+    _tracked=set(_sp.run(['git','ls-files','plugin-evals/activation','plugin-evals/behavioral','plugin-evals/holdout','plugin-evals/fixture'],cwd=ROOT,capture_output=True,text=True,check=True).stdout.split())
 except Exception:
     _tracked=None
 if _tracked is not None:
-    _gen={str(q.relative_to(ROOT)) for d in ('activation','behavioral') for q in (ROOT/'plugin-evals'/d).rglob('*') if q.is_file()}
-    if _gen-_tracked: fail(f'plugin-evals: generated cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
+    _gen={str(q.relative_to(ROOT)) for d in ('activation','behavioral','holdout','fixture') for q in (ROOT/'plugin-evals'/d).rglob('*') if q.is_file()}
+    if _gen-_tracked: fail(f'plugin-evals: eval cases are not tracked by git (git add plugin-evals): {sorted(_gen-_tracked)[:3]}')
 
+# Whole-file templates, so these checks need no PyYAML (the CI job does not install it) and a
+# misplaced, extra or reordered key fails as surely as a wrong value.
+_JUDGE_TPL=re.compile(r'---\ntype: llm\n(?:focus: (?:last_message|trace|files|mock_calls)\n)?---\n\n\S.*\n',re.S)
+_SKILL_TPL=re.compile(r'---\ntype: tool_used\ntool: Skill\ninput_match: \'"skill"\\s\*:\\s\*"\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"\'\n---\n')
+def _read_case_file(_f):
+    # Bytes, not read_text: universal newlines would hide a CR the eval runner still sees.
+    try: _t=_f.read_bytes().decode('utf-8')
+    except (OSError,UnicodeDecodeError) as _e: fail(f'{_f.relative_to(ROOT)}: unreadable as UTF-8 ({_e.__class__.__name__})'); return ''
+    if '\r' in _t: fail(f'{_f.relative_to(ROOT)}: must use LF line endings')
+    return _t
+def _check_layout(_case,_want):
+    # Exactly these files and no symlinks: an extra grader or a second case file changes what runs,
+    # and a link under repo/ would let the run's edits reach outside its working copy.
+    _seen=set()
+    for _q in _case.rglob('*'):
+        if _q.is_symlink(): fail(f'{_q.relative_to(ROOT)}: symlinks are not allowed in eval cases')
+        elif _q.is_file() and _q.relative_to(_case).parts[0]!='repo': _seen.add(str(_q.relative_to(_case)))
+    if _seen!=_want: fail(f'{_case.relative_to(ROOT)}: expected exactly {sorted(_want)}, found {sorted(_seen)}')
+def _check_graders(_rel,_judge,_sk,_want):
+    if not _JUDGE_TPL.fullmatch(_read_case_file(_judge)): fail(f'{_rel}/graders/judge.md: must be type: llm front matter followed by criteria')
+    _m2=_SKILL_TPL.fullmatch(_read_case_file(_sk))
+    if not _m2 or _m2.group(1)!=_want or _want not in _skill_names: fail(f'{_rel}/graders/skill.md: must be the tool_used Skill grader for {_want}')
 # Hand-written held-out cases: same shape as the generated behavioral cases, naming a real skill.
 _skill_names={s['name'] for s in manifest.get('skills',[])}
-for _case in sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is_dir()):
+# Each case is bound to the skill it measures, so a grader copied from another case cannot pass.
+_EXPECTED_HOLDOUT={'ho-bug':'systemic-bug-instinct','ho-charter':'execution-charter','ho-close':'close-the-books','ho-corp':'corporate-action-continuity','ho-money':'money-trail','ho-transfer':'transfer-neutrality','ho-truth':'truth-boundary'}
+_holdouts=sorted(q for q in (ROOT/'plugin-evals'/'holdout').glob('*') if q.is_dir())
+if {q.name for q in _holdouts}!=set(_EXPECTED_HOLDOUT): fail(f'plugin-evals/holdout: expected exactly {sorted(_EXPECTED_HOLDOUT)}, found {sorted(q.name for q in _holdouts)}')
+for _case in _holdouts:
     _rel=_case.relative_to(ROOT)
     _pm=_case/'prompt.md'; _judge=_case/'graders'/'judge.md'; _sk=_case/'graders'/'skill.md'
-    if not (_pm.exists() and _judge.exists() and _sk.exists()):
+    _check_layout(_case,{'prompt.md','graders/judge.md','graders/skill.md'})
+    if not (_pm.is_file() and _judge.is_file() and _sk.is_file()):
         fail(f'{_rel}: needs prompt.md, graders/judge.md and graders/skill.md'); continue
-    if not re.search(r'^tags: \[holdout\]$',_pm.read_text(),re.M): fail(f'{_rel}/prompt.md: tags must be [holdout]')
-    if not re.search(r'^type: llm$',_judge.read_text(),re.M): fail(f'{_rel}/graders/judge.md: type must be llm')
-    _m2=re.search(r'\(\?:\[\\w-\]\+:\)\?([a-z0-9-]+)"',_sk.read_text())
-    if not _m2 or _m2.group(1) not in _skill_names: fail(f'{_rel}/graders/skill.md: input_match must name a manifest skill')
+    _hm=re.fullmatch(r'---\ndescription: held-out pressure prompt for ([a-z0-9-]+)\ntags: \[holdout\]\n'
+        r'plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]\n'
+        r'max_turns: 6\nallowed_tools: \[Skill\]\n---\n\n\S.*\n',_read_case_file(_pm),re.S)
+    _want=_EXPECTED_HOLDOUT.get(_case.name)
+    if _want is None: continue  # already reported by the exact-set check
+    if not _hm or _hm.group(1)!=_want: fail(f'{_rel}/prompt.md: must match the holdout template, naming {_want}')
+    _check_graders(_rel,_judge,_sk,_want)
     if yaml:
         for _f in (_pm,_judge,_sk):
             try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
             except Exception as _e: fail(f'{_f.relative_to(ROOT)}: front matter is not strict YAML ({_e})')
+
+# Sample-repository cases: case.yaml plus a scaffold that copies repo/ into the run.
+# --scaffold runs scaffold.sh as the operator, so every case must carry the one pinned script.
+import os as _os
+_fixtures=sorted(q for q in (ROOT/'plugin-evals'/'fixture').glob('*') if q.is_dir())
+# Removing a case must fail here, not pass by shrinking the loop to nothing.
+_EXPECTED_FIXTURES={'fx-systemic-bug':'systemic-bug-instinct','fx-execution-charter':'execution-charter'}
+if {q.name for q in _fixtures}!=set(_EXPECTED_FIXTURES): fail(f'plugin-evals/fixture: expected exactly {sorted(_EXPECTED_FIXTURES)}, found {sorted(q.name for q in _fixtures)}')
+# Pinned, so editing every copy the same way (say, to copy into the checkout) still fails.
+# Changing the script on purpose means updating this hash in the same reviewed diff.
+import hashlib as _hl
+_SCAFFOLD_SHA256='a3227c5e7a7f78aeb1405ae1fc1a311af38b6f3dd779c3c5296e118d8a69401f'
+_families={str((ROOT/'skills'/f).resolve()) for f in ('operator','financial-truth')}
+for _case in _fixtures:
+    _rel=_case.relative_to(ROOT)
+    _cy=_case/'case.yaml'; _judge=_case/'graders'/'judge.md'; _sk=_case/'graders'/'skill.md'; _sc=_case/'scaffold.sh'
+    _check_layout(_case,{'case.yaml','scaffold.sh','graders/judge.md','graders/skill.md'})
+    if not (all(f.is_file() for f in (_cy,_judge,_sk,_sc)) and (_case/'repo').is_dir()):
+        fail(f'{_rel}: needs case.yaml, scaffold.sh, repo/, graders/judge.md and graders/skill.md'); continue
+    if not any(q.is_file() for q in (_case/'repo').rglob('*')): fail(f'{_rel}/repo: must contain at least one file')
+    if _hl.sha256(_sc.read_bytes()).hexdigest()!=_SCAFFOLD_SHA256: fail(f'{_rel}/scaffold.sh: must be the pinned canonical scaffold (sha256 {_SCAFFOLD_SHA256[:12]}...)')
+    if not _os.access(_sc,_os.X_OK): fail(f'{_rel}/scaffold.sh: must be executable')
+    if _case.name not in _EXPECTED_FIXTURES: continue  # already reported by the exact-set check
+    _check_graders(_rel,_judge,_sk,_EXPECTED_FIXTURES[_case.name])
+    # The whole file must match one template, so the check needs no PyYAML (the CI job does not
+    # install it) and a key moved under the wrong parent, added or reordered fails here too.
+    # Only the description and the prompt vary, as double-quoted printable ASCII with no quote or
+    # backslash: no escape, control or non-ASCII character can make them invalid or change their value.
+    _txt=_read_case_file(_cy)
+    _tpl=re.compile(
+        r'schema_version: "1\.1"\n'
+        r'name: '+re.escape(_case.name)+r'\n'
+        r'description: "[ !#-\[\]-~]+"\n'
+        r'tags: \[fixture\]\n'
+        r'plugins: \["\.\./\.\./\.\./skills/operator", "\.\./\.\./\.\./skills/financial-truth"\]\n'
+        r'execution:\n'
+        r'  prompt: "[!#-\[\]-~][ !#-\[\]-~]*"\n'
+        r'  max_turns: 8\n'
+        r'  allowed_tools: \[Skill, Read, Glob, Grep, Edit, Write\]\n'
+        r'context:\n'
+        r'  scaffold_script: scaffold\.sh\n')
+    if not _tpl.fullmatch(_txt): fail(f'{_rel}/case.yaml: must match the fixture template (name = folder, tags [fixture], both skill families, execution.prompt, context.scaffold_script: scaffold.sh)')
+    if not yaml: continue
+    for _f in (_judge,_sk):
+        try: yaml.safe_load(_f.read_text(encoding="utf-8").split("---\n",2)[1])
+        except Exception as _e: fail(f'{_f.relative_to(ROOT)}: front matter is not strict YAML ({_e})')
+    try: _c=yaml.safe_load(_cy.read_text(encoding="utf-8"))
+    except Exception as _e: fail(f'{_rel}/case.yaml: not strict YAML ({_e})'); continue
+    if not isinstance(_c,dict): fail(f'{_rel}/case.yaml: must be a mapping'); continue
+    _ctx=_c.get('context') if isinstance(_c.get('context'),dict) else {}
+    _ex=_c.get('execution') if isinstance(_c.get('execution'),dict) else {}
+    if _c.get('name')!=_case.name: fail(f'{_rel}/case.yaml: name must match the folder')
+    if 'fixture' not in (_c.get('tags') or []): fail(f'{_rel}/case.yaml: tags must include fixture')
+    if _ctx.get('scaffold_script')!='scaffold.sh': fail(f'{_rel}/case.yaml: context.scaffold_script must be scaffold.sh')
+    if not str(_ex.get('prompt') or '').strip(): fail(f'{_rel}/case.yaml: execution.prompt is required')
+    if {str((_case/pp).resolve()) for pp in (_c.get('plugins') or [])}!=_families: fail(f'{_rel}/case.yaml: plugins must load both skill families')
 
 if errors:
     print('VALIDATION FAILED')
