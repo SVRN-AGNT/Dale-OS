@@ -675,7 +675,8 @@ CTL = ".github/workflows/integration-controller.yml"
 ELECT = "Elect and merge one eligible PR"
 RUNS.update({"/actions/runs/30": dict(PRT, id=30, path=CTL, conclusion="failure"),
              "/actions/runs/31": dict(PRT, id=31, event="pull_request", path=CTL, conclusion="failure", pull_requests=PR12),
-             "/actions/runs/32": dict(PRT, id=32, path=".github/workflows/other.yml", conclusion="failure")})
+             "/actions/runs/32": dict(PRT, id=32, path=".github/workflows/other.yml", conclusion="failure"),
+             "/actions/runs/33": dict(WFD, id=33, path=CTL, conclusion="failure", head_branch="feature")})
 IGN = {(CTL, ELECT)}
 ctl = lambda conclusion, run=30, **over: job(40, conclusion, "2026-10-16T10:01:00Z", run, **{"name": ELECT, **over})  # noqa: E731
 for c in pm.FAILED_CHECK:
@@ -686,6 +687,8 @@ check("another job in the controller's file still counts",
 check("the same job name from another workflow file still counts", pm.failed_checks([ctl("failure", 32)], ident, wof, IGN) == [ELECT])
 check("a PR's own copy of the controller file (a pull_request run) still counts",
       pm.failed_checks([ctl("failure", 31)], ident, wof, IGN) == [ELECT])
+check("a dispatch of the controller file from a non-default branch still counts",
+      pm.failed_checks([ctl("failure", 33)], ident, wof, IGN) == [ELECT])
 check("a controller job that cannot be proven still counts",
       pm.failed_checks([ctl("failure")], None, wof, IGN) == [ELECT]
       and pm.failed_checks([ctl("failure", details_url="")], ident, wof, IGN) == [ELECT]
@@ -693,7 +696,8 @@ check("a controller job that cannot be proven still counts",
 check("ignoring the controller hides no other failure on the head",
       pm.failed_checks([ctl("failure"), job(20, "failure", "2026-10-16T10:01:00Z", 5)], ident, wof, IGN) == ["Tests"])
 check("a queued or running controller job is not a failed check either way",
-      pm.failed_checks([ctl(None, status="queued"), ctl(None, status="in_progress")], ident, wof) == [])
+      pm.failed_checks([ctl(None, status="queued"), ctl(None, status="in_progress")], ident, wof) == []
+      and pm.failed_checks([ctl(None, status="queued"), ctl(None, status="in_progress")], ident, wof, IGN) == [])
 saved_env = os.environ.get("IGNORE_CHECKS")
 os.environ["IGNORE_CHECKS"] = f"{CTL}#{ELECT}\n  \nno-separator\n#{ELECT}\n{CTL}#\n"
 check("the caller's lines parse as path#job name pairs and malformed lines are dropped", pm.ignored_checks() == IGN)
