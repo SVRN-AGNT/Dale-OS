@@ -75,10 +75,6 @@ on:
         description: Per-review cap on the plan usage one review may take (notional dollars)
         type: string
         default: '2'
-      runner:
-        description: "Runner label for this workflow's jobs. Private repositories may pass a cheaper runner (e.g. ubicloud-standard-2); public repositories keep the default"
-        type: string
-        default: ubuntu-latest
     secrets:
       claude_code_oauth_token:
         required: false
@@ -89,7 +85,8 @@ permissions:
 jobs:
   review:
     name: Independent agent review
-    runs-on: ${{ inputs.runner }}
+    # No runner input: this job holds the Claude OAuth token and writes the check the merge gate reads, so it stays GitHub-hosted.
+    runs-on: ubuntu-latest
     timeout-minutes: 35
     permissions:
       contents: read

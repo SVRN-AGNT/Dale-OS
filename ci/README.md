@@ -40,18 +40,21 @@ workflow and the checker it runs always come from the same commit.
 
 ## Runners
 
-`ci-hygiene.yml`, `ci-agent-review.yml` and `ci-pm-review.yml` take a `runner`
-input (default `ubuntu-latest`). Private repositories may pass
-`ubicloud-standard-2`: their jobs mostly run under a minute, and GitHub bills
-each one as a full minute, so a runner a third of the price cuts those
-callers' bill the most. Public repositories keep the default, since GitHub
-bills them nothing.
+`ci-hygiene.yml` takes a `runner` input (default `ubuntu-latest`). Private
+repositories may pass `ubicloud-standard-2`: its jobs mostly run under a
+minute, and GitHub bills each one as a full minute, so a runner a third of the
+price cuts that caller's bill. Public repositories keep the default, since
+GitHub bills them nothing.
 
-A job that holds `INTEGRATION_TOKEN` or a GitHub App key stays on GitHub-hosted
-runners, which is why `ci-merge-lane.yml` has no `runner` input. Only jobs that
-hold `GITHUB_TOKEN` or the review OAuth token may move. The PM's review job
-takes the runner only with `provider: chatgpt`; with `provider: api` it holds
-the OpenAI key and stays on `ubuntu-latest`.
+Only jobs whose token is read-only may leave GitHub-hosted runners (owner,
+2026-10-19). A job that holds `INTEGRATION_TOKEN`, a GitHub App key, the review
+OAuth token or an API key, or whose `GITHUB_TOKEN` can write to a pull request
+(comments, labels, its text, checks or statuses), stays on `ubuntu-latest`: on
+another provider's runner it could leak the credential or forge what the merge
+gate reads. That is why `ci-merge-lane.yml`, `ci-agent-review.yml` and
+`ci-pm-review.yml` have no `runner` input. A caller's own jobs follow the same
+rule: builds and tests with `contents: read` may move; anything that writes to
+a pull request may not.
 
 ## The PM caller
 
