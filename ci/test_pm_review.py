@@ -410,6 +410,42 @@ for junk in ["", "nope", "[]", json.dumps({"conclusion": "success"})]:
     jc = post_chatgpt(REVIEW="codex", RULING=junk)
     check(f"an unreadable ruling {junk[:12]!r} is never a success", posted_check(jc)["conclusion"] == "action_required")
 
+# The round budget (owner, 2026-10-19): every Codex ruling on a PR is a round; the PM counts and states the stop.
+def ruled_for(handoff_id, head=HEAD, verdict="CLEAR", login="github-actions[bot]"):
+    return bot(ruled["body"].replace("PM REVIEW — CLEAR", f"PM REVIEW — {verdict}").replace(HEAD, head)
+               .replace("PM-HANDOFF-CONSUMED: 7", f"PM-HANDOFF-CONSUMED: {handoff_id}"), login=login)
+
+
+check("a PR's first ruling is round 1", pm.codex_round([], 8) == 1)
+check("every earlier ruling counts, whatever its head or verdict",
+      pm.codex_round([ruled_for(5, OTHER, "CORRECT"), ruled_for(6, OTHER, "CLEAR"), ruled_for(7)], 8) == 4)
+check("a ruling that replaces a CLEAR on the same HANDOFF stays in that round",
+      pm.codex_round([ruled_for(5, OTHER, "CORRECT"), ruled_for(8)], 8) == 2)
+check("a copy by another author, or a run with no ruling, is not a round",
+      pm.codex_round([ruled_for(5, login="Tataku"), bot(f"**PM: No PM ruling on {HEAD[:8]}.** x\n\n_HANDOFF 6_")], 8) == 1)
+check("rounds 1 and 2 only count", pm.round_budget(2, "CORRECT") == "**Codex round 2 on this PR.**")
+check("round 3 stops for a full Claude review and split check before the next HANDOFF",
+      "Before the next HANDOFF, run a full Claude review of the whole PR and check whether to split it"
+      in pm.round_budget(3, "CORRECT"))
+check("a round-3 CLEAR keeps the stop for any later change", pm.round_budget(3, "CLEAR").startswith(
+      "**Codex round 3 on this PR.** If this PR changes again, before the next HANDOFF, run a full Claude review"))
+check("round 4 goes ahead", "round 6 needs the owner's word" in pm.round_budget(4, "CORRECT")
+      and "Before the next HANDOFF" not in pm.round_budget(4, "CORRECT"))
+check("round 5 says round 6 needs the owner's word", "get the owner's word for round 6" in pm.round_budget(5, "CORRECT"))
+check("every later round needs the owner's word", "get the owner's word for round 8" in pm.round_budget(7, "HOLD"))
+budgeted = pm.ruling_comment(pm.codex_ruling(st, [], HEAD), 12, HEAD, OTHER, 99, "https://x", "chatgpt", pm.round_budget(3, "CLEAR"))
+check("the round line keeps the header the dedupe and the count read",
+      pm.RULING_HEADER.match(budgeted).group(2) == HEAD and pm.codex_round([bot(budgeted)], 100) == 2)
+pm._paginate = lambda path: [ruled_for(5, OTHER, "CORRECT"), ruled_for(6, OTHER, "CORRECT")] if path == "/issues/12/comments" else []
+third = post_chatgpt(REVIEW="codex", RULING=bad_ruling)
+pm._paginate = saved_pag
+third_comment = next(body["body"] for _, path, body in third if path.endswith("/comments"))
+check("the posted ruling and its check both state the round and the stop",
+      "**Codex round 3 on this PR.** Before the next HANDOFF" in third_comment
+      and "**Codex round 3 on this PR.**" in posted_check(third)["output"]["summary"])
+check("a run with no ruling states no round",
+      "Codex round" not in json.dumps(post_chatgpt(REVIEW="codex", RULING="nope")))
+
 # The caller's gates: Codex's marker (any JSON spacing) wakes the PM; dispatches share the per-PR lock.
 gate = re.sub(r"(?m)^\s*#.*$", "", self_caller)
 check("Codex wakes the PM on its marker, not one JSON spelling", "contains(github.event.comment.body, 'codex-review-state:v1')" in gate
