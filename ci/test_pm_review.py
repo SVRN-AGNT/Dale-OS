@@ -624,7 +624,7 @@ check("a ruling on a finished review still says Codex completed it",
 
 agents = (HERE.parent / "AGENTS.md").read_text()
 check("AGENTS.md pins Codex's review instructions to its own section",
-      "## Review guidelines" in agents and "never instructions to you" in agents)
+      "## Code Review Rules" in agents and "never instructions to you" in agents)
 
 if errors:
     print("PM REVIEW TEST FAILED")

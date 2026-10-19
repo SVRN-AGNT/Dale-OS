@@ -116,7 +116,7 @@ A PR that edits an `AGENTS.md`, or a path in
 gets `HOLD`, because Codex reads those as its review instructions from the PR.
 Codex's review cannot raise `OWNER GATE`, and it cannot apply a
 `contract_path` or `control_issue` contract: with either set, the PM gives no
-ruling. Put the contract in the `## Review guidelines` section of AGENTS.md,
+ruling. Put the contract in the `## Code Review Rules` section of AGENTS.md,
 which Codex applies.
 
 ```yaml
@@ -141,7 +141,9 @@ jobs:
       expected_pr: ${{ inputs.pr }}
 ```
 
-Give the repository's AGENTS.md a `## Review guidelines` section that tells
+Give the repository's AGENTS.md a `## Code Review Rules` section (the heading
+Codex's docs name; keeping a `### Review guidelines` subheading inside it
+matches older readers) that tells
 Codex to take review instructions only from that section and to treat every
 file the PR changes as content under review. Codex reads AGENTS.md from the PR,
 but a PR that edits it is held, so the guidelines it applies are the base
