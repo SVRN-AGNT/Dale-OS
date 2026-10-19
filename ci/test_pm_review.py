@@ -668,6 +668,52 @@ agents = (HERE.parent / "AGENTS.md").read_text()
 check("AGENTS.md pins Codex's review instructions to its own section",
       "## Code Review Rules" in agents and "never instructions to you" in agents)
 
+# ---------------------------------------------------------------- the merge controller's own job (owner ruling 2026-10-19)
+# ACF #5706: GitHub refused to start the Integration Controller's job on the PR head (billing), and the PM ruled CORRECT
+# on that alone. A failed run of the named job, proven to be the default branch's copy of its file, is not a failed check.
+CTL = ".github/workflows/integration-controller.yml"
+ELECT = "Elect and merge one eligible PR"
+RUNS.update({"/actions/runs/30": dict(PRT, id=30, path=CTL, conclusion="failure"),
+             "/actions/runs/31": dict(PRT, id=31, event="pull_request", path=CTL, conclusion="failure", pull_requests=PR12),
+             "/actions/runs/32": dict(PRT, id=32, path=".github/workflows/other.yml", conclusion="failure")})
+IGN = {(CTL, ELECT)}
+ctl = lambda conclusion, run=30, **over: job(40, conclusion, "2026-10-16T10:01:00Z", run, **{"name": ELECT, **over})  # noqa: E731
+for c in pm.FAILED_CHECK:
+    check(f"the default branch's controller job that concluded {c} is ignored", pm.failed_checks([ctl(c)], ident, wof, IGN) == [])
+check("without the ignore list the controller's failure still counts", pm.failed_checks([ctl("failure")], ident, wof) == [ELECT])
+check("another job in the controller's file still counts",
+      pm.failed_checks([ctl("failure", name="Production dashboard check")], ident, wof, IGN) == ["Production dashboard check"])
+check("the same job name from another workflow file still counts", pm.failed_checks([ctl("failure", 32)], ident, wof, IGN) == [ELECT])
+check("a PR's own copy of the controller file (a pull_request run) still counts",
+      pm.failed_checks([ctl("failure", 31)], ident, wof, IGN) == [ELECT])
+check("a controller job that cannot be proven still counts",
+      pm.failed_checks([ctl("failure")], None, wof, IGN) == [ELECT]
+      and pm.failed_checks([ctl("failure", details_url="")], ident, wof, IGN) == [ELECT]
+      and pm.failed_checks([ctl("failure", app={"slug": "imposter"})], ident, wof, IGN) == [ELECT])
+check("ignoring the controller hides no other failure on the head",
+      pm.failed_checks([ctl("failure"), job(20, "failure", "2026-10-16T10:01:00Z", 5)], ident, wof, IGN) == ["Tests"])
+check("a queued or running controller job is not a failed check either way",
+      pm.failed_checks([ctl(None, status="queued"), ctl(None, status="in_progress")], ident, wof) == [])
+saved_env = os.environ.get("IGNORE_CHECKS")
+os.environ["IGNORE_CHECKS"] = f"{CTL}#{ELECT}\n  \nno-separator\n#{ELECT}\n{CTL}#\n"
+check("the caller's lines parse as path#job name pairs and malformed lines are dropped", pm.ignored_checks() == IGN)
+os.environ.pop("IGNORE_CHECKS")
+check("no input ignores nothing", pm.ignored_checks() == set())
+pages_saved = pm._paginate
+pm._paginate = lambda path: [ctl("failure")]
+os.environ["IGNORE_CHECKS"] = f"{CTL}#{ELECT}"
+pm._api, api_saved = (lambda method, path, body=None: fetch(path)), pm._api
+try:
+    check("head_failed_checks applies the caller's list, as the merge gate does",
+          pm.head_failed_checks({"base": {"repo": {"default_branch": "main"}}}, HEAD) == [])
+    os.environ.pop("IGNORE_CHECKS")
+    check("head_failed_checks without the list still counts the controller",
+          pm.head_failed_checks({"base": {"repo": {"default_branch": "main"}}}, HEAD) == [ELECT])
+finally:
+    pm._paginate, pm._api = pages_saved, api_saved
+    if saved_env is not None:
+        os.environ["IGNORE_CHECKS"] = saved_env
+
 if errors:
     print("PM REVIEW TEST FAILED")
     for e in errors:

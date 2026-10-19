@@ -111,6 +111,18 @@ could already rewrite the failed check, so it adds no authority. A name or app
 alone proves nothing, and a skipped or neutral run sets nothing aside. The PM
 reads run records, so its caller grants `actions: read`; without it every
 failure keeps counting.
+A caller's `ignore_checks` input (one `workflow path#job name` per line) names
+a job whose failed run says nothing about the PR. Owner ruling 2026-10-19: only
+ACF's merge controller, `.github/workflows/integration-controller.yml#Elect
+and merge one eligible PR`, whose job runs on the PR head and once read as a
+CORRECT when GitHub refused to start it (ACF #5706). Any other entry needs the
+owner's word. Only a finished run (failure, cancelled, timed out, startup
+failure, action required) that the run records prove is that job of the
+default branch's copy of that file is left out. A queued, running or missing
+run, any other job, and the same name from a PR's own copy still count. The
+merge gate reads the same `IGNORE_CHECKS` through `head_failed_checks`, so a
+caller that runs the gate sets it there too, or the gate stays stricter than
+the PM.
 A PR that edits an `AGENTS.md`, or a path in
 `instruction_paths` (added to AGENTS.md, never replacing it),
 gets `HOLD`, because Codex reads those as its review instructions from the PR.

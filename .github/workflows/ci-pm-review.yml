@@ -83,6 +83,10 @@ on:
         description: "chatgpt only: regex of paths Codex reads as review instructions (default: any AGENTS.md); a PR editing one gets HOLD"
         type: string
         default: ''
+      ignore_checks:
+        description: "One `workflow path#job name` per line: a failed run of that job, proven to come from the default branch's copy of that file, is not a failed check (owner ruling 2026-10-19: ACF's merge controller only; any other entry needs the owner's word)"
+        type: string
+        default: ''
       provider:
         description: "api: run Codex with an OpenAI API key. chatgpt: read Codex's own GitHub review (ChatGPT plan, no key)"
         type: string
@@ -154,6 +158,7 @@ jobs:
           CONTRACT_PATH: ${{ inputs.contract_path }}
           INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
           EXPECTED_PR: ${{ inputs.expected_pr }}
+          IGNORE_CHECKS: ${{ inputs.ignore_checks }}
         run: python3 shared/ci/pm_review.py resolve
 
       - name: Check provider credential
