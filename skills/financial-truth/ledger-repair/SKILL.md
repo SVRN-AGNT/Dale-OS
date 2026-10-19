@@ -17,6 +17,7 @@ description: Design and review safe repairs to financial ledgers. Use when delet
 4. Require the commit path to use the same preflight definitions as the preview path.
 5. For future write-capable implementations: commit atomically or roll back; write the audit receipt only after success; reconcile after commit.
 6. Never broaden a repair from the named economic episode without exposing the additional rows separately in preview.
+7. When a writer stops producing a kind of record, show the records it already wrote separately in preview, and propose reversing or superseding the ones the new rule rejects, never deleting them.
 
 ## Deterministic companion
 
