@@ -184,7 +184,8 @@ def codex_round(pr_comments, handoff_id) -> int:
 
 
 def round_budget(n: int, verdict) -> str:
-    """The round line every ruling carries; from round 3 it names the stop the next HANDOFF must respect."""
+    """The round line every ruling carries, ahead of its body so truncation never drops it; from round 3 it names the
+    stop the next HANDOFF must respect."""
     line = f"**Codex round {n} on this PR.**"
     when = "If this PR changes again, b" if verdict == "CLEAR" else "B"
     if n == 3:
@@ -619,9 +620,9 @@ def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, pr
         f"**PR:** #{pr} · **Exact reviewed head:** `{head_sha}` · **Base:** `{base_sha}`",
         f"PM-HANDOFF-CONSUMED: {handoff_id}",
         "",
+        *([budget, ""] if budget else []),
         ruling["body"],
         "",
-        *([budget, ""] if budget else []),
         "---",
         f"_{by} ([run]({run_url})). "
         "It covers this head only; any push revokes it. The `PM Review` check on the head carries the same ruling._",
@@ -932,7 +933,7 @@ def _post_ruling(ruling: dict, pr: int, head: str, base: str, handoff, run_url: 
     _api("POST", "/check-runs", {
         "name": "PM Review", "head_sha": head, "status": "completed", "conclusion": ruling["conclusion"],
         "external_id": f"handoff:{handoff}", "details_url": run_url,
-        "output": {"title": ruling["title"], "summary": "\n\n".join(filter(None, [str(ruling["body"]), budget]))[:60000]},
+        "output": {"title": ruling["title"], "summary": "\n\n".join(filter(None, [budget, str(ruling["body"])]))[:60000]},
     })
     if ruling.get("ruled"):
         body = ruling_comment(ruling, pr, head, base, handoff, run_url, provider, budget)

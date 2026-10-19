@@ -443,6 +443,12 @@ third_comment = next(body["body"] for _, path, body in third if path.endswith("/
 check("the posted ruling and its check both state the round and the stop",
       "**Codex round 3 on this PR.** Before the next HANDOFF" in third_comment
       and "**Codex round 3 on this PR.**" in posted_check(third)["output"]["summary"])
+long = dict(pm.codex_ruling(st, pm.codex_findings([codex_finding(HEAD, "P1")], HEAD), HEAD), body="x" * 70000)
+pm._paginate = lambda path: [ruled_for(5, OTHER, "CORRECT"), ruled_for(6, OTHER, "CORRECT")] if path == "/issues/12/comments" else []
+long_calls = post_chatgpt(REVIEW="codex", RULING=json.dumps(long))
+pm._paginate = saved_pag
+check("a body long enough to be truncated keeps the round line in the check",
+      posted_check(long_calls)["output"]["summary"].startswith("**Codex round 3 on this PR.**"))
 check("a run with no ruling states no round",
       "Codex round" not in json.dumps(post_chatgpt(REVIEW="codex", RULING="nope")))
 
