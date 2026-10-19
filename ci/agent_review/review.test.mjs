@@ -1,6 +1,7 @@
 // Contract tests for the shared agent reviewer. Run: node --test ci/agent_review/
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   credentialAttempts, interpretResult, buildPrompt, redactSecrets,
   ALLOWED_TOOLS, DISALLOWED_TOOLS,
@@ -96,4 +97,11 @@ test('the run cap counts every non-skipped run and fails closed on re-runs', () 
   assert.equal(capReached({ runs, self, cap: 2, now }), false);
   assert.equal(capReached({ runs, self, cap: 1, now }), true);
   assert.equal(capReached({ runs, self: { ...self, run_attempt: 2 }, cap: 100, now }), true);
+});
+
+test('the review job stays on GitHub-hosted runners (Codex P1 on wallet-alpha-lab #168)', () => {
+  const wf = readFileSync(new URL('../../.github/workflows/ci-agent-review.yml', import.meta.url), 'utf8')
+    .replace(/^\s*#.*$/gm, '');
+  assert.deepEqual([...wf.matchAll(/runs-on:\s*(.+)/g)].map((m) => m[1].trim()), ['ubuntu-latest']);
+  assert.ok(!wf.includes('inputs.runner'));
 });
