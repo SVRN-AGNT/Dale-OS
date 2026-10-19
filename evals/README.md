@@ -12,6 +12,15 @@ python scripts/run_evals.py
 
 These are ground-truth checks for arithmetic and hard invariants.
 
+## Tool invariants and seeded bugs
+
+`evals/invariants/test_tool_invariants.py` states the financial invariants from the domain (FIFO conservation and date order, transfer neutrality, missing is never zero, before/after symmetry) and checks them on seeded generated events. `evals/invariants/mutation_check.py` seeds one plausible bug at a time into a copy of `tools/` and fails if any bug leaves the invariants green, so the suite cannot quietly become decorative.
+
+```bash
+python evals/invariants/test_tool_invariants.py
+python evals/invariants/mutation_check.py
+```
+
 ## Activation evals
 
 `evals/activation/corpus.jsonl` tests skill discovery/routing. Every canonical skill has one positive activation case and one confuser where that same skill should stay out of the way.

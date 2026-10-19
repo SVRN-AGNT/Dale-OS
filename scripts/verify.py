@@ -16,6 +16,8 @@ PYTHON_STEPS = [
     ("build library catalog", [sys.executable, "scripts/build_catalog.py"]),
     ("build plugin eval cases", [sys.executable, "scripts/build_plugin_evals.py"]),
     ("validate repository", [sys.executable, "scripts/validate_repo.py"]),
+    ("check financial tool invariants", [sys.executable, "evals/invariants/test_tool_invariants.py"]),
+    ("prove the invariants catch seeded bugs", [sys.executable, "evals/invariants/mutation_check.py"]),
     ("validate model eval contracts", [sys.executable, "scripts/validate_eval_contracts.py"]),
     (
         "validate receipt transitions",
