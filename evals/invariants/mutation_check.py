@@ -45,6 +45,7 @@ MUTANTS = [
      "an unknown classification treated as known"),
     ("money_trail.py", "or duplicates:", "or False:", "a re-imported movement allowed to PASS"),
     ("ledger_delta.py", "ds=dec(a['shares'])-dec(b['shares'])", "ds=dec(b['shares'])-dec(a['shares'])", "share delta sign inverted"),
+    ("ledger_delta.py", "dec(a['cost_basis'])-dec(b['cost_basis'])", "dec(b['cost_basis'])-dec(a['cost_basis'])", "cost-basis delta sign inverted"),
     ("ledger_delta.py", "d=ac.get(key,0)-bc.get(key,0)", "d=ac.get(key,0)", "cash delta reported as the after balance"),
     ("ledger_delta.py", "'trades_removed':sorted(bt-at)", "'trades_removed':[]", "removed trades hidden"),
     ("ledger_delta.py", "dec(r.get('shares'),", "dec(r.get('shares',0),", "a missing share count becomes zero"),

@@ -255,6 +255,11 @@ def ledger_invariants(seed: int) -> None:
     want = sorted((k, float(pa.get(k, 0) - pb.get(k, 0))) for k in set(pb) | set(pa) if pa.get(k, 0) != pb.get(k, 0))
     got = sorted((x["key"], x["shares_delta"]) for x in fwd["position_deltas"] if x["shares_delta"])
     check("ledger: each share delta is after minus before", got == want, seed)
+    cb = lambda s: {f"{p['account_id']}::{p['ticker']}": d(p["cost_basis"]) for p in s["positions"]}
+    cbb, cba = cb(before), cb(after)
+    want_cb = {k: float((cba.get(k, Decimal(0)) - cbb.get(k, Decimal(0))).quantize(CENT)) for k in set(cbb) | set(cba)}
+    check("ledger: each cost-basis delta is after minus before",
+          all(x["cost_basis_delta"] == want_cb[x["key"]] for x in fwd["position_deltas"]), seed)
     # Cash deltas sum to the change in total cash.
     tot = lambda s: sum((d(v) for v in s["cash_by_account"].values()), Decimal(0))
     check("ledger: cash deltas sum to the change in total cash",
