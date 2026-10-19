@@ -348,7 +348,19 @@ def check_identity(run: dict, default_branch: str, fetch=None):
         return None
 
 
-def failed_checks(check_runs, identify=None, workflow_of=None) -> list[str]:
+def ignored_checks() -> set[tuple[str, str]]:
+    """(workflow file, job name) pairs whose failed runs say nothing about the PR (the caller's `ignore_checks`, one
+    `path#job name` per line). Owner ruling 2026-10-19: ACF's merge controller only, and any other entry needs the
+    owner's word; a billing refusal of its job on a PR head read as a CORRECT with 0 findings (ACF #5706)."""
+    pairs = set()
+    for line in os.environ.get("IGNORE_CHECKS", "").splitlines():
+        path, sep, name = line.strip().partition("#")
+        if sep and path.strip() and name.strip():
+            pairs.add((path.strip(), name.strip()))
+    return pairs
+
+
+def failed_checks(check_runs, identify=None, workflow_of=None, ignore=()) -> list[str]:
     """Checks with a run on the head that failed, was cancelled or was not reviewed, and is not set aside.
 
     A failed run is set aside only by a successful run that started after it and that `identify` (check_identity)
@@ -359,7 +371,11 @@ def failed_checks(check_runs, identify=None, workflow_of=None) -> list[str]:
     after it, in a pull request run of the same workflow file and event, for the same pull requests, bases and branch,
     on this head, and that run has concluded with anything but cancelled. A concurrency group that cancels a superseded run leaves no verdict, and the newer run's own jobs are
     the result that counts: any of them that failed is counted on its own (ACF #5692: three jobs of a superseded PR
-    Visual Evidence run read as a CORRECT with 0 findings)."""
+    Visual Evidence run read as a CORRECT with 0 findings).
+
+    A failed run is also left out when `identify` proves it is the named job of a workflow file in `ignore` and that
+    GitHub took the file from the default branch. A queued, running or missing run is never a failed run here, and a
+    run of the same name from a PR's own copy of the file, or one that cannot be proven, still counts."""
     done = [r for r in check_runs if r.get("name") != PM_CHECK and r.get("status") == "completed"]
     failed = [r for r in done if r.get("conclusion") in FAILED_CHECK]
     if not failed or identify is None:
@@ -374,6 +390,8 @@ def failed_checks(check_runs, identify=None, workflow_of=None) -> list[str]:
     out = set()
     for f in failed:
         k = keys.get(id(f))
+        if k is not None and k[2] == "default" and (k[1], k[0]) in ignore:
+            continue
         if k is None or not any(r.get("conclusion") == "success" and keys.get(id(r)) == k and order(r) > order(f) for r in done):
             if not superseded(f, done, workflow_of, order):
                 out.add(f.get("name") or "?")
@@ -436,7 +454,8 @@ def head_failed_checks(pr: dict, head: str) -> list[str]:
         return cache[path]
 
     return failed_checks(_paginate(f"/commits/{head}/check-runs?filter=all"),
-                         lambda r: check_identity(r, default_branch, fetch), lambda r: job_workflow(r, fetch))
+                         lambda r: check_identity(r, default_branch, fetch), lambda r: job_workflow(r, fetch),
+                         ignored_checks())
 
 
 def codex_ruling(state, findings, head_sha: str, instruction_edits=(), failed=(), clean_receipt=False) -> dict:

@@ -97,7 +97,7 @@ review every push and spend the plan's 5-hour window; measured about 2.5% per
 review) and let the HANDOFF ask: it carries `@codex review` on a line of its
 own. The PM reads only comments written by `chatgpt-codex-connector[bot]`, an
 app login GitHub reserves. No findings on the head and no failed check is
-`CLEAR`; any finding, of any priority, or a failed or not-reviewed (`action_required`) check is `CORRECT`, even before Codex marks its review completed (priority
+`CLEAR`; any finding, of any priority, or a failed or not-reviewed (`action_required`) check is `CORRECT` (except the one job a caller's `ignore_checks` names, below), even before Codex marks its review completed (priority
 is Codex's urgency, not whether the code is wrong; a finding the author thinks
 mistaken goes to the owner). A failed run stops counting only when a successful
 run that started after it is provably the same check, from GitHub's own run
@@ -111,6 +111,19 @@ could already rewrite the failed check, so it adds no authority. A name or app
 alone proves nothing, and a skipped or neutral run sets nothing aside. The PM
 reads run records, so its caller grants `actions: read`; without it every
 failure keeps counting.
+A caller's `ignore_checks` input (one `workflow path#job name` per line) names
+a job whose failed run says nothing about the PR. Owner ruling 2026-10-19: only
+ACF's merge controller, `.github/workflows/integration-controller.yml#Elect
+and merge one eligible PR`, whose job runs on the PR head and once read as a
+CORRECT when GitHub refused to start it (ACF #5706). Any other entry needs the
+owner's word. Only a finished run (failure, cancelled, timed out, startup
+failure, action required) that the run records prove is that job of the
+default branch's copy of that file is left out. A queued, running or missing
+run, any other job, and the same name from a PR's own copy still count. The
+merge gate reads the same `IGNORE_CHECKS` through `head_failed_checks`, so a
+caller that runs the gate sets it there too, or the gate stays stricter than
+the PM. `ci-merge-lane.yml` has no `ignore_checks` input: its lane runs on
+`workflow_run` and schedule, so its own job never lands on a PR head.
 A PR that edits an `AGENTS.md`, or a path in
 `instruction_paths` (added to AGENTS.md, never replacing it),
 gets `HOLD`, because Codex reads those as its review instructions from the PR.
