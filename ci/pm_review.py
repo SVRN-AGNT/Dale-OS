@@ -165,6 +165,39 @@ def latest_ruling(pr_comments, head: str):
     return None
 
 
+# Owner ruling 2026-10-19: every Codex ruling on a PR is a round, including rounds already spent. After round 3 the
+# session stops for a full Claude review and split check; rounds 4 and 5 go ahead; round 6 and every later round need
+# the owner's word. CI cannot refuse a round (`@codex review` starts Codex by itself), so the PM counts and states the
+# budget in each ruling, and sessions keep it.
+HANDOFF_CONSUMED = re.compile(r"(?m)^PM-HANDOFF-CONSUMED: (\S+)$")
+
+
+def codex_round(pr_comments, handoff_id) -> int:
+    """This ruling's round on the PR: one per HANDOFF the PM has ruled on, this one counted once."""
+    seen = []
+    for c in pr_comments:
+        body = c.get("body") or ""
+        m = HANDOFF_CONSUMED.search(body)
+        if _bot_post(c) and RULING_HEADER.match(body) and m and m.group(1) not in seen:
+            seen.append(m.group(1))
+    return len(seen) + (str(handoff_id) not in seen)
+
+
+def round_budget(n: int, verdict) -> str:
+    """The round line every ruling carries, ahead of its body so truncation never drops it; from round 3 it names the
+    stop the next HANDOFF must respect."""
+    line = f"**Codex round {n} on this PR.**"
+    when = "If this PR changes again, b" if verdict == "CLEAR" else "B"
+    if n == 3:
+        return (f"{line} {when}efore the next HANDOFF, run a full Claude review of the whole PR and check whether to "
+                "split it. Rounds 4 and 5 then go ahead; round 6 needs the owner's word.")
+    if n == 4:
+        return f"{line} Round 5 goes ahead; round 6 needs the owner's word."
+    if n >= 5:
+        return f"{line} {when}efore the next HANDOFF, get the owner's word for round {n + 1}."
+    return line
+
+
 def standing_clear(pr_comments, head: str) -> bool:
     """True when the newest ruling for this head is a CLEAR. Under provider "chatgpt" a CLEAR is not final: a later
     Codex finding or failed check on the same head must be able to replace it with CORRECT (never the reverse)."""
@@ -577,7 +610,7 @@ def interpret(final_message, head_sha: str = "") -> dict:
             "body": "\n".join(lines).strip()}
 
 
-def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, provider: str = "api") -> str:
+def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, provider: str = "api", budget: str = "") -> str:
     by = ("Codex's code review on the ChatGPT plan, read by the shared Dale-OS PM workflow" if provider == "chatgpt"
           else "Independent PM review by OpenAI Codex, run by the shared Dale-OS PM workflow")
     label = "OWNER GATE" if ruling["verdict"] == "OWNER_GATE" else ruling["verdict"]
@@ -587,6 +620,7 @@ def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, pr
         f"**PR:** #{pr} · **Exact reviewed head:** `{head_sha}` · **Base:** `{base_sha}`",
         f"PM-HANDOFF-CONSUMED: {handoff_id}",
         "",
+        *([budget, ""] if budget else []),
         ruling["body"],
         "",
         "---",
@@ -895,13 +929,14 @@ def cmd_post() -> None:
 
 
 def _post_ruling(ruling: dict, pr: int, head: str, base: str, handoff, run_url: str, provider: str = "api") -> None:
+    budget = round_budget(codex_round(_paginate(f"/issues/{pr}/comments"), handoff), ruling.get("verdict")) if ruling.get("ruled") else ""
     _api("POST", "/check-runs", {
         "name": "PM Review", "head_sha": head, "status": "completed", "conclusion": ruling["conclusion"],
         "external_id": f"handoff:{handoff}", "details_url": run_url,
-        "output": {"title": ruling["title"], "summary": str(ruling["body"])[:60000]},
+        "output": {"title": ruling["title"], "summary": "\n\n".join(filter(None, [budget, str(ruling["body"])]))[:60000]},
     })
     if ruling.get("ruled"):
-        body = ruling_comment(ruling, pr, head, base, handoff, run_url, provider)
+        body = ruling_comment(ruling, pr, head, base, handoff, run_url, provider, budget)
     else:
         body = f"**PM: {ruling['title']}.** {ruling['body']}\n\n_HANDOFF {handoff} · [run]({run_url})_"
     _api("POST", f"/issues/{pr}/comments", {"body": body})

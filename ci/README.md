@@ -173,6 +173,26 @@ finding or failed check found then posts a `CORRECT` (or `HOLD`) that replaces
 the `CLEAR`. Nothing ever turns a `CORRECT` or `HOLD` into a `CLEAR` on the same
 head; that takes a push and a new HANDOFF.
 
+**The round budget (owner ruling, 2026-10-19).** Every ruling the PM posts on a
+PR is a Codex round, whatever its verdict or head, and rounds spent before this
+rule count. The PM counts its own earlier ruling comments on the PR, one per
+`PM-HANDOFF-CONSUMED` id (a ruling that replaces a `CLEAR` on the same HANDOFF
+stays in that round), and adds one line to the comment and the `PM Review`
+check:
+
+| Round | The line says |
+|---|---|
+| 1, 2 | `Codex round N on this PR.` |
+| 3 | Before the next HANDOFF, run a full Claude review of the whole PR and check whether to split it (on a `CLEAR`: if the PR changes again). |
+| 4 | Round 5 goes ahead; round 6 needs the owner's word. |
+| 5 and later | Before the next HANDOFF, get the owner's word for the next round. |
+
+CI cannot refuse a round, because `@codex review` starts Codex by itself, so
+the budget holds by convention; the count makes a breach visible in the ruling
+the session acts on. A run with no ruling is not a round. The count reads
+comments by `github-actions[bot]`, which a workflow on a PR branch can also post
+as; a forged ruling can only raise the count, which brings the stop sooner.
+
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id (and, for `provider: chatgpt`, its PR
 number). A dispatch from any other branch
