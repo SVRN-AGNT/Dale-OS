@@ -778,7 +778,7 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
         # The `api` PM applies a contract file or control-issue body; Codex's review cannot read either.
         ruling = {"ruled": False, "verdict": None, "conclusion": "action_required", "title": f"No PM ruling on {head[:8]}",
                   "body": "This repository configures a PM contract (`contract_path` or `control_issue`), which Codex's review "
-                          "cannot apply. Move the contract into the `## Review guidelines` section of AGENTS.md on the default "
+                          "cannot apply. Move the contract into the `## Code Review Rules` section of AGENTS.md on the default "
                           "branch, which Codex does apply, and drop the input. This is not a ruling and not a CLEAR."}
         _outputs(review="codex", pr=pr_n, head_sha=head, handoff_id=handoff_id, ruling=json.dumps(ruling), base_sha=pr["base"]["sha"])
         return
