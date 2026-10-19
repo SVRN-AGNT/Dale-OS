@@ -15,7 +15,7 @@ description: Gate and calculate investment performance only when the required va
 2. Identify the return method and state why it is valid for the available records.
 3. If a material external flow is known but its timing is missing and the valid return method depends on that timing, the requested return is **WITHHELD**. A sensitivity range may be shown only as diagnostic context and must be labeled as not being a publishable return result.
 4. Do not fall back to a flattering or approximate simple return when unresolved external flows can be mistaken for gains or when required flow timing is unavailable.
-5. Rebase or narrow across material valuation discontinuities instead of drawing unbounded continuity through a gap.
+5. Rebase or narrow across material valuation discontinuities instead of drawing unbounded continuity through a gap. Use the trading calendar of the venue that prices the asset: a value missing on a closed day may carry the last close, and one missing on a trading day is a gap and is handled as above.
 6. Publish the method, evidence status, exclusions, and caveats beside the number.
 7. Withhold when unresolved data can materially change the performance conclusion.
 

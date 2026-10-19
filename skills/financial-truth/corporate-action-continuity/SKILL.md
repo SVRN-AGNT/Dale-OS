@@ -14,9 +14,10 @@ description: Preserve economic continuity through splits, reverse splits, symbol
 1. Classify the action as structural or economically realizational before changing any ledger behavior. An instruction to reset basis does not make the action realizational; say what evidence would show a taxable disposal.
 2. For supported splits/reverse splits, transform quantities by the ratio while preserving total basis and holding-period dates.
 3. For supported symbol changes, resolve the ticker chain without rewriting historical trades or creating duplicate active positions.
-4. Keep cash and realized P&L neutral unless the action explicitly includes cash/boot or a taxable realization.
-5. Defer unsupported mergers, spin-offs, boot, cash-in-lieu, and complex reorganizations rather than approximating them.
-6. Run continuity checks before and after: ownership, total basis, lots, holding period, cash, realized P&L.
+4. Take each holding's identity from its stated type, not from its symbol or the account that holds it. One symbol can name different instruments.
+5. Keep cash and realized P&L neutral unless the action explicitly includes cash/boot or a taxable realization.
+6. Defer unsupported mergers, spin-offs, boot, cash-in-lieu, and complex reorganizations rather than approximating them.
+7. Run continuity checks before and after: ownership, total basis, lots, holding period, cash, realized P&L.
 
 ## Falsify it
 
