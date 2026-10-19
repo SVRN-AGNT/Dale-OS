@@ -11,7 +11,7 @@ description: Separate observed distributions from their tax character and eviden
 
 ## Workflow
 
-1. Record the cash distribution independently from tax character. Record a declared distribution as declared, never as received, and record the receipt on its pay date. Take the tax-year date from the character source, which can differ from the pay date.
+1. Record the cash distribution independently from tax character. Record a declared distribution as declared, with its scheduled pay date, never as received. Mark it received only from observed cash or reinvestment evidence, on the date that evidence shows. Take the tax-year date from the character source, which can differ from both.
 2. Grade every character source. Treat interim issuer estimates as estimates unless the governing source says otherwise.
 3. Apply basis-changing treatment such as return of capital only when the character evidence meets the required authority for that workflow.
 4. If character is estimated, show the expected effect as provisional and keep final accounting open.
