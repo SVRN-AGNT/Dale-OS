@@ -151,7 +151,7 @@ Which rules CI or git enforce, and which rest on convention:
 | The round budget (owner's word from round 6) | Convention; the PM states it in every ruling | 13 of 63 PRs went past round 5 |
 | One purpose per PR; sweep by class before a HANDOFF | Convention | Not measured |
 
-The merge gate's suite has 119 named checks. It cites Codex findings on this repository's PR #41 (17 P1, 3 P2)
+The merge gate's suite runs 132 named checks. It cites Codex findings on this repository's PR #41 (17 P1, 3 P2)
 20 times, each beside the checks that finding produced.
 
 ## Known limits

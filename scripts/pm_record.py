@@ -70,21 +70,23 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
     """One row per PR with a ruling or a usage-limit message in the window, and the PRs opened in the window whose
     title names a revert (kept as numbers only). A PR's state is kept only as whether it merged by `until`: a merge
     never changes afterwards, while a close can be undone by a reopen."""
+    start, end = when(since), when(until)
     rows, reverts = [], []
     for repo in repos:
-        seen = set()  # a PR updated mid-collection moves to the top and pushes the rest down a page: seen twice
-        for pr in pages(f"repos/{org}/{repo}/pulls?state=all&sort=updated&direction=desc"):
-            if pr["updated_at"] < since:
-                break
-            if pr["number"] in seen:
+        # Every PR, oldest-created last: creation order never changes, so a PR updated mid-collection cannot jump
+        # past the page being read and be skipped, as it can under `sort=updated`. A PR opened mid-collection
+        # pushes the rest down a page, so one may be listed twice.
+        seen = set()
+        for pr in pages(f"repos/{org}/{repo}/pulls?state=all&sort=created&direction=desc"):
+            if when(pr["updated_at"]) < start or pr["number"] in seen:
                 continue
             seen.add(pr["number"])
-            if since <= pr["created_at"] <= until and "revert" in (pr.get("title") or "").lower():
+            if start <= when(pr["created_at"]) <= end and "revert" in (pr.get("title") or "").lower():
                 reverts.append({"repo": repo, "pr": pr["number"]})
             rulings, limits, unfinished = [], 0, []
             for c in pages(f"repos/{org}/{repo}/issues/{pr['number']}/comments?since={since}"):
                 body, login = c.get("body") or "", c["user"]["login"]
-                if not since <= c["created_at"] <= until:
+                if not start <= when(c["created_at"]) <= end:
                     continue
                 if login == CODEX_BOT and USAGE_LIMIT in body:
                     limits += 1
@@ -105,7 +107,7 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
                 })
             if rulings or limits or unfinished:
                 merged_at = pr.get("merged_at")
-                rows.append({"repo": repo, "pr": pr["number"], "merged": bool(merged_at) and merged_at <= until,
+                rows.append({"repo": repo, "pr": pr["number"], "merged": bool(merged_at) and when(merged_at) <= end,
                              "rulings": rulings, "usage_limit_messages": limits,
                              "rounds_of_rulings_before_codex_finished": unfinished})
     return rows, reverts
@@ -125,7 +127,7 @@ def summary(record: dict) -> dict:
     on_passed = [row for row in rows if any(r["agent_review_passed_first"] and r["findings"] for r in row["rulings"])]
     p1_on_passed = [row for row in rows
                     if any(r["agent_review_passed_first"] and "P1" in r["priorities"] for r in row["rulings"])]
-    first = [min(row["rulings"], key=lambda r: r["at"]) for row in rows]
+    first = [min(row["rulings"], key=lambda r: when(r["at"])) for row in rows]
     rounds = [max([r["round"] or 0 for r in row["rulings"]]
                   + [n or 0 for n in row["rounds_of_rulings_before_codex_finished"]]) for row in rows]
     counted = [n for n in rounds if n]
@@ -137,7 +139,7 @@ def summary(record: dict) -> dict:
             b["P1"] += r["priorities"].count("P1")
             b["P2"] += r["priorities"].count("P2")
     return {
-        "window": [min(r["at"] for r in rulings), max(r["at"] for r in rulings)],
+        "window": [min((r["at"] for r in rulings), key=when), max((r["at"] for r in rulings), key=when)],
         "prs": len(rows), "rulings": len(rulings),
         "merged": sum(row["merged"] for row in rows),
         "verdicts": dict(collections.Counter(r["verdict"] for r in rulings)),
