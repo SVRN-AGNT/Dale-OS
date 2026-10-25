@@ -53,11 +53,14 @@ def when(s: str) -> datetime:
 
 
 def posted_at(org: str, repo: str, comment_id: str) -> str | None:
-    """When a comment was posted, or None if it is gone."""
+    """When a comment was posted, or None if it is gone. Any other failure stops the collection rather than counting
+    as a missing HANDOFF."""
     try:
         return gh(f"repos/{org}/{repo}/issues/comments/{comment_id}")["created_at"]
-    except subprocess.CalledProcessError:
-        return None
+    except subprocess.CalledProcessError as e:
+        if "HTTP 404" in (e.stderr or ""):
+            return None
+        raise
 
 
 def reviewed_before(org: str, repo: str, head: str, at: str) -> bool:
