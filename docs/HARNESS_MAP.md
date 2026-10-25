@@ -31,16 +31,18 @@ The reference implementation is a private financial dashboard repository. Everyt
 
 **1. Risk picks the lane, and the lane picks the judges.** A change's lane (docs, ordinary, truth, held) is
 derived from the paths it touches and is never self-declared. Ordinary work lands on green CI and a passing Agent
-Review. Money, sync, schema and access work also goes to the second vendor: it lands on a `CLEAR`, or after 2 hours
-with no ruling. CI and merge machinery is held scope and lands only on a `CLEAR` for the current head. See
+Review. Truth work (money, sync, evidence, imports, identity) also goes to the second vendor: it lands on a `CLEAR`,
+or after 2 hours with no ruling. Held work (workflows, access, billing, migrations, merge and release tooling) lands
+only on a `CLEAR` for the current head, never on the timeout. Each repository names its held paths in one regex that
+the reviewer, the PM and the merge gate share; this repository holds `.github/workflows/` and `ci/`. See
 [`shipping-lanes`](../skills/operator/shipping-lanes/SKILL.md).
 
 **2. One lander, and it re-derives the verdict.** No session merges. In the reference repository a single Controller
-workflow is the only merger. Here, `merge-lane.yml` lands any PR that carries a HANDOFF; one without a HANDOFF is left to the repository's
-own merge rule. For
-held scope, the merge gate ([`ci/merge_gate.py`](../ci/merge_gate.py)) re-reads Codex's own comments and the head's
-checks at election and again just before the merge call, so a finding posted after a `CLEAR` still blocks. A push
-revokes every verdict. Production promotion stays with a person and is frozen at one commit.
+workflow is the only merger. Here, `merge-lane.yml` lands any PR that carries a HANDOFF; one without a HANDOFF is
+left to the repository's own merge rule. For every PR with a HANDOFF, the merge gate
+([`ci/merge_gate.py`](../ci/merge_gate.py)) re-reads Codex's own comments and the head's checks at election and again
+just before the merge call, so a finding posted after a `CLEAR` still blocks. A push revokes every verdict.
+Production promotion stays with a person and is frozen at one commit.
 
 **3. Truth states are part of the type system.** Unknown, stale, unavailable, inferred, estimated and observed stay
 distinguishable everywhere downstream. Missing evidence is never zero, and analytics degrade or withhold when the
