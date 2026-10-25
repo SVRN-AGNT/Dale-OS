@@ -6,7 +6,10 @@ Individual agents matter, but reliability comes from the harness around them: ho
 
 This document captures the advanced operating patterns that emerged from building and running real multi-agent development workflows around ACF Dashboard. The examples are concrete, but the contracts are portable.
 
-> **Retired mechanisms.** The worker/PM loop (AUTORUN) and the durable agent mailbox described in §4 to §6 and §9 were retired in the reference system on 16 October 2026. Their lessons stand; the mechanisms do not. Today's control plane is a `HANDOFF:` comment, a second-vendor PM, and the merge lane ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)). The "PM" in §4 is that retired loop's reviewer, not the second-vendor PM.
+> **Retired mechanisms.** The worker/PM loop (AUTORUN) and the durable agent mailbox described in §4 to §6 and §9 were retired in the reference system on 16 October 2026. Their lessons stand; the mechanisms do not.
+>
+> **Why they were retired.** The system came to run code review on subscriptions instead: Agent Review on every ready PR, and the second-vendor PM answering `HANDOFF:` comments, both with spend caps. With that in place, the pull request itself became the conversation ledger. Handoffs, rulings and findings live in PR comments and checks, pinned to an exact head and readable by any later agent, so a separate transport for agent-to-agent handoff had nothing left to carry. By early October the mailbox was ruled legacy transport. Its dashboard panel read a committed snapshot rather than the live remote. And although the design was declared dormant, every session still loaded its hooks, so agents kept rediscovering it and treating it as live: a second, stale set of instructions competing with the real control plane. The retirement removed the hooks, workflows and scripts in one change and left the history in git.
+> Today's control plane is a `HANDOFF:` comment, a second-vendor PM, and the merge lane ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)). The "PM" in §4 is that retired loop's reviewer, not the second-vendor PM.
 
 The executable portable form is the canonical [`swarm` skill](../skills/operator/swarm/SKILL.md). This document explains the architecture around that skill; it is not a second source of truth for the skill contract.
 
