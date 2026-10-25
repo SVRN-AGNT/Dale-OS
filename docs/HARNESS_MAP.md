@@ -104,7 +104,7 @@ budgeted resource, not a default setting, and no saving may trade away accountin
 | A paid eval triggered by a PR path re-ran on every push while the trigger file stayed in the diff | The targeted paid probe runs only by manual dispatch, and the full paid eval only on dispatch or a deliberate push to its verification branch ([report](reports/CROSS_MODEL_VERIFICATION_2026-08-07.md)) |
 
 Agent Review bills only the Claude subscription (any API key is stripped from its environment), under a daily cap, a
-spend budget, a job timeout and a concurrency group, so a usage limit reads as "not reviewed", never as an API bill.
+per-review usage cap counted in notional dollars, a job timeout and a concurrency group, so a usage limit reads as "not reviewed", never as an API bill.
 The numbers that keep this honest are in [ADOPT step 10](../shipping/ADOPT.md#step-10--measure-four-numbers-on-every-change-to-the-pipeline): runner minutes per
 merged PR are measured beside escaped defects, and a change that shortens the wait but raises escaped defects is
 rolled back.
