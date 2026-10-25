@@ -15,7 +15,8 @@ python scripts/pm_record.py summary docs/reports/pm-record-2026-10-25.json
 ## Definitions
 
 - **Ruling:** a `PM REVIEW —` comment by `github-actions[bot]` that says Codex completed its review of the head.
-  Others are left out: those the PM made on an API key before 16 October, and 14 made before Codex had finished.
+  All others are left out, among them those the PM made on an API key before 16 October and 14 made before Codex
+  had finished.
 - **Agent Review passed first:** a successful `Agent Review` check run on the ruled head had completed before the
   ruling was posted. It is read from all the head's check runs, re-runs included, not from the HANDOFF's own claim,
   and unlike the merge gate it does not check which workflow posted the run.
