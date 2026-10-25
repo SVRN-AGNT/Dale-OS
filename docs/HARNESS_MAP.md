@@ -31,18 +31,19 @@ The reference implementation is a private financial dashboard repository. Everyt
 
 **1. Risk picks the lane, and the lane picks the judges.** A change's lane (docs, ordinary, truth, held) is
 derived from the paths it touches and is never self-declared. Ordinary work lands on green CI and a passing Agent
-Review. Truth work (money, sync, evidence, imports, identity) also goes to the second vendor: it lands on a `CLEAR`,
+Review (in the reference repo the Builder waits for that pass; the lander does not check it on ordinary PRs). Truth work (money, sync, evidence, imports, identity) also goes to the second vendor: it lands on a `CLEAR`,
 or after 2 hours with no ruling. Held work (workflows, access, billing, migrations, merge and release tooling) lands
 only on a `CLEAR` for the current head, never on the timeout. Each repository names its held paths in one regex that
 the reviewer, the PM and the merge gate share; this repository holds `.github/workflows/` and `ci/`. See
 [`shipping-lanes`](../skills/operator/shipping-lanes/SKILL.md).
 
-**2. One lander, and it re-derives the verdict.** No session merges. In the reference repository a single Controller
+**2. One lander, and it re-derives the verdict.** No session merges around the lander. In the reference repository a single Controller
 workflow is the only merger. Here, `merge-lane.yml` lands any PR that carries a HANDOFF; one without a HANDOFF is
 left to the repository's own merge rule. For every PR with a HANDOFF, the merge gate
 ([`ci/merge_gate.py`](../ci/merge_gate.py)) re-reads Codex's own comments and the head's checks at election and again
 just before the merge call, so a finding posted after a `CLEAR` still blocks. A push revokes every verdict.
-Production promotion stays with a person and is frozen at one commit.
+Production promotion is frozen at one commit and needs the owner's written authorisation for that cut; a session
+performs the merge only after the full suite is green on it.
 
 **3. Truth states are part of the type system.** Unknown, stale, unavailable, inferred, estimated and observed stay
 distinguishable everywhere downstream. Missing evidence is never zero, and analytics degrade or withhold when the
@@ -65,7 +66,8 @@ counts only when it is right, reached, and visible when it fails
 ends in a precise stop that names the blocker and what would clear it. The constitution lists hard halts, and a weak
 plan is not allowed to become code.
 
-**7. The fleet has a shape.** Builder sessions never merge or promote. A coordinator session talks to the owner and
+**7. The fleet has a shape.** Builder sessions never merge held scope, never merge around the lander, and never
+promote without the owner's word for that cut. A coordinator session talks to the owner and
 starts one thread per piece of work. A separate research lane hands findings to the build lane as labelled issues, not
 as pasted text. Each session opens with an execution charter (objective, risk class, scope in and out, stop conditions,
 verification, writeback), and its context budget scales with the risk class
@@ -77,6 +79,16 @@ reviewer must clear before it may block ([ADOPT step 11](../shipping/ADOPT.md#st
 and a standing invitation to break the claims ([`evals/`](../evals/), [`CHALLENGE.md`](../CHALLENGE.md),
 [`PROOF.md`](../PROOF.md)).
 
+**9. Tests are feedback; clearance comes from outside.** In the reference repo the portfolio truth engine is a named
+component whose manifest lists its exact import closure, and a boundary test fails on any drift, so "the engine" means
+the same files everywhere it is copied, including a second product built on it. A promotion is refused unless an
+external Truth Kit, using independent verifiers and planted bugs, has cleared that exact engine digest. A green
+in-repo suite never turns that check green, and a new money rule needs independently written test books before any
+clearance can name it. Financial extraction follows the same split: a model may read a document's layout, but code
+reads every number from the cells, and failed reconciliation checks block the save. The public financial skills carry
+the rule ([`financial-evidence-grade`](../skills/financial-truth/financial-evidence-grade/SKILL.md)); the kit itself
+is private.
+
 ## Known limits
 
 These are open, and a reviewer should look at them first.
@@ -85,9 +97,17 @@ These are open, and a reviewer should look at them first.
   the owner's word from round 6) can't be refused by CI. The author posts the trigger.
 - **No human approver the automation cannot impersonate.** The trusted-reviewer list is empty by design, so held scope
   relies on the cross-vendor gate rather than on a person's approval.
-- **Agent identity.** As of the 14 October 2026 status in [`shipping/README.md`](../shipping/README.md), the agents'
-  own GitHub App and ruleset were still waiting on a one-time setup by the owner. Until they exist, limits on pushing
-  agents come partly from instructions.
+- **Agent identity.** The reference repo merged a GitHub App identity for agents on 14 October 2026. Whether every
+  pushing agent in every repository uses it is not confirmed here; where it doesn't, limits on pushing agents come
+  partly from instructions.
+- **Adopters' held paths are narrower than the doctrine.** The lane table holds access, billing, migrations and
+  authority sources, but each repository's regex decides. Some adopters hold only `.github/workflows/`, and this
+  repository holds `.github/workflows/` and `ci/` but not its own instruction files or skills.
+- **Adopters run older layer code.** Callers pin the shared workflows to a commit, and the adopting repositories pin
+  commits from before the latest changes here. What this repository documents is ahead of what some of them run.
+- **The reviewer gates before it has earned it.** Rule 5 says a reviewer reports without blocking until it clears a
+  measured bar, but the merge gate already requires a passing Agent Review on HANDOFF and held PRs, and no record shows
+  the bar was cleared. The second vendor's CLEAR is the check that holds the line meanwhile.
 - **A repository writer can forge evidence.** The merge gate defends against the PR itself and against timing, but
   anyone with write access (the owner, the Claude app, agent sessions) could run a modified workflow on another
   branch and post a passing check. Closing this needs review checks posted by a dedicated GitHub App whose key only

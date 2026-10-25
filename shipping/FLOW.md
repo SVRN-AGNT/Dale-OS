@@ -4,6 +4,8 @@ Each row follows one stage a change passes through in the reference repository, 
 
 The owner also has an interactive version of this table as a private page, kept outside this repository.
 
+The table shows the state on 14 October 2026. Rows marked built or pending there have since landed: terse test output, the skip for already-tested trees, the red-run alert, promotion receipts and the truth gate all merged that day, and held scope has landed through the merge gate since 16 October ([`README.md`](README.md#status-on-14-october-2026)).
+
 | Stage | Before | Kind | Now | State |
 |---|---|---|---|---|
 | **Agent reads the rules** | A 411-line instructions file loaded into every session, with rationale and history | Cut fat | 225 lines of hard rules. All 320 moved lines live word for word in a detail doc that is read only when needed | Merged |

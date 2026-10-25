@@ -38,12 +38,14 @@ A lane is chosen from the paths a change touches, including both sides of a rena
 
 | Lane | Typical paths | What it needs to land |
 |---|---|---|
-| **L0 docs** | `docs/**`, `*.md` only | Required checks + a passing Agent Review |
+| **L0 docs** | `docs/**`, `*.md` only, except authority sources (instruction files such as `CLAUDE.md` and `AGENTS.md`, skills that set gates, owner decisions, merge policy), which are L3 | Required checks + a passing Agent Review |
 | **L1 ordinary** | Everything not below | Green required checks on the exact tree + a passing Agent Review |
 | **L2 truth** | Money, sync, evidence, imports, identity | L1 + the affected tests + second-vendor CLEAR (or 2-hour timeout) |
 | **L3 held** | Workflows, access, billing, migrations, merge and release tooling | L2, but only a **CLEAR** counts, never the timeout. The merge gate re-derives it just before merging |
 
-The lane decides who judges and who lands. It never decides whether the work is correct; the checks and reviewers do that.
+The lane decides who judges and who lands. It never decides whether the work is correct; the checks and reviewers do that. A path that cannot be classified counts as held.
+
+In the reference repo, "a passing Agent Review" on L0 and L1 is a Builder rule: the Builder sets READY only after the review passes, but the Controller does not read the check on ordinary PRs, and a contract test fails if it starts to. The merge gate requires the pass only on PRs that carry a `HANDOFF:` and on held scope. Making the reviewer a merge gate for ordinary work is the owner's decision, waiting on the measured bar in rule 5.
 
 **The ready rule (owner decisions, 14 to 19 October 2026).** Ordinary work (L0 and L1) needs green CI and a passing Agent Review, and nothing more. For authority work (L2 truth: money, sync, evidence, imports, identity) and held PRs (L3), the Builder marks the PR ready, waits for Agent Review and CI to go green on that head, and then posts one `HANDOFF:` naming it. L2 lands on the second vendor's `CLEAR`, or after 2 hours with no ruling (recorded as "PM timeout"). L3 lands only on a `CLEAR`. A `CORRECT` or `HOLD` blocks the merge, a push revokes every ruling and needs a new HANDOFF, and an Agent Review approval never stands in for a CLEAR. Each Codex ruling is a round: after round 3 the whole PR gets a full Claude review and a check on whether to split it, and round 6 onward needs the owner's word. This replaced two earlier rules: the second vendor on every PR, judged overly cautious, and a CLEAR before ready. The HANDOFF now waits for Agent Review and CI, so the second vendor's limited quota is spent only on a finished change.
 
@@ -93,7 +95,7 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 13. **Red tells someone.** A red scheduled or trunk run opens one issue, which closes itself when the run is green again.
 14. **Every model job has caps:** a spend budget, a process timeout, a job timeout and a concurrency group.
 15. **A release is frozen at one commit.** Merges keep landing while a promotion runs, and the receipt is generated from git rather than written by hand.
-16. **Builders do not refresh the base just to stay current.** Freshness is the Controller's job. A Builder merges the base into its branch only to fix a conflict, to pick up code it needs, or once before a held PR's final `HANDOFF:`, because nothing else refreshes a PR that a person lands. Each refresh is a new head, so the full PR gate runs again. In the reference repo, heads that only merged in the base used 30% of PR CI minutes over 200 runs (973 of 3,279 billed minutes on 13 and 14 October 2026).
+16. **Builders do not refresh the base just to stay current.** Freshness is the Controller's job. A Builder merges the base into its branch only to fix a conflict, to pick up code it needs, or once before a held PR's final `HANDOFF:`, because the lander never updates a held PR: it merges a behind held PR only when the base changed none of its files. Each refresh is a new head, so the full PR gate runs again. In the reference repo, heads that only merged in the base used 30% of PR CI minutes over 200 runs (973 of 3,279 billed minutes on 13 and 14 October 2026).
 
 ### What stays human
 
@@ -105,7 +107,7 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 | Give an automated judge more authority | It changes merge authority; it needs measured evidence first |
 | Read production after a deploy | It reads live user data, so it needs a written protocol |
 
-Things the owner no longer does in the reference repo: approve bot runs stuck on "action required", wait while a release suite restarts, or be the only check on whether review happened. Once the red-run alert is adopted there (pending), a red nightly will open an issue instead of waiting to be noticed.
+Things the owner no longer does in the reference repo: approve bot runs stuck on "action required", wait while a release suite restarts, be the only check on whether review happened, or notice a red nightly, which now opens an issue. For a promotion, the owner gives a one-off written authorisation for that cut, and a session performs the merge once the full suite is green on it.
 
 ## Status on 14 October 2026
 
@@ -130,7 +132,7 @@ These are the states when this page was written. Check the linked PRs for live s
 
 **The cost of the day's speed:** held-scope PRs merged by hand carry no Controller attestation, so the next release has to run in full consolidation mode.
 
-**Since then (16 to 19 October 2026).** Held scope no longer waits for a person: the merge gate described in rule 9 lands it ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)), and this repository runs it on itself. A passing Agent Review is now one of the gate's conditions rather than a report. The second vendor runs as Codex on the owner's ChatGPT plan, with no API key, and each ruling counts against a round budget. The gate's threat model, including what it does not defend against, is in the same section of `ci/README.md`.
+**Landed since (14 to 24 October 2026).** Everything under "Built, not landed" merged on 14 October: terse agent test output, skipping post-merge checks for an already-tested tree, and promotion receipts generated from git. The red-run alert was adopted the same day. The reference repo also gained a truth-clearance gate (see [the harness map](../docs/HARNESS_MAP.md)). Held scope no longer waits for a person: the merge gate described in rule 9 lands it ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)), and this repository runs it on itself. On PRs with a HANDOFF and on held scope, a passing Agent Review is one of the gate's conditions; on ordinary PRs it is still a Builder rule (see the lanes above). The second vendor runs as Codex on the owner's ChatGPT plan, with no API key, and each ruling counts against a round budget. The gate's threat model, including what it does not defend against, is in the same section of `ci/README.md`.
 
 ## How it relates to the Operating Manual
 

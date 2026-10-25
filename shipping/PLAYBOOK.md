@@ -107,7 +107,7 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | R14 | Screenshots on UI PRs, driven through the running app | F1, F2, F9 | Done: before and after screenshots on UI PRs (merged 2026-10-14) |
 | R15 | A weekly digest routine, off the hour, updating one page | F10 | Done as a Friday digest issue (merged 2026-10-14) |
 | R16 | Strip the harness as models improve | F7, F8 | Adopted as a principle |
-| R17 | Harness audit after each model upgrade | F8 | Done: procedure written, first run completed |
+| R17 | Harness audit after each model upgrade | F8 | Partly done: procedure written and first triggered on 14 October 2026; the with-and-without comparison runs have not been done |
 
 <a id="left-out"></a>
 ## Left out
