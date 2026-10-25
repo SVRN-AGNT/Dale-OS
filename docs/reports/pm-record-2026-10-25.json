@@ -1,0 +1,4877 @@
+{
+ "org": "SVRN-AGNT",
+ "repos": [
+  "ACFDashboard",
+  "Dale-OS",
+  "second-brain",
+  "ACF-Docs",
+  "wallet-alpha-lab"
+ ],
+ "since": "2026-10-16T00:00:00Z",
+ "until": "2026-10-25T14:34:00Z",
+ "rows": [
+  {
+   "repo": "ACFDashboard",
+   "pr": 5817,
+   "merged": false,
+   "rulings": [],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5816,
+   "merged": false,
+   "rulings": [
+    {
+     "at": "2026-10-25T08:04:50Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T08:28:41Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T08:58:44Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T09:20:10Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5814,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T04:23:11Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T04:39:49Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5811,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T03:04:41Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T03:24:12Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5810,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T02:43:10Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5808,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T01:44:56Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T02:05:58Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5807,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T02:08:45Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5805,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-24T10:36:12Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T11:08:30Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5804,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-24T03:41:41Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5803,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-24T03:21:21Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5800,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-23T06:02:33Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-23T06:30:22Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-23T13:03:14Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P2",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-23T13:33:01Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 3,
+     "priorities": [
+      "P2",
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-23T14:59:54Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-23T16:45:33Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T01:41:00Z",
+     "verdict": "CORRECT",
+     "round": 7,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T03:33:01Z",
+     "verdict": "CORRECT",
+     "round": 8,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5799,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-22T22:03:53Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T22:34:38Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T23:18:20Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-22T23:24:00Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-22T23:30:18Z",
+     "verdict": "CLEAR",
+     "round": 5,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5797,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-22T18:09:04Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T18:35:21Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5796,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-22T03:35:25Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T04:30:00Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5795,
+   "merged": false,
+   "rulings": [
+    {
+     "at": "2026-10-22T03:27:17Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 5,
+     "priorities": [
+      "P1",
+      "P1",
+      "P1",
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T04:58:46Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T12:21:28Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T13:32:38Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:44:58Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T17:43:14Z",
+     "verdict": "CORRECT",
+     "round": 7,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5792,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T12:34:42Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5790,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T17:27:05Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T17:58:54Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T18:28:53Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T19:16:58Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T19:44:26Z",
+     "verdict": "CLEAR",
+     "round": 5,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5789,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T11:23:50Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T11:41:19Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5787,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T06:21:02Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:35:32Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T07:06:36Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T01:54:10Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T02:11:24Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T12:22:17Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:43:04Z",
+     "verdict": "CORRECT",
+     "round": 7,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T17:07:42Z",
+     "verdict": "CORRECT",
+     "round": 8,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5782,
+   "merged": true,
+   "rulings": [],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5779,
+   "merged": true,
+   "rulings": [],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5776,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T01:16:12Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T01:33:49Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T01:57:17Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:22:22Z",
+     "verdict": "CLEAR",
+     "round": 4,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5775,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T01:40:14Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T12:15:26Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T01:43:51Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T01:59:55Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T02:17:40Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:51:14Z",
+     "verdict": "CLEAR",
+     "round": 6,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5774,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T06:40:03Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 4,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5773,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T19:51:02Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5763,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T13:18:37Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5760,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T12:39:23Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T13:08:53Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5758,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T06:42:19Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T13:29:06Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T19:56:34Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5757,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T06:40:33Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T07:02:22Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T13:30:26Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5752,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T03:11:35Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T06:40:59Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T18:58:39Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 3,
+     "priorities": [
+      "P2",
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T19:37:56Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T01:35:51Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:21:27Z",
+     "verdict": "CLEAR",
+     "round": 6,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 4,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5749,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T02:18:46Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5748,
+   "merged": false,
+   "rulings": [
+    {
+     "at": "2026-10-21T02:01:07Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5746,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T01:59:46Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5745,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T01:53:42Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 4,
+     "priorities": [
+      "P1",
+      "P1",
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T02:18:54Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T02:39:49Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T03:28:35Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T06:42:44Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T12:32:34Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T12:52:47Z",
+     "verdict": "CLEAR",
+     "round": 7,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5744,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T01:52:33Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T02:46:07Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5743,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T01:41:10Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5740,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-20T01:12:31Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5738,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T21:53:40Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5737,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T21:41:24Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T22:05:16Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T22:25:53Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T01:02:31Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T01:23:58Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T01:57:53Z",
+     "verdict": "CLEAR",
+     "round": 6,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5730,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T17:56:14Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T18:12:13Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T20:53:33Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T21:18:09Z",
+     "verdict": "CLEAR",
+     "round": 4,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T21:33:34Z",
+     "verdict": "CLEAR",
+     "round": 5,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5729,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T18:10:01Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T20:41:22Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T20:56:38Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T21:30:10Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T21:45:22Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T22:24:50Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-20T01:02:31Z",
+     "verdict": "CLEAR",
+     "round": 7,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5726,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T16:49:26Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T17:29:31Z",
+     "verdict": "CLEAR",
+     "round": 3,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5724,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T14:42:08Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T14:47:11Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-19T15:05:09Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T15:11:59Z",
+     "verdict": "CLEAR",
+     "round": 4,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5723,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T14:15:05Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5722,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T14:04:50Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5721,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T14:00:41Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T14:35:21Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5718,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T13:33:11Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5713,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:32:13Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T03:51:08Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T04:05:03Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5708,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T01:37:11Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5706,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T00:02:39Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:51:08Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T01:30:06Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T02:03:13Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T02:35:30Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T03:06:13Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T13:16:23Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T13:45:57Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T17:09:18Z",
+     "verdict": "CLEAR",
+     "round": 10,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    null
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5705,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T23:54:45Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:00:03Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:07:33Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:14:04Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:21:11Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:35:36Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:44:30Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:52:07Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:58:47Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T01:04:58Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 10,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    null
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5702,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T13:51:16Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5701,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T13:19:33Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T13:26:39Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T13:33:40Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T13:40:58Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T15:57:49Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T19:07:06Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T19:32:39Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5693,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-17T21:16:44Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-17T21:31:27Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-20T01:38:48Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T12:36:27Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T02:00:22Z",
+     "verdict": "CORRECT",
+     "round": 7,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T02:19:59Z",
+     "verdict": "CORRECT",
+     "round": 8,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T02:40:24Z",
+     "verdict": "CORRECT",
+     "round": 9,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-24T02:58:48Z",
+     "verdict": "CLEAR",
+     "round": 10,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    null,
+    4
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5692,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T13:05:14Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    null
+   ]
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5691,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-17T21:14:34Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:22:50Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:31:56Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5686,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-17T05:25:29Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T05:57:50Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T06:05:29Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T06:12:40Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T06:20:02Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T06:27:20Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T06:32:12Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-17T18:02:41Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-17T19:03:52Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T19:20:41Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 10,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T19:27:17Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 11,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T19:34:06Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 12,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T19:39:09Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 13,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5684,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-17T02:10:31Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T19:57:54Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T20:29:02Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T20:43:35Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T21:06:05Z",
+     "verdict": "CLEAR",
+     "round": 5,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5683,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-17T21:15:24Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5681,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T22:07:49Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-16T22:35:42Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T22:42:50Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5676,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T18:24:27Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-16T18:29:47Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5674,
+   "merged": false,
+   "rulings": [
+    {
+     "at": "2026-10-16T18:17:16Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 55,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T13:01:20Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T14:17:26Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 54,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T03:26:40Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 3,
+     "priorities": [
+      "P2",
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T03:34:07Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T03:56:01Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T06:23:51Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T06:38:45Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T12:49:52Z",
+     "verdict": "CLEAR",
+     "round": 6,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 53,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T13:53:49Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 52,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T09:03:06Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T12:09:58Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 50,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:20:43Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T03:27:43Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 49,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:15:12Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 48,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:10:40Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T03:17:29Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 47,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T00:36:25Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 46,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T13:17:04Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T13:30:31Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T13:47:38Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T14:06:56Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T14:21:57Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T14:33:43Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T14:48:30Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 45,
+   "merged": true,
+   "rulings": [],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 44,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T13:12:27Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-18T13:18:26Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 42,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-17T21:28:27Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:33:50Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 41,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T20:05:04Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T20:17:44Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T20:25:09Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T20:34:09Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T20:39:47Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T20:53:30Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:00:34Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:08:14Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:16:01Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:30:32Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 4,
+     "priorities": [
+      "P1",
+      "P1",
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 10,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:45:50Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 11,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:51:57Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 12,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T21:58:01Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 13,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T01:59:10Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 14,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T20:56:09Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 15,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 40,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T19:10:56Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T19:16:29Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 39,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T18:14:47Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "Dale-OS",
+   "pr": 38,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T17:37:21Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 232,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T04:05:46Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 230,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T06:25:36Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:54:09Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:59:38Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T17:04:36Z",
+     "verdict": "CLEAR",
+     "round": 4,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 227,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T01:53:00Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T01:59:09Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 222,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T13:41:21Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T13:46:16Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T13:52:07Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T16:20:44Z",
+     "verdict": "CLEAR",
+     "round": 4,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 219,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:36:07Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 218,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T01:51:20Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 3,
+     "priorities": [
+      "P2",
+      "P2",
+      "P3"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T01:59:12Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T02:03:27Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:25:34Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P3"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:32:03Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P3"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:40:49Z",
+     "verdict": "CLEAR",
+     "round": 6,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 215,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T23:53:04Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 211,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T20:02:52Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T20:06:47Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:06:27Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:10:57Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "second-brain",
+   "pr": 207,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T18:14:46Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 235,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T04:05:03Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 234,
+   "merged": true,
+   "rulings": [],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 233,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T01:51:40Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T02:01:02Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 231,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:35:32Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 228,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T23:52:18Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 225,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T20:04:40Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:06:24Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "ACF-Docs",
+   "pr": 224,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T18:14:31Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T18:22:22Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 1,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-16T18:26:30Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 181,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T04:08:41Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-25T04:16:58Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 180,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-25T04:04:47Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 178,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T01:37:14Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 177,
+   "merged": true,
+   "rulings": [],
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 176,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T02:03:58Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 175,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-19T03:37:41Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 174,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T12:15:34Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T12:24:57Z",
+     "verdict": "CLEAR",
+     "round": 2,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 173,
+   "merged": false,
+   "rulings": [
+    {
+     "at": "2026-10-21T12:34:56Z",
+     "verdict": "CORRECT",
+     "round": 1,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T12:44:27Z",
+     "verdict": "CORRECT",
+     "round": 2,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T12:52:59Z",
+     "verdict": "CORRECT",
+     "round": 3,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T13:00:44Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T13:11:24Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 3,
+     "priorities": [
+      "P1",
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-22T16:43:10Z",
+     "verdict": "CORRECT",
+     "round": 6,
+     "findings": 2,
+     "priorities": [
+      "P1",
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 172,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-21T06:31:49Z",
+     "verdict": "CLEAR",
+     "round": 1,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 168,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-18T23:54:46Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:01:22Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-19T00:35:41Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 166,
+   "merged": false,
+   "rulings": [
+    {
+     "at": "2026-10-17T21:12:19Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:24:26Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:31:13Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:26:15Z",
+     "verdict": "CORRECT",
+     "round": 4,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-21T06:33:54Z",
+     "verdict": "CORRECT",
+     "round": 5,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 165,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T22:03:20Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 163,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T20:15:47Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-16T20:27:20Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 162,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T20:05:00Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P1"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    },
+    {
+     "at": "2026-10-17T21:05:32Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": true
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  },
+  {
+   "repo": "wallet-alpha-lab",
+   "pr": 161,
+   "merged": true,
+   "rulings": [
+    {
+     "at": "2026-10-16T19:18:23Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 2,
+     "priorities": [
+      "P2",
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-16T19:22:24Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-16T19:27:55Z",
+     "verdict": "CORRECT",
+     "round": null,
+     "findings": 1,
+     "priorities": [
+      "P2"
+     ],
+     "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    },
+    {
+     "at": "2026-10-16T19:35:52Z",
+     "verdict": "CLEAR",
+     "round": null,
+     "findings": 0,
+     "priorities": [],
+     "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": false
+    }
+   ],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
+  }
+ ],
+ "reverts": []
+}

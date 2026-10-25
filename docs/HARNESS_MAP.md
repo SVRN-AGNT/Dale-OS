@@ -14,6 +14,23 @@ rests on instructions or on a writer's good faith, Known limits says so.
 
 The reference implementation is a private financial dashboard repository. Everything portable is in this repository.
 
+## What runs where
+
+- **Builders** are Claude Code sessions. They open PRs and post the `HANDOFF:` that asks for the second vendor through
+  the `claude` GitHub app; a HANDOFF posted any other way does not count.
+- **Agent Review** is a separate headless Claude Code run on GitHub Actions, billed to the Claude subscription. It
+  runs this repository's reviewer code (other repositories pin a commit of it) against the merged base, with
+  file-reading tools only, and sees the PR's title and description only after its own pass over the diff.
+- **The PM** is Codex's GitHub app, reviewing on the owner's ChatGPT plan when a HANDOFF asks. A Python workflow
+  ([`ci/pm_review.py`](../ci/pm_review.py)) reads only comments Codex's app wrote and posts the ruling and a
+  `PM Review` check on the head.
+- **The merge lane** ([`ci/merge_gate.py`](../ci/merge_gate.py)) runs on GitHub Actions. Its merge token lives in an
+  environment only the default branch can use, and it never checks out or runs the PR.
+- **Runners** are GitHub-hosted. In private repositories, jobs with a read-only token may run on Ubicloud.
+
+The reference app's own stack, hosting, data stores and endpoints are left out on purpose
+([`PUBLIC_BOUNDARY.md`](PUBLIC_BOUNDARY.md)). Nothing above depends on them.
+
 ## The seven usual layers, and what each becomes here
 
 | Usual layer | Usual form | Here | Where |
@@ -109,12 +126,41 @@ The numbers that keep this honest are in [ADOPT step 10](../shipping/ADOPT.md#st
 merged PR are measured beside escaped defects, and a change that shortens the wait but raises escaped defects is
 rolled back.
 
+## What the record shows
+
+[The second-vendor record](reports/SECOND_VENDOR_RECORD_2026-10-25.md) covers 103 PRs and 307 PM rulings in five
+repositories, 16 to 25 October 2026, rebuilt from GitHub by [`scripts/pm_record.py`](../scripts/pm_record.py).
+
+- 288 rulings answered a HANDOFF posted after Claude's Agent Review had passed the head. In those, Codex made 271
+  findings, 133 of them P1, across 61 PRs. 43 PRs drew at least one P1.
+- 41 PRs cleared on their first ruling. Of the 63 PRs whose rulings state a round, the median took 2 rounds and 13
+  went past round 5.
+- Findings are counted, not checked for validity, so they show the reviewers disagree, not that either was right.
+  Nothing measures what both reviewers missed.
+
+Which rules CI or git enforce, and which rest on convention:
+
+| Rule | Enforced by | Evidence |
+|---|---|---|
+| A verdict covers one exact head; a push revokes it | Merge gate | [`ci/test_merge_gate.py`](../ci/test_merge_gate.py): "a HANDOFF for another head does not count", "a moved head is not merged" |
+| Only Codex's app can supply the review; a forged or edited copy blocks | Merge gate | "a forged CLEAR from another login does not count", "a Codex comment edited by someone else blocks the merge" |
+| A finding posted after the CLEAR still blocks | Merge gate, which reads twice, 90 s apart, before merging | "a Codex finding posted after the CLEAR blocks the merge", "a finding that lands between the reads stops the merge" |
+| Agent Review counts only from the default branch's workflow, run for this head | Merge gate | "a newer Agent Review from a PR-branch copy of agent-review.yml does not count", "a pass claiming a run started for another PR's head blocks" |
+| Held scope never merges on the timeout | Merge gate | "held scope waits for a CLEAR even 4 hours after the HANDOFF" |
+| Ask the second vendor only after Agent Review passes | Convention | 288 of the record's 307 rulings answered a HANDOFF posted after Agent Review passed; 19 did not (the record leaves out 14 made before Codex finished) |
+| The round budget (owner's word from round 6) | Convention; the PM states it in every ruling | 13 of 63 PRs went past round 5 |
+| One purpose per PR; sweep by class before a HANDOFF | Convention | Not measured |
+
+The merge gate's suite runs 132 named checks. It cites Codex findings on this repository's PR #41 (17 P1, 3 P2)
+20 times, each beside the checks that finding produced.
+
 ## Known limits
 
 These are open, and a reviewer should look at them first.
 
 - **Some rules are still convention.** The `HANDOFF:` trigger and the Codex round budget (a full review after round 3,
-  the owner's word from round 6) can't be refused by CI. The author posts the trigger.
+  the owner's word from round 6) can't be refused by CI. The author posts the trigger. The table above lists them,
+  with what the record shows for each.
 - **No human approver the automation cannot impersonate.** The trusted-reviewer list is empty by design, so held scope
   relies on the cross-vendor gate rather than on a person's approval.
 - **Agent identity.** The reference repo merged a GitHub App identity for agents on 14 October 2026. Whether every
@@ -128,7 +174,8 @@ These are open, and a reviewer should look at them first.
   commits from before the latest changes here. What this repository documents is ahead of what some of them run.
 - **The reviewer gates before it has earned it.** Rule 5 says a reviewer reports without blocking until it clears a
   measured bar, but the merge gate already requires a passing Agent Review on HANDOFF and held PRs, and no record shows
-  the bar was cleared. The second vendor's CLEAR is the check that holds the line meanwhile.
+  the bar was cleared. The second vendor's CLEAR is the check that holds the line meanwhile; in the record Codex
+  flagged a P1 on 43 PRs after Agent Review had passed them.
 - **Some merged trees were never tested.** Evidence counts only for the exact tree it judged. The shared merge lane
   refuses a PR that GitHub reports as behind its base, but GitHub reports that only where branch protection requires
   branches to be up to date; without that setting a behind PR can merge, a wider form of the same gap. The reference
@@ -136,10 +183,11 @@ These are open, and a reviewer should look at them first.
   its reviewed head when the base changed none of its files. That saves a refresh and a second-vendor round each time
   the base moves, but non-overlapping paths can still interact (dependencies, generated files, behavior). A merge
   queue that tests the prospective merge would close both.
-- **The second vendor's quota is shared and invisible.** One ChatGPT plan backs the PM in every repository and the
-  owner's own Codex use. On 25 October its 5-hour window ran out mid-review: Codex's status read "Running" for about
-  two hours, and the PM, which cannot tell a quota stall from a slow review, waited. The workaround is procedural:
-  check the quota before re-asking. Rounds count rulings, so a re-ask on a head that got no ruling stays the same round.
+- **The second vendor's quota is shared, and the PM doesn't read it.** One ChatGPT plan backs the PM in every
+  repository and the owner's own Codex use. Codex often says when the window is spent, with a "usage limits" comment
+  (55 in the record), but the PM does not parse it. Sometimes it says nothing: on 25 October its status read
+  "Running" for about two hours until the window reset, and the PM waited. The workaround is procedural: check the
+  quota before re-asking. Rounds count rulings, so a re-ask on a head that got no ruling stays the same round.
 - **A repository writer can forge evidence.** The merge gate defends against the PR itself and against timing, but
   anyone with write access (the owner, the Claude app, agent sessions) could run a modified workflow on another
   branch and post a passing check. Closing this needs review checks posted by a dedicated GitHub App whose key only
@@ -153,8 +201,9 @@ If you build harnesses yourself, these are the questions where an outside view h
    git or access control.
 2. **Where would you collapse layers?** Two judges, lanes, a merge gate and a constitution with a detail document all
    cost tokens, CI minutes and latency. Which parts don't pay for themselves on a one-person project?
-3. **Is the cross-vendor reviewer independent?** Both reviewers read the same diff and the same PR description, so
-   their errors may be correlated. What would you measure to tell?
+3. **Is the cross-vendor reviewer independent?** Both reviewers read the same diff, so their errors may be
+   correlated. The record shows their findings disagree (Codex flagged a P1 on 43 PRs after Agent Review had passed them), but
+   not which were right or what both missed. What would you measure to tell?
 4. **How do you handle long-run state?** This system relies on threads, issues, an append-only ledger and gated
    memory instead of a `progress.md`. Does yours recover better after compaction or a dead runner?
 5. **What is missing?** For example: cost accounting per accepted change, rollback drills, or a failure class you have
