@@ -14,35 +14,17 @@
    "repo": "ACFDashboard",
    "pr": 5817,
    "merged": false,
-   "open": true,
-   "rulings": [
-    {
-     "at": "2026-10-25T14:33:53Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 3,
-     "agent_review_passed_first": true
-    }
-   ],
-   "usage_limit_messages": 0
+   "rulings": [],
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5816,
    "merged": false,
-   "open": true,
    "rulings": [
-    {
-     "at": "2026-10-25T05:27:59Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 3,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-25T08:04:50Z",
      "verdict": "CORRECT",
@@ -88,13 +70,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5814,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T04:23:11Z",
@@ -117,13 +101,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5811,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T03:04:41Z",
@@ -146,13 +130,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5810,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T02:43:10Z",
@@ -164,23 +148,14 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5807,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-25T01:11:15Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 1,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-25T02:08:45Z",
      "verdict": "CLEAR",
@@ -191,13 +166,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5808,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T01:44:56Z",
@@ -220,13 +197,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5800,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-23T06:02:33Z",
@@ -328,13 +305,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5805,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-24T10:36:12Z",
@@ -358,13 +335,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5804,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-24T03:41:41Z",
@@ -378,23 +355,14 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5795,
    "merged": false,
-   "open": true,
    "rulings": [
-    {
-     "at": "2026-10-22T02:39:47Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 3,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-22T03:27:17Z",
      "verdict": "CORRECT",
@@ -467,23 +435,16 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 3
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5803,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-24T03:13:33Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 2,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-24T03:21:21Z",
      "verdict": "CLEAR",
@@ -494,13 +455,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5693,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-17T21:16:44Z",
@@ -521,24 +484,6 @@
      ],
      "failed_checks": 0,
      "agent_review_passed_first": true
-    },
-    {
-     "at": "2026-10-17T21:35:54Z",
-     "verdict": "CORRECT",
-     "round": null,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 1,
-     "agent_review_passed_first": false
-    },
-    {
-     "at": "2026-10-20T01:04:10Z",
-     "verdict": "CORRECT",
-     "round": 4,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 1,
-     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-20T01:38:48Z",
@@ -607,13 +552,16 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    null,
+    4
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5787,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T06:21:02Z",
@@ -708,13 +656,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5799,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-22T22:03:53Z",
@@ -772,13 +720,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5797,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-22T18:09:04Z",
@@ -803,13 +751,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5775,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T01:40:14Z",
@@ -877,23 +825,14 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5796,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-22T02:56:24Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 2,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-22T03:35:25Z",
      "verdict": "CORRECT",
@@ -917,13 +856,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5790,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T17:27:05Z",
@@ -980,13 +921,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5792,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T12:34:42Z",
@@ -998,13 +939,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5748,
    "merged": false,
-   "open": true,
    "rulings": [
     {
      "at": "2026-10-21T02:01:07Z",
@@ -1016,13 +957,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5789,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T11:23:50Z",
@@ -1045,13 +986,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5774,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T06:40:03Z",
@@ -1067,13 +1008,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 4
+   "usage_limit_messages": 4,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5758,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T06:42:19Z",
@@ -1111,13 +1052,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 3
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5776,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T01:16:12Z",
@@ -1162,13 +1103,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5752,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T03:11:35Z",
@@ -1238,39 +1179,30 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 4
+   "usage_limit_messages": 4,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5782,
    "merged": true,
-   "open": false,
    "rulings": [],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5779,
    "merged": true,
-   "open": false,
    "rulings": [],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5773,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-20T19:27:28Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 3,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-20T19:51:02Z",
      "verdict": "CLEAR",
@@ -1281,13 +1213,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5763,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T13:18:37Z",
@@ -1302,13 +1236,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 3
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5757,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T06:40:33Z",
@@ -1346,13 +1280,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5760,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T12:39:23Z",
@@ -1381,13 +1315,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5745,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T01:53:42Z",
@@ -1473,13 +1407,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5744,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T01:52:33Z",
@@ -1500,13 +1434,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5749,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T02:18:46Z",
@@ -1518,13 +1452,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5737,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T21:41:24Z",
@@ -1593,13 +1527,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5746,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T01:59:46Z",
@@ -1611,13 +1545,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5743,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T01:41:10Z",
@@ -1629,13 +1563,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5729,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T18:10:01Z",
@@ -1714,13 +1648,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 3
+   "usage_limit_messages": 3,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5740,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-20T01:12:31Z",
@@ -1732,13 +1666,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 2
+   "usage_limit_messages": 2,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5738,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T21:53:40Z",
@@ -1750,13 +1684,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5730,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T17:56:14Z",
@@ -1810,13 +1744,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5684,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-17T02:10:31Z",
@@ -1870,23 +1804,14 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5726,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-19T15:42:15Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 1,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-19T16:49:26Z",
      "verdict": "CORRECT",
@@ -1908,13 +1833,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5706,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T00:02:39Z",
@@ -1981,15 +1908,6 @@
      "agent_review_passed_first": true
     },
     {
-     "at": "2026-10-19T12:09:15Z",
-     "verdict": "CORRECT",
-     "round": null,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 1,
-     "agent_review_passed_first": true
-    },
-    {
      "at": "2026-10-19T13:16:23Z",
      "verdict": "CORRECT",
      "round": null,
@@ -2021,13 +1939,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    null
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5724,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T14:42:08Z",
@@ -2070,13 +1990,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5721,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T14:00:41Z",
@@ -2100,13 +2020,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5723,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T14:15:05Z",
@@ -2118,13 +2038,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5722,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T14:04:50Z",
@@ -2136,13 +2056,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5718,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T13:33:11Z",
@@ -2154,13 +2074,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5713,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:32:13Z",
@@ -2195,13 +2115,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5708,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T01:37:11Z",
@@ -2213,23 +2133,14 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5705,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-18T23:51:11Z",
-     "verdict": "CORRECT",
-     "round": null,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 1,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-18T23:54:45Z",
      "verdict": "CLEAR",
@@ -2338,13 +2249,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    null
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5701,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T13:19:33Z",
@@ -2416,13 +2329,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5702,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T13:51:16Z",
@@ -2434,23 +2347,14 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5692,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-17T21:25:20Z",
-     "verdict": "CORRECT",
-     "round": null,
-     "findings": 0,
-     "priorities": [],
-     "failed_checks": 3,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-18T13:05:14Z",
      "verdict": "CLEAR",
@@ -2461,13 +2365,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": [
+    null
+   ]
   },
   {
    "repo": "ACFDashboard",
    "pr": 5691,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-17T21:14:34Z",
@@ -2506,13 +2412,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5683,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-17T21:15:24Z",
@@ -2524,13 +2430,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5686,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-17T05:25:29Z",
@@ -2666,13 +2572,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5681,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T22:07:49Z",
@@ -2704,13 +2610,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5674,
    "merged": false,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T18:17:16Z",
@@ -2724,13 +2630,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACFDashboard",
    "pr": 5676,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T18:24:27Z",
@@ -2753,13 +2659,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 55,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T13:01:20Z",
@@ -2782,13 +2688,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 54,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T03:26:40Z",
@@ -2857,13 +2763,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 53,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T13:53:49Z",
@@ -2875,13 +2781,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 52,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T09:03:06Z",
@@ -2905,13 +2811,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 50,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:20:43Z",
@@ -2934,13 +2840,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 48,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:10:40Z",
@@ -2963,13 +2869,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 49,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:15:12Z",
@@ -2981,13 +2887,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 47,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T00:36:25Z",
@@ -2999,13 +2905,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 46,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T13:17:04Z",
@@ -3085,13 +2991,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 44,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T13:12:27Z",
@@ -3114,21 +3020,21 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 45,
    "merged": true,
-   "open": false,
    "rulings": [],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 42,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-17T21:28:27Z",
@@ -3151,13 +3057,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 41,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T20:05:04Z",
@@ -3329,13 +3235,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 40,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T19:10:56Z",
@@ -3358,13 +3264,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 39,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T18:14:47Z",
@@ -3376,13 +3282,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "Dale-OS",
    "pr": 38,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T17:37:21Z",
@@ -3394,13 +3300,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 232,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T04:05:46Z",
@@ -3412,13 +3318,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 230,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T06:25:36Z",
@@ -3464,13 +3370,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 218,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T01:51:20Z",
@@ -3539,13 +3445,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 227,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T01:53:00Z",
@@ -3568,13 +3474,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 222,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T13:41:21Z",
@@ -3619,13 +3525,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 219,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:36:07Z",
@@ -3637,13 +3543,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 215,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T23:53:04Z",
@@ -3655,13 +3561,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 211,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T20:02:52Z",
@@ -3706,13 +3612,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "second-brain",
    "pr": 207,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T18:14:46Z",
@@ -3724,13 +3630,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 235,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T04:05:03Z",
@@ -3742,13 +3648,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 233,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T01:51:40Z",
@@ -3773,21 +3679,21 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 234,
    "merged": true,
-   "open": false,
    "rulings": [],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 231,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:35:32Z",
@@ -3799,13 +3705,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 228,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T23:52:18Z",
@@ -3817,13 +3723,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 225,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T20:04:40Z",
@@ -3844,13 +3750,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "ACF-Docs",
    "pr": 224,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T18:14:31Z",
@@ -3880,13 +3786,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 181,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T04:08:41Z",
@@ -3909,13 +3815,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 180,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-25T04:04:47Z",
@@ -3927,13 +3833,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 173,
    "merged": false,
-   "open": true,
    "rulings": [
     {
      "at": "2026-10-21T12:34:56Z",
@@ -4005,13 +3911,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 174,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T12:15:34Z",
@@ -4034,13 +3940,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 166,
    "merged": false,
-   "open": true,
    "rulings": [
     {
      "at": "2026-10-17T21:12:19Z",
@@ -4099,13 +4005,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 172,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T06:31:49Z",
@@ -4117,33 +4023,22 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 177,
    "merged": true,
-   "open": false,
    "rulings": [],
-   "usage_limit_messages": 1
+   "usage_limit_messages": 1,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 176,
    "merged": true,
-   "open": false,
    "rulings": [
-    {
-     "at": "2026-10-21T01:54:27Z",
-     "verdict": "CORRECT",
-     "round": 1,
-     "findings": 1,
-     "priorities": [
-      "P2"
-     ],
-     "failed_checks": 0,
-     "agent_review_passed_first": true
-    },
     {
      "at": "2026-10-21T02:03:58Z",
      "verdict": "CLEAR",
@@ -4154,13 +4049,15 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": [
+    1
+   ]
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 178,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-21T01:37:14Z",
@@ -4172,13 +4069,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 175,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-19T03:37:41Z",
@@ -4190,13 +4087,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 168,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-18T23:54:46Z",
@@ -4230,13 +4127,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 162,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T20:05:00Z",
@@ -4259,13 +4156,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 165,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T22:03:20Z",
@@ -4277,13 +4174,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 163,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T20:15:47Z",
@@ -4306,13 +4203,13 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   },
   {
    "repo": "wallet-alpha-lab",
    "pr": 161,
    "merged": true,
-   "open": false,
    "rulings": [
     {
      "at": "2026-10-16T19:18:23Z",
@@ -4358,7 +4255,8 @@
      "agent_review_passed_first": true
     }
    ],
-   "usage_limit_messages": 0
+   "usage_limit_messages": 0,
+   "rounds_of_rulings_before_codex_finished": []
   }
  ],
  "reverts": []

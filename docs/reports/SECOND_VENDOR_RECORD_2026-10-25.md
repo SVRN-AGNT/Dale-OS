@@ -2,11 +2,11 @@
 
 What the two reviewers actually did, measured across the owner's five repositories (the private reference
 repository, this one, and three others) from the first PM ruling that read a Codex review (16 October, 17:37 UTC)
-to 25 October, 14:33 UTC.
+to a cutoff of 25 October, 14:34 UTC.
 
 The record is [`pm-record-2026-10-25.json`](pm-record-2026-10-25.json). It keeps no titles, bodies or commit shas.
-[`scripts/pm_record.py`](../../scripts/pm_record.py) built it read-only through `gh api`, counting only comments
-and PR states up to 14:34 UTC, and recomputes every number below:
+[`scripts/pm_record.py`](../../scripts/pm_record.py) built it read-only through `gh api`, and recomputes every number
+below:
 
 ```bash
 python scripts/pm_record.py summary docs/reports/pm-record-2026-10-25.json
@@ -14,29 +14,29 @@ python scripts/pm_record.py summary docs/reports/pm-record-2026-10-25.json
 
 ## Definitions
 
-- **Ruling:** a `PM REVIEW —` comment by `github-actions[bot]` that names Codex's review. Rulings that don't, such as
-  those the PM made on an API key before 16 October, are left out.
+- **Ruling:** a `PM REVIEW —` comment by `github-actions[bot]` that says Codex completed its review of the head.
+  Others are left out: those the PM made on an API key before 16 October, and 14 made before Codex had finished.
 - **Agent Review passed first:** a successful `Agent Review` check run on the ruled head had completed before the
   ruling was posted. It is read from all the head's check runs, re-runs included, not from the HANDOFF's own claim,
   and unlike the merge gate it does not check which workflow posted the run.
 - **Finding:** an item listed under the ruling's Blocking heading, with Codex's priority (P0 to P3). A finding that
   Codex repeats on a later head counts again.
 - **Round:** the round the ruling states. The PM began stating it on 19 October; it counts that PR's earlier
-  rulings too.
+  rulings too, including any made before Codex finished, and so does a PR's highest round here.
 
 ## What it shows
 
 | Measure | Value |
 |---|---|
-| PRs with at least one ruling | 104 (97 merged, 6 open, 1 closed) |
-| Rulings | 321: 224 `CORRECT`, 97 `CLEAR` |
-| Rulings on a head Agent Review had already passed | 314 of 321 |
-| Codex findings on those heads | 281: 134 P1, 144 P2, 3 P3, no P0 |
-| PRs where Codex found something after Agent Review passed | 64 of 104 |
-| PRs where that included a P1 | 44 of 104 |
-| PRs cleared on their first ruling | 35 of 104 |
-| `CORRECT` rulings caused only by a failed check, with no Codex finding | 21 |
-| PRs past round 5 (of 64 with stated rounds) | 13; the most was 10 rounds; the median 2 |
+| PRs with at least one ruling | 103, of which 97 merged by the cutoff |
+| Rulings | 307: 210 `CORRECT`, 97 `CLEAR` |
+| Rulings on a head Agent Review had already passed | 302 of 307 |
+| Codex findings on those heads | 280: 134 P1, 143 P2, 3 P3, no P0 |
+| PRs with a Codex finding after Agent Review passed | 63 of 103 |
+| PRs where that included a P1 | 44 of 103 |
+| PRs whose first counted ruling was `CLEAR` | 41 of 103 |
+| `CORRECT` rulings caused only by a failed check, with no Codex finding | 8 |
+| PRs past round 5 (of 63 with stated rounds) | 13; the most was 10 rounds; the median 2 |
 | Codex "usage limits" messages | 55, on 32 PRs |
 | PRs opened in the window with "revert" in the title | 0 |
 
@@ -45,21 +45,22 @@ converges:
 
 | Round | 1 | 2 | 3 | 4 | 5 | 6 and later |
 |---|---|---|---|---|---|---|
-| Rulings | 59 | 43 | 24 | 22 | 18 | 24 |
+| Rulings | 50 | 43 | 24 | 21 | 18 | 24 |
 | P1 findings | 25 | 24 | 11 | 8 | 10 | 7 |
 
 ## How to read it
 
-- **The second vendor is not a rubber stamp.** On 44 PRs Codex rated something P1 on a head Claude's reviewer had
-  already passed. That is evidence the two reviewers' errors differ. It is not proof that they are independent:
-  both read the same diff, and nothing here counts the defects both missed.
+- **The two reviewers' findings disagree.** On 44 PRs Codex rated something P1 on a head Claude's reviewer had
+  already passed. Until the findings are audited, that shows disagreement, not that one reviewer caught defects the
+  other missed: a P1 may be a false positive. Nor does it show independence: both read the same diff, and nothing
+  here counts the defects both missed.
 - **Findings are counted, not audited.** Nobody has checked each finding for validity. A finding the author thinks is
   wrong has to be answered on its thread and waived by the owner, and this record does not count waivers. A precision
   audit of a random sample is the next measurement to make.
 - **The round budget is convention.** It was set on 19 October. Thirteen PRs went past round 5 in the window, and
   the record has no machine-readable trace of the owner's word for each round past 5.
-- **Long reviews keep finding P1s.** Rounds 6 and later still produced 7. The owner's rule of 25 October, one
-  purpose per PR and a sweep by class before every HANDOFF, aims at this.
+- **Long reviews keep drawing P1s.** Rounds 6 and later still drew 7. The owner's rule of 25 October, one purpose
+  per PR and a sweep by class before every HANDOFF, aims at this.
 - **The quota can be seen, but the PM doesn't read it.** Codex often answers a spent quota with a "usage limits"
   comment (55 in the window). The PM does not parse that comment. On 25 October, on this repository's PR #55, Codex
   posted no such message: its status read "Running" until the window reset.
