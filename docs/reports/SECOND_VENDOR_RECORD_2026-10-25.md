@@ -39,7 +39,8 @@ python scripts/pm_record.py summary docs/reports/pm-record-2026-10-25.json
 | PRs past round 5 (of 64 with stated rounds) | 13; the most was 10 rounds; the median 2 |
 | Codex "usage limits" messages | 50, on 27 PRs |
 
-P1 findings by round, which shows how slowly a long review converges:
+P1 findings by round, counting only rulings that state one (from 19 October), which shows how slowly a long review
+converges:
 
 | Round | 1 | 2 | 3 | 4 | 5 | 6 and later |
 |---|---|---|---|---|---|---|

@@ -63,9 +63,11 @@ def collect(org: str, repos: list[str], since: str) -> list[dict]:
             rulings, limits = [], 0
             for c in pages(f"repos/{org}/{repo}/issues/{pr['number']}/comments?since={since}"):
                 body, login = c.get("body") or "", c["user"]["login"]
+                if c["created_at"] < since:
+                    continue
                 if login == CODEX_BOT and USAGE_LIMIT in body:
                     limits += 1
-                if login != PM_BOT or not RULING.match(body) or CODEX not in body or c["created_at"] < since:
+                if login != PM_BOT or not RULING.match(body) or CODEX not in body:
                     continue
                 rnd, found, head, failed = ROUND.search(body), FINDINGS.search(body), HEAD.search(body), FAILED.search(body)
                 rulings.append({
