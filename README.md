@@ -39,7 +39,7 @@ This repository is the canonical source. Skills are modules inside the operating
 
 **Agents review and merge each other's work; people keep only the steps that are theirs.**
 
-[`shipping/`](shipping/README.md) packages the review-and-merge pipeline assembled in one day for a private financial repository, around the merge controller it already had. Each change gets a lane from the paths it touches: docs, ordinary, truth, or held. The lane decides who judges it (an independent agent reviewer on every PR, plus a second model from a different vendor on authority work) and who lands it (one Controller for routine work, a person for held scope). Production releases, access grants and the reviewer's blocking power stay with a person.
+[`shipping/`](shipping/README.md) packages the review-and-merge pipeline assembled in one day for a private financial repository, around the merge controller it already had. Each change gets a lane from the paths it touches: docs, ordinary, truth, or held. The lane decides who judges it (an independent agent reviewer on every PR, plus a second model from a different vendor on authority work) and how it lands (one Controller for everything, with held scope released only through a merge gate that re-derives the second vendor's clearance at merge time). Production releases, access grants and any widening of a reviewer's authority stay with a person.
 
 - [Operating model](shipping/README.md): roles, lanes, the 16 rules that make it hold, and what stays human.
 - [Before and after](shipping/FLOW.md): every stage, with merged versus pending and measured versus expected.
@@ -117,6 +117,7 @@ For money, ledgers, portfolio analytics and financial models:
 ## Five-minute proof
 
 ```bash
+python scripts/verify.py   # run first: builds the generated adapters, then validates
 python scripts/dale.py catalog
 python scripts/dale.py resolve symptom-patch --json
 python scripts/dale.py compositions --json
@@ -175,11 +176,11 @@ That is not the system failing. That is the system working.
 
 ## Status
 
-**Current tree: 0.2.0-dev.** It adds the canonical `swarm` skill and the advanced agentic-engineering layer.
+**Current tree: 0.2.0-dev.** Since v0.1.0 it adds eleven skills (31 in all, including `swarm`), the agentic-engineering layer, two Claude Code plugins, the shared CI layer and the Shipping System.
 
 **Frozen public release evidence: v0.1.0.** That release closed clean-runner validation, privacy scanning, 20/20 skill installability, generated-source parity, four-model provider-backed evaluation, semantic review, and targeted remediation. The historical four-model baseline remains **78/80 semantic passes (97.5%) with 0 critical invariant violations**; it is not rewritten to include post-v0.1 capabilities.
 
-SWARM has its own activation/behavioral coverage and repository validators in the current tree, but it is **not** claimed as part of the frozen v0.1.0 provider-backed matrix.
+The eleven post-v0.1 skills have their own activation and behavioral coverage in the current tree, but none is claimed as part of the frozen v0.1.0 provider-backed matrix.
 
 See [`PROOF.md`](PROOF.md), [`docs/reports/CROSS_MODEL_VERIFICATION_2026-08-07.md`](docs/reports/CROSS_MODEL_VERIFICATION_2026-08-07.md), and [`docs/PUBLIC_RELEASE_READINESS.md`](docs/PUBLIC_RELEASE_READINESS.md).
 

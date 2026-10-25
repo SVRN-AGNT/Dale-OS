@@ -91,13 +91,13 @@ Pick exactly one automatic merger: a Controller workflow, or a GitHub merge queu
 
 **Done when:** a red, conflicting, held or draft PR cannot be merged by the lander, and cannot block a different eligible PR.
 
-### Step 8 · Held scope stops honestly
+### Step 8 · Held scope lands on a re-derived verdict, or stops
 
-The lander refuses L3. If no approver exists that the automation cannot impersonate, a person lands L3 changes. The trusted-reviewer list stays empty until a separate identity exists. When the owner delegates merges in writing, the merge commit quotes the delegation and says the merge is unattested.
+The lander never releases L3 on its own judgment. If no approver exists that the automation cannot impersonate, the trusted-reviewer list stays empty, and there are two honest options: a person lands L3 changes, or the lander releases one only through a merge gate.
 
-A hand merge of an L3 PR waits for the second opinion. This covers a push after the PR was marked ready, or a reviewer that has gone quiet, which is why the 2-hour timeout exists alongside the ready-time CLEAR. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
+The gate ([`ci/merge_gate.py`](../ci/merge_gate.py), caller in [`ci/README.md`](../ci/README.md#the-merge-lane-caller)) releases an L3 PR only when its current head has green CI, a passing Agent Review, a `HANDOFF:` naming that head, and a second-vendor `CLEAR` that still stands when the gate re-reads the reviewer's own comments and the head's checks, at election and again just before the merge call. A `CORRECT` or `HOLD` blocks it, a push needs a new HANDOFF, and L3 never merges on the 2-hour timeout. Write down the gate's threat model, including that a repository writer could still forge evidence until review checks come from a dedicated App.
 
-**Done when:** an L3 PR with a fresh push and no new HANDOFF cannot be hand-merged under the written rule, and each hand-merge commit names its path (CLEAR, timeout, or the owner's per-PR waiver).
+**Done when:** an L3 PR with a fresh push and no new HANDOFF cannot merge, a Codex finding posted after a `CLEAR` blocks the merge, and an L3 PR whose HANDOFF has gone 2 hours without a ruling stays open.
 
 ### Step 9 · Agents get their own identity before any auto-fix
 
@@ -126,14 +126,12 @@ Freeze each promotion at one commit on its own branch, generate its receipt from
 
 ## Where each repository stands
 
-As of 14 October 2026:
+As of 25 October 2026, from the workflow files on each repository's default branch:
 
-| Repository | Level reached | Next step |
-|---|---|---|
-| ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor on authority and held PRs with a 2-hour timeout (decided; written rule update pending) | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
-| Dale-OS (public) | 1: the layer lives here and passes strict | Lane map; agent review |
-| wallet-alpha-lab (private) | Step 1 open in [#149](https://github.com/SVRN-AGNT/wallet-alpha-lab/pull/149), green | Merge (it redeploys the same site code) |
-| ACF-Docs (public) | Step 1 open in [#214](https://github.com/SVRN-AGNT/ACF-Docs/pull/214), green | Merge (it redeploys the same site code) |
-| chaz-automation (private) | 0: no workflows; vault docs self-merge under a written decision | Step 1 if it gains CI |
-
-The wallet-alpha-lab link resolves only for people with access to that private repository.
+| Repository | What runs |
+|---|---|
+| ACFDashboard (private, reference) | Agent Review, the PM, and its own Integration Controller as the sole lander, which releases held scope through the shared merge gate (`ci/merge_gate.py`) |
+| Dale-OS (public) | The shared layer itself, run on this repository: CI floor, Agent Review, the PM and the merge lane |
+| ACF-Docs (public) | Agent Review, the PM and the merge lane |
+| wallet-alpha-lab (private) | Agent Review, the PM and the merge lane |
+| chaz-automation (private) | Agent Review, the PM and the merge lane; vault docs self-merge under a written decision |

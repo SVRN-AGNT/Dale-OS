@@ -6,6 +6,8 @@ Individual agents matter, but reliability comes from the harness around them: ho
 
 This document captures the advanced operating patterns that emerged from building and running real multi-agent development workflows around ACF Dashboard. The examples are concrete, but the contracts are portable.
 
+> **Retired mechanisms.** The worker/PM loop (AUTORUN) and the durable agent mailbox described in §4 to §6 and §9 were retired in the reference system on 16 October 2026. Their lessons stand; the mechanisms do not. Today's control plane is a `HANDOFF:` comment, a second-vendor PM, and the merge lane ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)). The "PM" in §4 is that retired loop's reviewer, not the second-vendor PM.
+
 The executable portable form is the canonical [`swarm` skill](../skills/operator/swarm/SKILL.md). This document explains the architecture around that skill; it is not a second source of truth for the skill contract.
 
 ## 1. Harness crafting — design before spawn
@@ -137,7 +139,7 @@ A production loop should define:
 
 ### Two-actor completion
 
-One pattern used in ACF Dashboard separates the coding worker from the PM/reviewer.
+One pattern ACF Dashboard used until 16 October 2026 separated the coding worker from the PM/reviewer.
 
 The worker can implement, test, and submit evidence. It has **no path to COMPLETE**.
 
@@ -289,7 +291,7 @@ For hard agentic work:
 
 ## Source examples
 
-The portable rules above were generalized from real systems in ACF Dashboard. Stable source snapshots:
+The portable rules above were generalized from real systems in ACF Dashboard. The source repository is private, so the snapshots below (ACFDashboard @ `8b956f5`) are cited for provenance and are not publicly readable. The mailbox and AUTORUN documents are retired:
 
 - [Adaptive SWARM meta-orchestrator and harness compiler](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/.claude/skills/swarm/SKILL.md)
 - [Harness design contract](https://github.com/SVRN-AGNT/ACFDashboard/blob/8b956f58050e58d8a8631f08c50789be2f45df4a/.claude/skills/swarm/references/harness-design.md)

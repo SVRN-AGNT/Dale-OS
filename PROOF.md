@@ -99,7 +99,7 @@ The public v0.1.0 release evidence remains historical and unchanged:
 
 ### Provider-backed cross-model evidence
 
-On 2026-08-07, four current model roles across OpenAI and Anthropic completed the frozen provider-backed evaluation:
+On 2026-08-07, four model roles, current on that date, across OpenAI and Anthropic completed the frozen provider-backed evaluation:
 
 - `gpt-5.6-sol`
 - `gpt-5.6-terra`

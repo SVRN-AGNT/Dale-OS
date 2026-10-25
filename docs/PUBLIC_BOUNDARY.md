@@ -1,6 +1,6 @@
 # Public / Private Boundary
 
-Dale OS is meant to be public eventually. That does not mean everything that taught it belongs in public.
+Dale OS is public. That does not mean everything that taught it belongs in public.
 
 ## Safe to publish
 

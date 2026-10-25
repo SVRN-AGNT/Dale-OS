@@ -141,6 +141,7 @@ Install canonical directories under `skills/`. Host adapters are distributions o
 Before a public skill release, validate both Dale OS invariants and the host ecosystem contract:
 
 ```bash
+python scripts/verify.py   # builds the generated adapters first
 python scripts/dale.py doctor
 gh skill publish --dry-run
 ```
