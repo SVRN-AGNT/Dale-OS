@@ -44,6 +44,7 @@
 - Added the high-stakes marker to `shipping/` and `shipping-lanes`: L2/L3 PRs get a `high-stakes` label, a `[HIGH STAKES]` title prefix, and a closing `🔴 HIGH STAKES · #NNNN · <action>` line in every message about them; ordinary PRs get `🟢 Ordinary · #NNNN`.
 - Recorded the owner's decision: ordinary PRs need green CI and a passing Agent Review; truth and held PRs also need a second-vendor CLEAR before ready, or 2 hours with no ruling ("PM timeout"). A blocking ruling stops ready, a push restarts the clock, and Agent Review never replaces a CLEAR.
 - Expanded the canonical catalog to 31 skills.
+- Updated `shipping/`, `shipping-lanes`, `merge-authority` and `ci/README.md` to the October rulings: the HANDOFF is posted only after the PR is ready and Agent Review and CI are green; L2 lands on a CLEAR or a 2-hour no-ruling timeout; L3 (held, including authority sources) lands only on a CLEAR, by a person or by the merge gate that re-derives it at merge time, never on the timeout; the Codex round budget; AUTORUN and the mailbox retired 2026-10-16. Added `docs/HARNESS_MAP.md`.
 
 ## 0.1.0 — public release
 

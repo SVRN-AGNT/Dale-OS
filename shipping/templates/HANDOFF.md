@@ -25,7 +25,7 @@ Objective: <one sentence on what the change must achieve>
 Scope IN: <what it changes>
 Scope OUT: <what it deliberately does not change>
 
-Agent Review: <APPROVE | REQUEST_CHANGES> on <sha>; findings addressed: <list or "none">
+Agent Review: APPROVE on <sha>; earlier findings addressed: <list or "none">
 Verification run: <commands and results, or the check names that are green on this head>
 Known unknowns: <what was not verified, and why>
 

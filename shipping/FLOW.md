@@ -23,4 +23,4 @@ The table shows the state on 14 October 2026. Several rows marked built or pendi
 
 ## The trade-off
 
-Held-scope PRs merged by hand that day carry no Controller attestation. That forces the next release into full consolidation mode, the slow path with every checklist item and the whole suite. Giving agents their own identity is what eventually lets those changes go through the Controller instead.
+Held-scope PRs merged by hand that day carry no Controller attestation. That forces the next release into full consolidation mode, the slow path with every checklist item and the whole suite. Since 16 October held scope goes through the Controller via the merge gate instead; agents' own identity is still what would close the forged-evidence gap in the gate's threat model.

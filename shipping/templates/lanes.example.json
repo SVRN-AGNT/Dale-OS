@@ -1,6 +1,6 @@
 {
   "schema": "dale-os/shipping-lanes/v1",
-  "note": "Example lane map. Copy it as shipping-lanes.json and replace the globs with your repository's paths. Keep the reviewer's rubric, prompt and scripts, and this file itself, in L3: they judge every later PR, so a change to them is a change to the judge. A script gives each changed path (both sides of every rename) the lane of the first entry whose globs match; an entry marked only_if_all_paths_match is skipped unless every changed path matches it. The PR takes the highest lane any path reaches (L3 > L2 > L1 > L0). If the list of changed files or this file cannot be read, the PR is L3. second-vendor-review (a CLEAR on the current head, or 2 hours with no ruling) applies to L2 and L3 only, matching the reference repo's rule.",
+  "note": "Example lane map. Copy it as shipping-lanes.json and replace the globs with your repository's paths. Keep the reviewer's rubric, prompt and scripts, and this file itself, in L3: they judge every later PR, so a change to them is a change to the judge. A script gives each changed path (both sides of every rename) the lane of the first entry whose globs match; an entry marked only_if_all_paths_match is skipped unless every changed path matches it. The PR takes the highest lane any path reaches (L3 > L2 > L1 > L0). If the list of changed files or this file cannot be read, the PR is L3. second-vendor-review (a CLEAR on the current head, or 2 hours with no ruling) applies to L2. L3 needs second-vendor-clear: a CLEAR only, never the timeout, landed either by a person or by a merge gate that re-derives the CLEAR from the reviewer's own record just before merging (ci/merge_gate.py). Authority sources (instruction files and skills; this example holds every SKILL.md rather than guess which set gates, plus owner decisions) are L3 even though they are Markdown.",
   "integration_branch": "main",
   "lanes": [
     {
@@ -17,13 +17,19 @@
         "scripts/merge/**",
         "**/auth/**",
         "**/billing/**",
-        ".claude/settings.json"
+        ".claude/settings.json",
+        "**/CLAUDE.md",
+        "**/AGENTS.md",
+        "**/SKILL.md",
+        "CLAUDE.md",
+        "AGENTS.md",
+        "**/decisions/**"
       ],
       "requires": [
         "required-checks-green-on-head",
         "agent-review",
-        "second-vendor-review",
-        "person-lands"
+        "second-vendor-clear",
+        "person-or-merge-gate-lands"
       ]
     },
     {
@@ -33,7 +39,8 @@
         "src/ledger/**",
         "src/sync/**",
         "src/import/**",
-        "src/evidence/**"
+        "src/evidence/**",
+        "src/identity/**"
       ],
       "requires": [
         "required-checks-green-on-head",

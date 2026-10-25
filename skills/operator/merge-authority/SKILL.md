@@ -36,7 +36,7 @@ Add a commit after the last passing run and see whether the merge is still allow
 
 ## Stop conditions
 
-- A sensitive change has no approver the automation cannot impersonate.
+- A sensitive change has no approver the automation cannot impersonate, and no second-vendor clearance re-derived at merge time under a written threat model.
 - The tree that would land differs from the tree that was tested.
 - Landing the change would also release to production, and that step belongs to a person.
 

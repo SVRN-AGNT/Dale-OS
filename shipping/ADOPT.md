@@ -8,7 +8,7 @@ An agent can run this guide with the [`shipping-lanes`](../skills/operator/shipp
 
 1. **The integration branch.** This is where the Controller merges, for example `main` or `preview`.
 2. **What production is,** and the single step that releases to it. That step stays a person's.
-3. **Who lands changes today.** Write it down even if the answer is "the owner, by hand". Step 6 replaces it, and nothing else may merge around it.
+3. **Who lands changes today.** Write it down even if the answer is "the owner, by hand". Step 7 replaces it, and nothing else may merge around it.
 
 ## Level 1 · Make CI truthful and cheap
 
@@ -56,7 +56,7 @@ In agent sessions, stay silent while tests are green, print failures first, and 
 
 ### Step 4 · Write the lane map
 
-Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Put the reviewer's rubric, prompt and scripts, and the lane map itself, in L3, because they judge every later PR. Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
+Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Put the reviewer's rubric, prompt and scripts, and the lane map itself, in L3, because they judge every later PR, and authority sources too (instruction files such as `CLAUDE.md` and `AGENTS.md`, skills that set gates, owner decisions). Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
 
 Make the lane visible: L2 and L3 PRs get a `high-stakes` label and a `[HIGH STAKES]` title prefix, and every agent message that mentions a PR ends with `🔴 HIGH STAKES · #NNNN · <action>` or `🟢 Ordinary · #NNNN`.
 
@@ -75,7 +75,7 @@ Build the reviewer as a workflow that has all of these properties. The reference
 - It is capped with a spend budget, a process timeout, `timeout-minutes` and a `concurrency` group that cancels in progress. It has no `contents: write` permission and no merge verb.
 - It is told to attack the change. An approval that lists no attempted attacks counts as not reviewed.
 
-**Done when:** the reviewer has posted verdicts on real PRs, and a contract test fails if the merger starts reading the verdict before the owner decides it may.
+**Done when:** the reviewer has posted verdicts on real PRs, and a contract test fails if the merger starts reading the verdict on ordinary PRs before the owner decides it may. A merge gate that reads it on HANDOFF and held PRs (step 8) is recorded as an owner decision or as open debt.
 
 ### Step 6 · Second-vendor review on authority lanes
 
