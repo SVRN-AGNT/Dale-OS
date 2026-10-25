@@ -22,6 +22,9 @@
 - shipping/ADOPT.md — step-by-step adoption for any repository
 - shipping/PLAYBOOK.md — Anthropic primary sources behind each rule
 - ci/README.md — shared CI layer
+- docs/HARNESS_MAP.md — one-page map of the whole harness, for harness engineers
+- docs/AGENTIC_ENGINEERING.md — task, authority and state graphs; handoff and recovery architecture
+- docs/SKILL_CATALOG.md — every skill with its failure class
 
 ## Operator OS
 - skills/operator/execution-charter/SKILL.md

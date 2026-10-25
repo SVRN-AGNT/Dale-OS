@@ -58,7 +58,7 @@ These five challenges are designed to make Dale OS fail in public if its rules a
 
 ```bash
 python scripts/run_evals.py
-python scripts/validate_repo.py
+python scripts/verify.py
 ```
 
 Then add your own fixture. The best contribution is a case that breaks a rule honestly.

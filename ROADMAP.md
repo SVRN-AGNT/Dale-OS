@@ -4,7 +4,7 @@ This file tracks only unfinished or future work. Completed release evidence belo
 
 ## Current development line — 0.2.0-dev
 
-The current tree builds on the frozen public v0.1.0 release and adds SWARM plus the advanced agentic-engineering layer.
+The current tree builds on the frozen public v0.1.0 release and adds eleven skills (including SWARM), the advanced agentic-engineering layer, two Claude Code plugins, the shared CI layer and the Shipping System.
 
 Near-term work should be earned by evidence rather than feature count:
 

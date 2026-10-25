@@ -56,7 +56,7 @@ Do not silently calculate through contamination.
 
 ## Mutation rule
 
-v0.1 is read-only by design. Any future financial mutation must satisfy all of these before execution:
+The public financial tools are read-only by design, in v0.1.0 and in the current 0.2.0-dev tree. Any future financial mutation must satisfy all of these before execution:
 
 1. deterministic preview,
 2. same economic logic in preview and commit,

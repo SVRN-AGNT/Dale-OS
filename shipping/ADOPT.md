@@ -8,7 +8,7 @@ An agent can run this guide with the [`shipping-lanes`](../skills/operator/shipp
 
 1. **The integration branch.** This is where the Controller merges, for example `main` or `preview`.
 2. **What production is,** and the single step that releases to it. That step stays a person's.
-3. **Who lands changes today.** Write it down even if the answer is "the owner, by hand". Step 6 replaces it, and nothing else may merge around it.
+3. **Who lands changes today.** Write it down even if the answer is "the owner, by hand". Step 7 replaces it, and nothing else may merge around it.
 
 ## Level 1 · Make CI truthful and cheap
 
@@ -56,7 +56,7 @@ In agent sessions, stay silent while tests are green, print failures first, and 
 
 ### Step 4 · Write the lane map
 
-Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Put the reviewer's rubric, prompt and scripts, and the lane map itself, in L3, because they judge every later PR. Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
+Copy [`templates/lanes.example.json`](templates/lanes.example.json) and list the paths for L2 (truth) and L3 (held). Put the reviewer's rubric, prompt and scripts, and the lane map itself, in L3, because they judge every later PR, and authority sources too (instruction files such as `CLAUDE.md` and `AGENTS.md`, skills that set gates, owner decisions). Have a script derive the lane from the changed paths, checking both sides of every rename. Never read a risk level from the PR body.
 
 Make the lane visible: L2 and L3 PRs get a `high-stakes` label and a `[HIGH STAKES]` title prefix, and every agent message that mentions a PR ends with `🔴 HIGH STAKES · #NNNN · <action>` or `🟢 Ordinary · #NNNN`.
 
@@ -75,13 +75,13 @@ Build the reviewer as a workflow that has all of these properties. The reference
 - It is capped with a spend budget, a process timeout, `timeout-minutes` and a `concurrency` group that cancels in progress. It has no `contents: write` permission and no merge verb.
 - It is told to attack the change. An approval that lists no attempted attacks counts as not reviewed.
 
-**Done when:** the reviewer has posted verdicts on real PRs, and a contract test fails if the merger starts reading the verdict before the owner decides it may.
+**Done when:** the reviewer has posted verdicts on real PRs, and a contract test fails if the merger starts reading the verdict on ordinary PRs before the owner decides it may. A merge gate that reads it on HANDOFF and held PRs (step 8) is recorded as an owner decision or as open debt.
 
 ### Step 6 · Second-vendor review on authority lanes
 
-On every L2 and L3 PR, the Builder posts a `HANDOFF:` comment after the Agent Review verdict, and marks the PR ready only after a `CLEAR` on its current head, or 2 hours with no ruling (recorded as "PM timeout"), using [`templates/HANDOFF.md`](templates/HANDOFF.md). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
+On every L2 and L3 PR, the Builder marks the PR ready, waits for CI and Agent Review to go green on its head, and then posts one `HANDOFF:` naming that head, using [`templates/HANDOFF.md`](templates/HANDOFF.md). An L2 PR may land on a `CLEAR` for its current head, or after 2 hours with no ruling (recorded as "PM timeout"). An L3 PR lands only on a `CLEAR` (step 8). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
 
-A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never replaces a CLEAR. The timeout keeps a quiet reviewer from stalling the line. Ordinary L0 and L1 work needs only green CI and a passing Agent Review. The reference repo first required the second vendor on every PR. On 14 October the owner dropped that as overly cautious; its written rules are still being updated to match.
+A `CORRECT` or `HOLD` blocks the merge, a push revokes every ruling and needs a new HANDOFF, and an Agent Review approval never replaces a CLEAR. On L2 the timeout keeps a quiet reviewer from stalling the line. Ordinary L0 and L1 work needs only green CI and a passing Agent Review. The reference repo first required the second vendor on every PR; on 14 October the owner dropped that as overly cautious.
 
 ## Level 3 · Autonomous landing
 
@@ -89,15 +89,15 @@ A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Revi
 
 Pick exactly one automatic merger: a Controller workflow, or a GitHub merge queue if your plan offers one. Never run both. Eligibility is mechanical: not a draft, marked ready, required checks green on the exact head, mergeable, dependencies merged, no hold, and the lane's reviews present. Sessions never merge, enable auto-merge or update branches around it. For a small repository, "the owner merges by hand" is a valid lander; write it down.
 
-**Done when:** a red, conflicting, held or draft PR cannot be merged by the lander, and cannot block a different eligible PR.
+**Done when:** a red, conflicting or draft PR, or a held PR without a CLEAR the gate re-derives (step 8), cannot be merged by the lander, and cannot block a different eligible PR.
 
-### Step 8 · Held scope stops honestly
+### Step 8 · Held scope lands on a re-derived verdict, or stops
 
-The lander refuses L3. If no approver exists that the automation cannot impersonate, a person lands L3 changes. The trusted-reviewer list stays empty until a separate identity exists. When the owner delegates merges in writing, the merge commit quotes the delegation and says the merge is unattested.
+The lander never releases L3 on its own judgment. If no approver exists that the automation cannot impersonate, the trusted-reviewer list stays empty, and there are two honest options: a person lands L3 changes, or the lander releases one only through a merge gate.
 
-A hand merge of an L3 PR waits for the second opinion. This covers a push after the PR was marked ready, or a reviewer that has gone quiet, which is why the 2-hour timeout exists alongside the ready-time CLEAR. The current head needs green CI, a passing Agent Review, and a HANDOFF answered `CLEAR` for that head, or 2 hours with no ruling. A `CORRECT` or `HOLD` blocks the merge, and a push needs a new HANDOFF and restarts the clock. Only the owner naming that specific PR waives the wait; blanket approval does not. The merge commit says which path it took.
+The gate ([`ci/merge_gate.py`](../ci/merge_gate.py), caller in [`ci/README.md`](../ci/README.md#the-merge-lane-caller)) releases an L3 PR only when its current head has green CI, a passing Agent Review, a `HANDOFF:` naming that head, and a second-vendor `CLEAR` that still stands when the gate re-reads the reviewer's own comments and the head's checks, at election and again just before the merge call. A `CORRECT` or `HOLD` blocks it, a push needs a new HANDOFF, and L3 never merges on the 2-hour timeout. Write down the gate's threat model, including that a repository writer could still forge evidence until review checks come from a dedicated App. Requiring a passing Agent Review here gives the reviewer a veto on L3 before it has cleared step 11's bar; record that as an owner decision or as open debt.
 
-**Done when:** an L3 PR with a fresh push and no new HANDOFF cannot be hand-merged under the written rule, and each hand-merge commit names its path (CLEAR, timeout, or the owner's per-PR waiver).
+**Done when:** an L3 PR with a fresh push and no new HANDOFF cannot merge, a Codex finding posted after a `CLEAR` blocks the merge, and an L3 PR whose HANDOFF has gone 2 hours without a ruling stays open.
 
 ### Step 9 · Agents get their own identity before any auto-fix
 
@@ -126,14 +126,12 @@ Freeze each promotion at one commit on its own branch, generate its receipt from
 
 ## Where each repository stands
 
-As of 14 October 2026:
+As of 25 October 2026, from the workflow files on each repository's default branch:
 
-| Repository | Level reached | Next step |
-|---|---|---|
-| ACFDashboard (private, reference) | 3, with Level 4 partly done: Controller, held scope, report-only reviewer, second vendor on authority and held PRs with a 2-hour timeout (decided; written rule update pending) | Agents' App identity (owner); reviewer measurement script and canaries; shared-layer adoption (held scope) |
-| Dale-OS (public) | 1: the layer lives here and passes strict | Lane map; agent review |
-| wallet-alpha-lab (private) | Step 1 open in [#149](https://github.com/SVRN-AGNT/wallet-alpha-lab/pull/149), green | Merge (it redeploys the same site code) |
-| ACF-Docs (public) | Step 1 open in [#214](https://github.com/SVRN-AGNT/ACF-Docs/pull/214), green | Merge (it redeploys the same site code) |
-| chaz-automation (private) | 0: no workflows; vault docs self-merge under a written decision | Step 1 if it gains CI |
-
-The wallet-alpha-lab link resolves only for people with access to that private repository.
+| Repository | What runs |
+|---|---|
+| ACFDashboard (private, reference) | Agent Review, the PM, and its own Integration Controller as the sole lander, which releases held scope through the shared merge gate (`ci/merge_gate.py`) |
+| Dale-OS (public) | The shared layer itself, run on this repository: CI floor, Agent Review, the PM and the merge lane |
+| ACF-Docs (public) | Agent Review, the PM and the merge lane |
+| wallet-alpha-lab (private) | Agent Review, the PM and the merge lane |
+| chaz-automation (private) | Agent Review, the PM and the merge lane; vault docs self-merge under a written decision |

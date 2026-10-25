@@ -75,7 +75,7 @@ Source: [Effective harnesses for long-running agents](https://www.anthropic.com/
 - Commits made with the default `GITHUB_TOKEN` do not trigger CI. Cap runs with `--max-turns`, job timeouts and concurrency groups. [GitHub Actions](https://code.claude.com/docs/en/github-actions)
 - Auto mode's classifier misses 17% of real overeager actions and is "not a drop-in replacement for careful human review on high-stakes infrastructure". [Auto mode](https://www.anthropic.com/engineering/claude-code-auto-mode) (2026-03-25)
 
-**In the system:** caps on every model job, an app token for any job that pushes, and a person on held scope.
+**In the system:** caps on every model job, an app token for any job that pushes, and held scope released only on a second-vendor CLEAR that the merge gate re-derives at merge time.
 
 <a id="f11"></a>
 ### F11 · Measure with small evals drawn from real failures
@@ -86,28 +86,28 @@ Source: [Demystifying evals for AI agents](https://www.anthropic.com/engineering
 
 ## Recommendations and where they stand
 
-Status is from the rollout tracker on 14 October 2026, with PR states checked live on GitHub. PR numbers refer to the reference repository unless they name another one.
+Status is from the rollout tracker on 14 October 2026, with PR states checked live on GitHub; R1, R1b, R4, R6, R7, R11 and R17 were updated on 25 October 2026. PR numbers refer to the reference repository unless they name another one.
 
 | # | Recommendation | From | Status |
 |---|---|---|---|
-| R1 | Run the new reviewer in shadow mode first | F4 | Done: report-only, with a written promotion and demotion bar |
-| R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: Agent Review on every PR; a second-vendor CLEAR (or 2 hours with no ruling) before ready on authority and held PRs (owner decision 2026-10-14, replacing an every-PR rule; the reference repo's written rule update is pending); a held hand merge waits for it too (merged) |
+| R1 | Run the new reviewer in shadow mode first | F4 | Done on ordinary PRs: report-only, with a written promotion and demotion bar. Since 16 October the merge gate requires a passing review on PRs with a HANDOFF and on held scope, before the bar was measured (see the harness map's known limits) |
+| R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: Agent Review on every PR; on authority PRs a second-vendor CLEAR (or 2 hours with no ruling) before merge, asked only after Agent Review and CI are green (owner decisions 2026-10-14, replacing an every-PR rule); held PRs merge only on a CLEAR the merge gate re-derives at merge time, never on the timeout (owner ruling 2026-10-16) |
 | R2 | Find, then verify each finding before it can block | F3 | Done |
 | R3 | Correctness only, nits never block, re-review converges | F2, F3 | Done |
-| R4 | Gate merges on the count of blocking findings | F3 | Owner decides, after shadow data meets the bar |
+| R4 | Gate merges on the count of blocking findings | F3 | Owner decides for ordinary PRs, after shadow data meets the bar. On PRs with a HANDOFF and on held scope, the merge gate already refuses a head without a passing review (see R1) |
 | R5 | A fixer routine for red PRs | F10 | Paused until R6 lands |
-| R6 | Agents get their own GitHub identity, with limits on access | F4, F10 | Waiting on the owner to create the App, ruleset and variables |
-| R7 | Terse test output for agents | F6 | Built (9 lines instead of 2,531), waiting to merge |
+| R6 | Agents get their own GitHub identity, with limits on access | F4, F10 | Partly done: the App identity merged 2026-10-14; whether every pushing agent uses it is not confirmed (harness map, known limits) |
+| R7 | Terse test output for agents | F6 | Done: 9 lines instead of 2,531, merged 2026-10-14 |
 | R8 | A fast sampled PR tier plus a nightly full regression | F6, F11 | Partly done: the PR tier and nightly exist; further cuts are built |
 | R9 | Caps on every model job; reusable workflows across repos | F10 | Partly done: the reviewer is capped, and the shared layer is in this repo ([#20](https://github.com/SVRN-AGNT/Dale-OS/pull/20)) |
 | R10 | Instructions file under about 200 lines | F5 | Done: 411 to 225 lines |
-| R11 | Deterministic promotion gates | F4, F5 | In progress: tooling and the frozen cut merged, receipt built |
+| R11 | Deterministic promotion gates | F4, F5 | In progress: tooling, the frozen cut and the receipt generated from git merged (receipt on 2026-10-14) |
 | R12 | Post-deploy production check | F10 | Owner decides: built switched off |
 | R13 | Changelog fragments instead of one shared file | F9 | Not started (by analogy to F9; Anthropic does not describe changelogs) |
 | R14 | Screenshots on UI PRs, driven through the running app | F1, F2, F9 | Done: before and after screenshots on UI PRs (merged 2026-10-14) |
 | R15 | A weekly digest routine, off the hour, updating one page | F10 | Done as a Friday digest issue (merged 2026-10-14) |
 | R16 | Strip the harness as models improve | F7, F8 | Adopted as a principle |
-| R17 | Harness audit after each model upgrade | F8 | Done: procedure written, first run completed |
+| R17 | Harness audit after each model upgrade | F8 | Partly done: procedure written and first triggered on 14 October 2026; the with-and-without comparison runs have not been done |
 
 <a id="left-out"></a>
 ## Left out

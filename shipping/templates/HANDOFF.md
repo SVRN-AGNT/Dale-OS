@@ -1,6 +1,6 @@
 # HANDOFF comment for the second-vendor reviewer
 
-Post this as a PR comment on every L2 (truth) or L3 (held) PR, after the Agent Review verdict is in, and mark the PR ready only after a `CLEAR` on its current head, or after 2 hours with no ruling (record it as "PM timeout"). An Agent Review approval never stands in for a CLEAR. The second reviewer is a model from a different vendor. Its reply is evidence for a person or the lander; it never merges anything.
+Post this as a PR comment on every L2 (truth) or L3 (held) PR, once the PR is ready (not a draft), Agent Review and CI are green on its current head, and no further push is planned. Ask once per finished change: the second reviewer's quota is limited. An L2 PR merges on a `CLEAR` for its current head, or after 2 hours with no ruling (record it as "PM timeout"). An L3 PR merges only on a `CLEAR`. An Agent Review approval never stands in for a CLEAR. The second reviewer is a model from a different vendor. Its reply is evidence for the lander; it never merges anything.
 
 The reply is automatic where the repository runs the shared PM caller ([`ci/README.md`](../../ci/README.md#the-pm-caller)). The comment must be posted through the `claude` app, start with `HANDOFF:` at byte zero, and name the current head as a full 40-character sha, or the PM skips it. Where the caller uses `provider: chatgpt` (Codex's own review on the ChatGPT plan, no API key), the comment must also carry `@codex review` on a line of its own: that line is what asks Codex, and the PM rules when Codex finishes the head.
 
@@ -25,7 +25,7 @@ Objective: <one sentence on what the change must achieve>
 Scope IN: <what it changes>
 Scope OUT: <what it deliberately does not change>
 
-Agent Review: <APPROVE | REQUEST_CHANGES> on <sha>; findings addressed: <list or "none">
+Agent Review: APPROVE on <sha>; earlier findings addressed: <list or "none">
 Verification run: <commands and results, or the check names that are green on this head>
 Known unknowns: <what was not verified, and why>
 
@@ -35,4 +35,4 @@ Reply CLEAR, CORRECT with blocking findings, or HOLD, for head <sha>.
 
 A reply covers only the head it names. A push after the reply means asking again.
 
-The reviewer answers with one of three rulings: `CLEAR`, `CORRECT` (blocking findings), or `HOLD`. A held PR may be hand-merged only after `CLEAR` on its current head, or after 2 hours with no ruling. `CORRECT` or `HOLD` blocks ready and the merge. Only the owner naming that specific PR waives the wait.
+The reviewer answers with one of three rulings: `CLEAR`, `CORRECT` (blocking findings), or `HOLD`. `CORRECT` or `HOLD` blocks the merge. After a `CORRECT`, fix every finding in one push, wait for Agent Review and CI to go green, then post one new HANDOFF. Each ruling is a round: after round 3 the whole PR gets a full review and a check on whether to split it, and round 6 onward needs the owner's word. Where the merge lane runs, it re-derives the `CLEAR` from the reviewer's own comments just before merging, so a finding posted after the `CLEAR` still blocks.

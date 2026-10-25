@@ -59,9 +59,13 @@ a pull request may not.
 ## The PM caller
 
 GitHub runs `issue_comment` workflows from the default branch, so the caller
-only works once it is merged there. A personal account has no organization
-secrets, so each repository needs its own `OPENAI_API_KEY` secret. Without it
-the PM says "not configured" on the PR and any review timeout applies.
+only works once it is merged there. With `provider: chatgpt`
+(below, and what this repository runs) no key is needed. The API-key variant
+shown first needs an `OPENAI_API_KEY` repository or organization secret;
+without it the PM says "not configured" on the PR. The merge lane re-derives a
+CLEAR only from Codex's own comments, so it lands held scope only with
+`provider: chatgpt`; otherwise only non-held PRs can land, on the 2-hour
+timeout.
 
 ```yaml
 name: pm-review
@@ -115,7 +119,7 @@ A caller's `ignore_checks` input (one `workflow path#job name` per line) names
 a job whose failed run says nothing about the PR. Owner ruling 2026-10-19: only
 ACF's merge controller, `.github/workflows/integration-controller.yml#Elect
 and merge one eligible PR`, whose job runs on the PR head and once read as a
-CORRECT when GitHub refused to start it (ACF #5706). Any other entry needs the
+CORRECT when GitHub refused to start it (an issue in a private repository). Any other entry needs the
 owner's word. Only a finished run (failure, cancelled, timed out, startup
 failure, action required) that the run records prove is that job of the
 default branch's copy of that file is left out. A queued, running or missing
@@ -222,6 +226,11 @@ subscription (`CLAUDE_CODE_OAUTH_TOKEN`, from `claude setup-token`); any API
 key is stripped from the reviewer's environment. A subscription usage limit
 gives `action_required` ("not reviewed"), never an API bill.
 
+From 2026-11-02 GitHub enforces a default policy that blocks `pull_request_target`
+in public repositories that have no Actions event policy of their own. A public caller must
+allow the event in its Actions policy, or this reviewer stops running, and the
+merge lane, which needs a passing Agent Review, stops merging.
+
 ```yaml
 name: agent-review
 on:
@@ -257,7 +266,9 @@ person typing "merge". The lane merges a PR when, on its exact head:
 1. a HANDOFF names the head (posted through the `claude` app);
 2. the PM's latest ruling is CLEAR **and** re-deriving it now from Codex's own
    comments and the head's checks (the PM's own functions) still gives CLEAR,
-   so a Codex finding posted after the CLEAR blocks the merge;
+   so a Codex finding posted after the CLEAR blocks the merge; or, outside held
+   scope only, 2 hours have passed since the HANDOFF with no ruling and
+   re-deriving finds no CORRECT or HOLD;
 3. the newest `Agent Review` passed (proven to come from the default branch's `agent-review.yml`), the newest run of each `required_workflows` file on the head passed (GitHub's workflow-run record, not a check by name), and no check other than the PM's own is still running, held or not.
 
 A held PR never merges on the 2-hour timeout. A PR with no HANDOFF is left to
@@ -321,7 +332,7 @@ cannot borrow a trusted run that reviewed another PR; a dispatched review record
 gate does not count it and the PR's own `pull_request_target` run must be re-run instead.
 
 `workflow_run`, not `pull_request_target`: GitHub blocks the latter by default
-in public repositories from 2026-11-02 (second-brain #210). GitHub refuses to
+in public repositories from 2026-11-02 (tracked in a private repository). GitHub refuses to
 let `GITHUB_TOKEN` merge a PR that changes `.github/workflows/`, so the lane
 merges with `INTEGRATION_TOKEN` (Contents, Pull requests and Workflows: read and
 write) and says plainly when a merge was refused for lack of it.
@@ -332,5 +343,8 @@ write) and says plainly when a merge was refused for lack of it.
 - which checks are required and who may merge;
 - whether a nightly or trunk workflow exists at all.
 
-The layer reports. It never merges, deploys or approves anything; the PM
-rules on a head, and a person or the repository's own merge rules act on it.
+The layer reports and rules. Only `ci-merge-lane.yml` merges, and only a PR
+whose exact head carries a HANDOFF, a passing Agent Review and a PM CLEAR
+re-derived at merge time (outside held scope, 2 hours with no ruling also
+qualifies). It never deploys or approves anything. A PR with no HANDOFF is left
+to the repository's own merge rule.
