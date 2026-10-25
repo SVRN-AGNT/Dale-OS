@@ -30,7 +30,7 @@ The aim is not to remove people. It is to move them to the steps that need a per
 | **Agent Reviewer** | A fresh Claude instance in CI | Reads the diff at the exact head commit and posts a typed verdict as a check run, with each blocking finding quoting the line it cites | Push, merge, approve held scope |
 | **Second-vendor reviewer** | A model from a different vendor (here, Codex on the owner's ChatGPT plan, read by a "PM" workflow) | Gives a second opinion on authority work (truth and held lanes) once the Builder posts a `HANDOFF:` naming a ready head whose CI and Agent Review are green. The PM posts `CLEAR`, `CORRECT` or `HOLD` as a check on that head | Merge |
 | **Controller** | A GitHub workflow (or a merge queue) | The only merger. Merges eligible PRs into the integration branch, one at a time, and held PRs only through the merge gate | Merge held scope without a CLEAR it re-derives itself, promote, deploy |
-| **Owner** | A person | Promotes to production, sets up access once, makes the rulings the gate enforces, stops any PR with an `owner-hold` label | Routine merges, held merges |
+| **Owner** | A person | Authorises each promotion to production, sets up access once, makes the rulings the gate enforces, stops any PR with an `owner-hold` label | Routine merges, held merges |
 
 ### Lanes
 
@@ -95,13 +95,13 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 13. **Red tells someone.** A red scheduled or trunk run opens one issue, which closes itself when the run is green again.
 14. **Every model job has caps:** a spend budget, a process timeout, a job timeout and a concurrency group.
 15. **A release is frozen at one commit.** Merges keep landing while a promotion runs, and the receipt is generated from git rather than written by hand.
-16. **Builders do not refresh the base just to stay current.** Freshness is the Controller's job. A Builder merges the base into its branch only to fix a conflict, to pick up code it needs, or once before a held PR's final `HANDOFF:`, because the lander never updates a held PR: it merges a behind held PR only when the base changed none of its files. Each refresh is a new head, so the full PR gate runs again. In the reference repo, heads that only merged in the base used 30% of PR CI minutes over 200 runs (973 of 3,279 billed minutes on 13 and 14 October 2026).
+16. **Builders do not refresh the base just to stay current.** Freshness is the Controller's job. A Builder merges the base into its branch only to fix a conflict, to pick up code it needs, or once before a held PR's final `HANDOFF:`, because the lander never updates a held PR (in the reference repo it merges a behind held PR only when the base changed none of its files; the shared merge lane refuses any behind PR). Each refresh is a new head, so the full PR gate runs again. In the reference repo, heads that only merged in the base used 30% of PR CI minutes over 200 runs (973 of 3,279 billed minutes on 13 and 14 October 2026).
 
 ### What stays human
 
 | Step | Why it is a person's |
 |---|---|
-| Promote the integration branch to production, and deploy | It cannot be undone by the time anyone reads about it |
+| Authorise each promotion to production (a session performs the merge once the full suite is green), and deploy | It cannot be undone by the time anyone reads about it |
 | Create agent identities, rulesets and secrets | It grants access; an agent cannot grant itself access |
 | Allow a sixth or later Codex round on one PR | Repeated rounds mean the change needs splitting or rethinking, not another pass |
 | Give an automated judge more authority | It changes merge authority; it needs measured evidence first |
@@ -132,7 +132,7 @@ These are the states when this page was written. Check the linked PRs for live s
 
 **The cost of the day's speed:** held-scope PRs merged by hand carry no Controller attestation, so the next release has to run in full consolidation mode.
 
-**Landed since (14 to 24 October 2026).** Everything under "Built, not landed" merged on 14 October: terse agent test output, skipping post-merge checks for an already-tested tree, and promotion receipts generated from git. The red-run alert was adopted the same day. The reference repo also gained a truth-clearance gate (see [the harness map](../docs/HARNESS_MAP.md)). Held scope no longer waits for a person: the merge gate described in rule 9 lands it ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)), and this repository runs it on itself. On PRs with a HANDOFF and on held scope, a passing Agent Review is one of the gate's conditions; on ordinary PRs it is still a Builder rule (see the lanes above). The second vendor runs as Codex on the owner's ChatGPT plan, with no API key, and each ruling counts against a round budget. The gate's threat model, including what it does not defend against, is in the same section of `ci/README.md`.
+**Landed since (14 to 24 October 2026).** Everything under "Built, not landed" merged on 14 October: terse agent test output, skipping post-merge checks for an already-tested tree, promotion receipts generated from git, and adoption of the shared layer in two more repositories. The red-run alert was adopted the same day. The reference repo also gained a truth-clearance gate (see [the harness map](../docs/HARNESS_MAP.md)). Held scope no longer waits for a person: the merge gate described in rule 9 lands it ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)), and this repository runs it on itself. On PRs with a HANDOFF and on held scope, a passing Agent Review is one of the gate's conditions; on ordinary PRs it is still a Builder rule (see the lanes above). The second vendor runs as Codex on the owner's ChatGPT plan, with no API key, and each ruling counts against a round budget. The gate's threat model, including what it does not defend against, is in the same section of `ci/README.md`.
 
 ## How it relates to the Operating Manual
 

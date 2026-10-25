@@ -89,13 +89,13 @@ A `CORRECT` or `HOLD` blocks the merge, a push revokes every ruling and needs a 
 
 Pick exactly one automatic merger: a Controller workflow, or a GitHub merge queue if your plan offers one. Never run both. Eligibility is mechanical: not a draft, marked ready, required checks green on the exact head, mergeable, dependencies merged, no hold, and the lane's reviews present. Sessions never merge, enable auto-merge or update branches around it. For a small repository, "the owner merges by hand" is a valid lander; write it down.
 
-**Done when:** a red, conflicting, held or draft PR cannot be merged by the lander, and cannot block a different eligible PR.
+**Done when:** a red, conflicting or draft PR, or a held PR without a CLEAR the gate re-derives (step 8), cannot be merged by the lander, and cannot block a different eligible PR.
 
 ### Step 8 · Held scope lands on a re-derived verdict, or stops
 
 The lander never releases L3 on its own judgment. If no approver exists that the automation cannot impersonate, the trusted-reviewer list stays empty, and there are two honest options: a person lands L3 changes, or the lander releases one only through a merge gate.
 
-The gate ([`ci/merge_gate.py`](../ci/merge_gate.py), caller in [`ci/README.md`](../ci/README.md#the-merge-lane-caller)) releases an L3 PR only when its current head has green CI, a passing Agent Review, a `HANDOFF:` naming that head, and a second-vendor `CLEAR` that still stands when the gate re-reads the reviewer's own comments and the head's checks, at election and again just before the merge call. A `CORRECT` or `HOLD` blocks it, a push needs a new HANDOFF, and L3 never merges on the 2-hour timeout. Write down the gate's threat model, including that a repository writer could still forge evidence until review checks come from a dedicated App.
+The gate ([`ci/merge_gate.py`](../ci/merge_gate.py), caller in [`ci/README.md`](../ci/README.md#the-merge-lane-caller)) releases an L3 PR only when its current head has green CI, a passing Agent Review, a `HANDOFF:` naming that head, and a second-vendor `CLEAR` that still stands when the gate re-reads the reviewer's own comments and the head's checks, at election and again just before the merge call. A `CORRECT` or `HOLD` blocks it, a push needs a new HANDOFF, and L3 never merges on the 2-hour timeout. Write down the gate's threat model, including that a repository writer could still forge evidence until review checks come from a dedicated App. Requiring a passing Agent Review here gives the reviewer a veto on L3 before it has cleared step 11's bar; record that as an owner decision or as open debt.
 
 **Done when:** an L3 PR with a fresh push and no new HANDOFF cannot merge, a Codex finding posted after a `CLEAR` blocks the merge, and an L3 PR whose HANDOFF has gone 2 hours without a ruling stays open.
 

@@ -62,8 +62,10 @@ GitHub runs `issue_comment` workflows from the default branch, so the caller
 only works once it is merged there. With `provider: chatgpt`
 (below, and what this repository runs) no key is needed. The API-key variant
 shown first needs an `OPENAI_API_KEY` repository or organization secret;
-without it the PM says "not configured" on the PR, and only non-held PRs can
-land, on the 2-hour timeout.
+without it the PM says "not configured" on the PR. The merge lane re-derives a
+CLEAR only from Codex's own comments, so it lands held scope only with
+`provider: chatgpt`; otherwise only non-held PRs can land, on the 2-hour
+timeout.
 
 ```yaml
 name: pm-review

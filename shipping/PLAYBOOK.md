@@ -86,11 +86,11 @@ Source: [Demystifying evals for AI agents](https://www.anthropic.com/engineering
 
 ## Recommendations and where they stand
 
-Status is from the rollout tracker on 14 October 2026, with PR states checked live on GitHub. PR numbers refer to the reference repository unless they name another one.
+Status is from the rollout tracker on 14 October 2026, with PR states checked live on GitHub; R1, R1b and R17 were updated on 25 October 2026. PR numbers refer to the reference repository unless they name another one.
 
 | # | Recommendation | From | Status |
 |---|---|---|---|
-| R1 | Run the new reviewer in shadow mode first | F4 | Done: report-only, with a written promotion and demotion bar |
+| R1 | Run the new reviewer in shadow mode first | F4 | Done on ordinary PRs: report-only, with a written promotion and demotion bar. Since 16 October the merge gate requires a passing review on PRs with a HANDOFF and on held scope, before the bar was measured (see the harness map's known limits) |
 | R1b | Separate grader, plus a second vendor on critical code | F2, F4 | Done: Agent Review on every PR; on authority PRs a second-vendor CLEAR (or 2 hours with no ruling) before merge, asked only after Agent Review and CI are green (owner decisions 2026-10-14, replacing an every-PR rule); held PRs merge only on a CLEAR the merge gate re-derives at merge time, never on the timeout (owner ruling 2026-10-16) |
 | R2 | Find, then verify each finding before it can block | F3 | Done |
 | R3 | Correctness only, nits never block, re-review converges | F2, F3 | Done |

@@ -8,10 +8,9 @@ single long run finish and leave evidence behind. Dale OS starts from a differen
 sessions can work on a financial codebase for months without anyone being able to claim a false state, whether that
 is a wrong number reported as reconciled, a PR reported as merged, or a guard reported as running.
 
-The short answer is that authority and evidence are enforced outside the model. The model writes, reads and judges.
-Who may decide what, which commit a verdict covers, and who may merge are settled by CI, git and access controls.
-An agent can't argue its way past them, though anyone with write access could still forge the evidence they read
-(see Known limits).
+The short answer is that authority and evidence are meant to be enforced outside the model. The model writes, reads
+and judges. Which commit a verdict covers, and when the lane may merge, are settled by CI and git. Where a rule still
+rests on instructions or on a writer's good faith, Known limits says so.
 
 The reference implementation is a private financial dashboard repository. Everything portable is in this repository.
 
@@ -23,23 +22,25 @@ The reference implementation is a private financial dashboard repository. Everyt
 | Saved procedures | One skill per repeated task | Skills are named after **failure classes**, not tasks: `systemic-bug-instinct`, `truth-boundary`, `reachability-proof`, `false-competence-check`. A resolver maps a symptom to the shortest skill route, and compositions say which skills to stack and which to leave out. | [`machine/failure-classes.json`](../machine/failure-classes.json), [`machine/compositions.json`](../machine/compositions.json), `python scripts/dale.py resolve <symptom>` |
 | Source access | MCP connectors | Connectors exist, but every fetched page, PR comment and CI log is treated as data, never as instructions. Blocked services are denied in settings, not in prose. | [`ci/README.md`](../ci/README.md) (agent-review caller) |
 | Action rules | `permissions` and a `PreToolUse` hook | Limits live in **access**, not in prompts: protected primitives are locked by foundation tests whose consumer allowlist *is* the lock, held paths are derived from the changed files (both sides of a rename), and an agent that pushes needs its own identity with platform-enforced limits. A rule that exists only as an instruction is listed as a gap. | [`risk-kernel`](../skills/operator/risk-kernel/SKILL.md), [`protected-boundary`](../skills/operator/protected-boundary/SKILL.md) |
-| Evidence reviewer | A read-only subagent the main agent invokes | Two independent judges the author cannot edit. **Agent Review** runs on every ready PR without being asked, so the author cannot skip it: a fresh Claude in CI, prompt loaded from the base branch, the PR read as git objects and never checked out, a typed verdict posted as a check on the exact head SHA, and every blocking finding has to quote the line it cites. **The PM**: on authority work, a second model from a different vendor (Codex) rules `CLEAR`, `CORRECT` or `HOLD` on a `HANDOFF:` naming the head. The author posts that HANDOFF. Held scope can't merge through the lane without one, but outside held scope skipping it is caught only by convention (see Known limits). | [`ci/README.md`](../ci/README.md), [`shipping/templates/`](../shipping/templates/) |
+| Evidence reviewer | A read-only subagent the main agent invokes | Two independent judges the author cannot edit. **Agent Review** runs on every ready PR by an allowlisted author without being asked, so the author cannot skip it: a fresh Claude in CI, prompt loaded from the base branch, the PR read as git objects and never checked out, a typed verdict posted as a check on the exact head SHA, and every blocking finding must carry a quote of the line it cites (a required field; the shared reviewer does not check the quote against the head). **The PM**: on authority work, a second model from a different vendor (Codex) rules `CLEAR`, `CORRECT` or `HOLD` on a `HANDOFF:` naming the head. The author posts that HANDOFF. Held scope can't merge through the lane without one, but outside held scope skipping it is caught only by convention (see Known limits). | [`ci/README.md`](../ci/README.md), [`shipping/templates/`](../shipping/templates/) |
 | Reasoning effort | Set per session or subagent | Routed in three layers: the role (routing, coding, review, writing), the capability tier it needs (economical, balanced, frontier), and the concrete model, which is the only perishable part and lives in one dated file per deployment. Escalation to the frontier tier is recorded with its reason. A model is promoted on measured behavior, not on its release notes. | [`machine/model-cost-policy.json`](../machine/model-cost-policy.json) (routing), [`docs/MODEL_EVAL_PROTOCOL.md`](MODEL_EVAL_PROTOCOL.md) (promotion evidence) |
 | Completion goal | `/goal` plus `progress.md` | A run never certifies its own completion. Outcomes come from a fixed set (finished, ready for review, needs a person, blocked, stuck, failed, cancelled), and anything outside the set counts as failure. Claims follow state tiers: implemented, pushed, PR open, merged, deployed. Only a state that can be proved gets claimed. | [`completion-contract`](../skills/operator/completion-contract/SKILL.md), [`verify-before-cite`](../skills/operator/verify-before-cite/SKILL.md) |
 
 ## What the usual seven layers have no place for
 
 **1. Risk picks the lane, and the lane picks the judges.** A change's lane (docs, ordinary, truth, held) is
-derived from the paths it touches and is never self-declared. Ordinary work lands on green CI and a passing Agent
-Review (in the reference repo the Builder waits for that pass; the lander does not check it on ordinary PRs). Truth work (money, sync, evidence, imports, identity) also goes to the second vendor: it lands on a `CLEAR`,
-or after 2 hours with no ruling. Held work (workflows, access, billing, migrations, merge and release tooling) lands
-only on a `CLEAR` for the current head, never on the timeout. Each repository names its held paths in one regex that
-the reviewer, the PM and the merge gate share; this repository holds `.github/workflows/` and `ci/`. See
+derived from the paths it touches and is never self-declared. Ordinary work needs green CI and a passing Agent
+Review. No lander checks the review on ordinary PRs, here or in the reference repo, where the Builder waits for it by
+rule. Truth work (money, sync, evidence, imports, identity) also goes to the second vendor: it lands on a `CLEAR`,
+or after 2 hours with no ruling. Held work (workflows, access, billing, migrations, merge and release tooling,
+authority sources) lands only on a `CLEAR` for the current head, never on the timeout. Here the held paths are one
+regex, passed by hand to each of the reviewer, PM and merge-lane callers; this repository holds `.github/workflows/`
+and `ci/`. The reference repo derives risk from the changed paths with a script instead. See
 [`shipping-lanes`](../skills/operator/shipping-lanes/SKILL.md).
 
 **2. One lander, and it re-derives the verdict.** No session merges around the lander. In the reference repository a single Controller
-workflow is the only merger. Here, `merge-lane.yml` lands any PR that carries a HANDOFF; one without a HANDOFF is
-left to the repository's own merge rule. For every PR with a HANDOFF, the merge gate
+workflow is the only merger. Here, `merge-lane.yml` considers only PRs that carry a HANDOFF, and lands one only when the
+gate allows it; a PR without a HANDOFF is left to the repository's own merge rule. For every PR with a HANDOFF, the merge gate
 ([`ci/merge_gate.py`](../ci/merge_gate.py)) re-reads Codex's own comments and the head's checks at election and again
 just before the merge call, so a finding posted after a `CLEAR` still blocks. A push revokes every verdict.
 Production promotion is frozen at one commit and needs the owner's written authorisation for that cut; a session
@@ -81,7 +82,7 @@ and a standing invitation to break the claims ([`evals/`](../evals/), [`CHALLENG
 
 **9. Tests are feedback; clearance comes from outside.** In the reference repo the portfolio truth engine is a named
 component whose manifest lists its exact import closure, and a boundary test fails on any drift, so "the engine" means
-the same files everywhere it is copied, including a second product built on it. A promotion is refused unless an
+the same files everywhere it is copied. A promotion is refused unless an
 external Truth Kit, using independent verifiers and planted bugs, has cleared that exact engine digest. A green
 in-repo suite never turns that check green, and a new money rule needs independently written test books before any
 clearance can name it. Financial extraction follows the same split: a model may read a document's layout, but code
@@ -102,7 +103,8 @@ These are open, and a reviewer should look at them first.
   partly from instructions.
 - **Adopters' held paths are narrower than the doctrine.** The lane table holds access, billing, migrations and
   authority sources, but each repository's regex decides. Some adopters hold only `.github/workflows/`, and this
-  repository holds `.github/workflows/` and `ci/` but not its own instruction files or skills.
+  repository holds `.github/workflows/` and `ci/` but not `CLAUDE.md` or its skills; a PR that edits `AGENTS.md` gets a PM `HOLD`
+  instead, which the gate also refuses.
 - **Adopters run older layer code.** Callers pin the shared workflows to a commit, and the adopting repositories pin
   commits from before the latest changes here. What this repository documents is ahead of what some of them run.
 - **The reviewer gates before it has earned it.** Rule 5 says a reviewer reports without blocking until it clears a
