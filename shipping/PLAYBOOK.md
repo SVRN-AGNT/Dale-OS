@@ -86,7 +86,7 @@ Source: [Demystifying evals for AI agents](https://www.anthropic.com/engineering
 
 ## Recommendations and where they stand
 
-Status is from the rollout tracker on 14 October 2026, with PR states checked live on GitHub; R1, R1b, R4, R6 and R17 were updated on 25 October 2026. PR numbers refer to the reference repository unless they name another one.
+Status is from the rollout tracker on 14 October 2026, with PR states checked live on GitHub; R1, R1b, R4, R6, R7, R11 and R17 were updated on 25 October 2026. PR numbers refer to the reference repository unless they name another one.
 
 | # | Recommendation | From | Status |
 |---|---|---|---|
@@ -97,11 +97,11 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | R4 | Gate merges on the count of blocking findings | F3 | Owner decides for ordinary PRs, after shadow data meets the bar. On PRs with a HANDOFF and on held scope, the merge gate already refuses a head without a passing review (see R1) |
 | R5 | A fixer routine for red PRs | F10 | Paused until R6 lands |
 | R6 | Agents get their own GitHub identity, with limits on access | F4, F10 | Partly done: the App identity merged 2026-10-14; whether every pushing agent uses it is not confirmed (harness map, known limits) |
-| R7 | Terse test output for agents | F6 | Built (9 lines instead of 2,531), waiting to merge |
+| R7 | Terse test output for agents | F6 | Done: 9 lines instead of 2,531, merged 2026-10-14 |
 | R8 | A fast sampled PR tier plus a nightly full regression | F6, F11 | Partly done: the PR tier and nightly exist; further cuts are built |
 | R9 | Caps on every model job; reusable workflows across repos | F10 | Partly done: the reviewer is capped, and the shared layer is in this repo ([#20](https://github.com/SVRN-AGNT/Dale-OS/pull/20)) |
 | R10 | Instructions file under about 200 lines | F5 | Done: 411 to 225 lines |
-| R11 | Deterministic promotion gates | F4, F5 | In progress: tooling and the frozen cut merged, receipt built |
+| R11 | Deterministic promotion gates | F4, F5 | In progress: tooling, the frozen cut and the receipt generated from git merged (receipt on 2026-10-14) |
 | R12 | Post-deploy production check | F10 | Owner decides: built switched off |
 | R13 | Changelog fragments instead of one shared file | F9 | Not started (by analogy to F9; Anthropic does not describe changelogs) |
 | R14 | Screenshots on UI PRs, driven through the running app | F1, F2, F9 | Done: before and after screenshots on UI PRs (merged 2026-10-14) |

@@ -105,11 +105,18 @@ These are open, and a reviewer should look at them first.
   authority sources, but each repository's regex decides. Some adopters hold only `.github/workflows/`, and this
   repository holds `.github/workflows/` and `ci/` but not `CLAUDE.md` or its skills; a PR that edits `AGENTS.md` gets a PM `HOLD`
   instead, which the gate also refuses.
-- **Adopters run older layer code.** Callers pin the shared workflows to a commit, and the adopting repositories pin
+- **Adopters run older layer code.** Callers pin the shared workflows to a commit, and some adopting repositories pin
   commits from before the latest changes here. What this repository documents is ahead of what some of them run.
 - **The reviewer gates before it has earned it.** Rule 5 says a reviewer reports without blocking until it clears a
   measured bar, but the merge gate already requires a passing Agent Review on HANDOFF and held PRs, and no record shows
   the bar was cleared. The second vendor's CLEAR is the check that holds the line meanwhile.
+- **Some merged trees were never tested.** Evidence counts only for the exact tree it judged. The shared merge lane
+  refuses a PR that GitHub reports as behind its base, but GitHub reports that only where branch protection requires
+  branches to be up to date; without that setting a behind PR can merge, a wider form of the same gap. The reference
+  repo's Controller makes one exception by owner ruling (16 October 2026): a held PR behind the base still merges on
+  its reviewed head when the base changed none of its files. That saves a refresh and a second-vendor round each time
+  the base moves, but non-overlapping paths can still interact (dependencies, generated files, behavior). A merge
+  queue that tests the prospective merge would close both.
 - **A repository writer can forge evidence.** The merge gate defends against the PR itself and against timing, but
   anyone with write access (the owner, the Claude app, agent sessions) could run a modified workflow on another
   branch and post a passing check. Closing this needs review checks posted by a dedicated GitHub App whose key only

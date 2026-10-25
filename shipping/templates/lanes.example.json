@@ -27,6 +27,7 @@
       ],
       "requires": [
         "required-checks-green-on-head",
+        "affected-tests",
         "agent-review",
         "second-vendor-clear",
         "person-or-merge-gate-lands"
