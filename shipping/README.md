@@ -117,7 +117,7 @@ These are the states when this page was written. Check the linked PRs for live s
 
 - In the reference repository, the main instructions file went from 411 to 225 lines, with all 320 moved lines kept word for word in a detail document.
 - The slowest test tier went from 6m27s to 1m42s, measured locally and not yet on CI runners. Two files took 78% of its time running a forecast nobody read.
-- Agent Review runs on every ready PR. Each review takes about 30 to 60 seconds and costs about $0.15. It is report-only, and it has already caught two confirmed bugs: a check that passed when it should have failed, and a whitespace blind spot in its own convergence logic.
+- Agent Review runs on every ready PR. Each review takes about 30 to 60 seconds and about $0.15 of usage, billed to the Claude subscription. It is report-only, and it has already caught two confirmed bugs: a check that passed when it should have failed, and a whitespace blind spot in its own convergence logic.
 - Acceptance tests are a required check. Mergeability retries back off over 2 to 32 seconds, within a 120-second budget.
 - The release-notes bot is removed, and each promotion is frozen at one commit.
 - The shared CI layer is in this repository ([Dale-OS #20](https://github.com/SVRN-AGNT/Dale-OS/pull/20)). Its first run found that this repository tested every PR commit twice.

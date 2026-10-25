@@ -90,6 +90,25 @@ reads every number from the cells, and failed reconciliation checks block the sa
 the rule ([`financial-evidence-grade`](../skills/financial-truth/financial-evidence-grade/SKILL.md)); the kit itself
 is private.
 
+**10. Cost is a design constraint, learned the expensive way.** Each rule below answers a cost the system actually
+paid, not a guess. The principle is in [`machine/model-cost-policy.json`](../machine/model-cost-policy.json): capability is a
+budgeted resource, not a default setting, and no saving may trade away accounting, provenance, authority or safety.
+
+| What it cost | What changed |
+|---|---|
+| GitHub bills each job rounded up to a whole minute. In the reference repo one PR run billed 10 minutes for about 7.4 real ones, a docs-only push paid it in full, and the Actions budget hit its monthly cap in August 2026 | Since 22 August a first job asks one question (did anything outside docs change?) with no checkout or install: one billed minute that can save nine. Jobs that cannot block a merge skip drafts |
+| Heads that only merged in the base used 30% of PR CI minutes (973 of 3,279 billed minutes over 200 runs, 13 and 14 October) | Builders refresh the base only to fix a conflict, pick up code they need, or once before a held PR's final HANDOFF ([rule 16](../shipping/README.md)) |
+| The same whole-minute bill on short, read-only jobs, at GitHub's full per-minute price | Jobs with a read-only token may run on a runner about a third of the price (`ubicloud-standard-2`). Anything holding a credential or able to write to a PR stays on GitHub, so a cheaper runner can never forge what the merge gate reads (owner, 19 October; [`ci/README.md`](../ci/README.md#runners)). Public repositories stay on GitHub, which bills them nothing |
+| Codex's automatic review used about 2.5% of the owner's 5-hour ChatGPT window per push, and asking it on every PR was judged overly cautious (14 October) | Automatic review is off. The second vendor is asked once per finished change, only after CI and Agent Review are green, only on truth and held work in the reference repo (here the lane lands only PRs that carry a HANDOFF), and `@codex` appears nowhere else. Rounds are budgeted: a full review and split check after round 3, the owner's word from round 6 |
+| This repository's PR #54 took six rounds, most of them on one class of mistake (one doc contradicting another) found and fixed one line at a time (25 October) | One purpose per PR, and before each HANDOFF the Builder sweeps the whole PR for every instance of each class a reviewer could flag, not only the flagged line (owner, 25 October) |
+| A paid eval triggered by a PR path re-ran on every push while the trigger file stayed in the diff | The targeted paid probe runs only by manual dispatch, and the full paid eval only on dispatch or a deliberate push to its verification branch ([report](reports/CROSS_MODEL_VERIFICATION_2026-08-07.md)) |
+
+Agent Review bills only the Claude subscription (any API key is stripped from its environment), under a daily cap, a
+spend budget, a job timeout and a concurrency group, so a usage limit reads as "not reviewed", never as an API bill.
+The numbers that keep this honest are in [ADOPT step 10](../shipping/ADOPT.md#step-10--measure-four-numbers-on-every-change-to-the-pipeline): runner minutes per
+merged PR are measured beside escaped defects, and a change that shortens the wait but raises escaped defects is
+rolled back.
+
 ## Known limits
 
 These are open, and a reviewer should look at them first.
@@ -117,6 +136,10 @@ These are open, and a reviewer should look at them first.
   its reviewed head when the base changed none of its files. That saves a refresh and a second-vendor round each time
   the base moves, but non-overlapping paths can still interact (dependencies, generated files, behavior). A merge
   queue that tests the prospective merge would close both.
+- **The second vendor's quota is shared and invisible.** One ChatGPT plan backs the PM in every repository and the
+  owner's own Codex use. On 25 October its 5-hour window ran out mid-review: Codex's status read "Running" for about
+  two hours, and the PM, which cannot tell a quota stall from a slow review, waited. The workaround is procedural:
+  check the quota before re-asking. Rounds count rulings, so a re-ask on a head that got no ruling stays the same round.
 - **A repository writer can forge evidence.** The merge gate defends against the PR itself and against timing, but
   anyone with write access (the owner, the Claude app, agent sessions) could run a modified workflow on another
   branch and post a passing check. Closing this needs review checks posted by a dedicated GitHub App whose key only
