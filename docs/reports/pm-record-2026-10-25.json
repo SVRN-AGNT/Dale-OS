@@ -1,6 +1,14 @@
 {
  "org": "SVRN-AGNT",
+ "repos": [
+  "ACFDashboard",
+  "Dale-OS",
+  "second-brain",
+  "ACF-Docs",
+  "wallet-alpha-lab"
+ ],
  "since": "2026-10-16T00:00:00Z",
+ "until": "2026-10-25T14:34:00Z",
  "rows": [
   {
    "repo": "ACFDashboard",
@@ -1234,6 +1242,22 @@
   },
   {
    "repo": "ACFDashboard",
+   "pr": 5782,
+   "merged": true,
+   "open": false,
+   "rulings": [],
+   "usage_limit_messages": 1
+  },
+  {
+   "repo": "ACFDashboard",
+   "pr": 5779,
+   "merged": true,
+   "open": false,
+   "rulings": [],
+   "usage_limit_messages": 1
+  },
+  {
+   "repo": "ACFDashboard",
    "pr": 5773,
    "merged": true,
    "open": false,
@@ -1801,7 +1825,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     },
     {
      "at": "2026-10-19T19:57:54Z",
@@ -2023,7 +2047,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     },
     {
      "at": "2026-10-19T15:05:09Z",
@@ -2371,7 +2395,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     },
     {
      "at": "2026-10-18T19:07:06Z",
@@ -2380,7 +2404,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     },
     {
      "at": "2026-10-18T19:32:39Z",
@@ -2425,7 +2449,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 3,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     },
     {
      "at": "2026-10-18T13:05:14Z",
@@ -2597,7 +2621,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     },
     {
      "at": "2026-10-17T19:20:41Z",
@@ -2677,7 +2701,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     }
    ],
    "usage_limit_messages": 0
@@ -2726,7 +2750,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     }
    ],
    "usage_limit_messages": 0
@@ -3094,6 +3118,14 @@
   },
   {
    "repo": "Dale-OS",
+   "pr": 45,
+   "merged": true,
+   "open": false,
+   "rulings": [],
+   "usage_limit_messages": 1
+  },
+  {
+   "repo": "Dale-OS",
    "pr": 42,
    "merged": true,
    "open": false,
@@ -3323,7 +3355,7 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": false
+     "agent_review_passed_first": true
     }
    ],
    "usage_limit_messages": 0
@@ -3745,6 +3777,14 @@
   },
   {
    "repo": "ACF-Docs",
+   "pr": 234,
+   "merged": true,
+   "open": false,
+   "rulings": [],
+   "usage_limit_messages": 1
+  },
+  {
+   "repo": "ACF-Docs",
    "pr": 231,
    "merged": true,
    "open": false,
@@ -4081,6 +4121,14 @@
   },
   {
    "repo": "wallet-alpha-lab",
+   "pr": 177,
+   "merged": true,
+   "open": false,
+   "rulings": [],
+   "usage_limit_messages": 1
+  },
+  {
+   "repo": "wallet-alpha-lab",
    "pr": 176,
    "merged": true,
    "open": false,
@@ -4312,5 +4360,6 @@
    ],
    "usage_limit_messages": 0
   }
- ]
+ ],
+ "reverts": []
 }

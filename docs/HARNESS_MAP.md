@@ -131,7 +131,7 @@ rolled back.
 [The second-vendor record](reports/SECOND_VENDOR_RECORD_2026-10-25.md) covers 104 PRs and 321 PM rulings in five
 repositories, 16 to 25 October 2026, rebuilt from GitHub by [`scripts/pm_record.py`](../scripts/pm_record.py).
 
-- 305 rulings were on heads Claude's Agent Review had already passed. On those heads Codex found 281 issues, 134 of
+- 314 rulings were on heads Claude's Agent Review had already passed. On those heads Codex found 281 issues, 134 of
   them P1, across 64 PRs. 44 PRs had at least one P1.
 - 35 PRs cleared on their first ruling. Of the 64 PRs whose rulings state a round, the median took 2 rounds and 13
   went past round 5.
@@ -146,7 +146,7 @@ Which rules CI or git enforce, and which rest on convention:
 | A finding posted after the CLEAR still blocks | Merge gate, which reads twice, 90 s apart, before merging | "a Codex finding posted after the CLEAR blocks the merge", "a finding that lands between the reads stops the merge" |
 | Agent Review counts only from the default branch's workflow, run for this head | Merge gate | "a newer Agent Review from a PR-branch copy of agent-review.yml does not count", "a pass claiming a run started for another PR's head blocks" |
 | Held scope never merges on the timeout | Merge gate | "held scope waits for a CLEAR even 4 hours after the HANDOFF" |
-| Ask the second vendor only after Agent Review passes | Convention | 305 of 321 rulings in the record |
+| Ask the second vendor only after Agent Review passes | Convention | 314 of 321 rulings in the record |
 | The round budget (owner's word from round 6) | Convention; the PM states it in every ruling | 13 of 64 PRs went past round 5 |
 | One purpose per PR; sweep by class before a HANDOFF | Convention | Not measured |
 
@@ -184,7 +184,7 @@ These are open, and a reviewer should look at them first.
   queue that tests the prospective merge would close both.
 - **The second vendor's quota is shared, and the PM doesn't read it.** One ChatGPT plan backs the PM in every
   repository and the owner's own Codex use. Codex often says when the window is spent, with a "usage limits" comment
-  (50 in the record), but the PM does not parse it. Sometimes it says nothing: on 25 October its status read
+  (55 in the record), but the PM does not parse it. Sometimes it says nothing: on 25 October its status read
   "Running" for about two hours until the window reset, and the PM waited. The workaround is procedural: check the
   quota before re-asking. Rounds count rulings, so a re-ask on a head that got no ruling stays the same round.
 - **A repository writer can forge evidence.** The merge gate defends against the PR itself and against timing, but

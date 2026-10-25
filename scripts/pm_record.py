@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """The second-vendor record: every PM ruling that read a Codex review, and what Claude's reviewer had said first.
 
-  collect --org ORG --repo R [--repo R ...] --since ISO --out FILE   read-only, through `gh api`
+  collect --org ORG --repo R [--repo R ...] --since ISO --until ISO --out FILE   read-only, through `gh api`
   summary FILE                                                       the numbers docs/HARNESS_MAP.md quotes
 
-`collect` keeps no titles, bodies or commit shas, so a snapshot of a private repository can be published.
+`collect` keeps no titles, bodies or commit shas, so a snapshot of a private repository can be published. Only
+comments and PR states inside the window count, so a later collection of the same window gives the same record.
 """
 from __future__ import annotations
 
@@ -48,22 +49,34 @@ def when(s: str) -> datetime:
 
 
 def reviewed_before(org: str, repo: str, head: str, at: str) -> bool:
-    """Whether a passing Agent Review on this head had completed before the PM ruled on it."""
-    runs = gh(f"repos/{org}/{repo}/commits/{head}/check-runs?check_name=Agent%20Review&per_page=100")["check_runs"]
-    return any(r.get("conclusion") == "success" and r.get("completed_at") and when(r["completed_at"]) <= when(at)
-               for r in runs)
+    """Whether a passing Agent Review on this head had completed before the PM ruled on it. `filter=all` keeps the
+    runs a re-run replaced, which the default (latest only) hides."""
+    page = 1
+    while True:
+        runs = gh(f"repos/{org}/{repo}/commits/{head}/check-runs?check_name=Agent%20Review&filter=all"
+                  f"&per_page=100&page={page}")["check_runs"]
+        if any(r.get("conclusion") == "success" and r.get("completed_at") and when(r["completed_at"]) <= when(at)
+               for r in runs):
+            return True
+        if len(runs) < 100:
+            return False
+        page += 1
 
 
-def collect(org: str, repos: list[str], since: str) -> list[dict]:
-    rows = []
+def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[dict], list[dict]]:
+    """One row per PR with a ruling or a usage-limit message in the window, and the PRs opened in the window whose
+    title names a revert (kept as numbers only)."""
+    rows, reverts = [], []
     for repo in repos:
         for pr in pages(f"repos/{org}/{repo}/pulls?state=all&sort=updated&direction=desc"):
             if pr["updated_at"] < since:
                 break
+            if since <= pr["created_at"] <= until and "revert" in (pr.get("title") or "").lower():
+                reverts.append({"repo": repo, "pr": pr["number"]})
             rulings, limits = [], 0
             for c in pages(f"repos/{org}/{repo}/issues/{pr['number']}/comments?since={since}"):
                 body, login = c.get("body") or "", c["user"]["login"]
-                if c["created_at"] < since:
+                if not since <= c["created_at"] <= until:
                     continue
                 if login == CODEX_BOT and USAGE_LIMIT in body:
                     limits += 1
@@ -79,16 +92,23 @@ def collect(org: str, repos: list[str], since: str) -> list[dict]:
                     "failed_checks": len(failed.group(1).strip().splitlines()) if failed else 0,
                     "agent_review_passed_first": bool(head) and reviewed_before(org, repo, head.group(1), c["created_at"]),
                 })
-            if rulings:
-                rows.append({"repo": repo, "pr": pr["number"], "merged": bool(pr.get("merged_at")),
-                             "open": pr["state"] == "open", "rulings": rulings, "usage_limit_messages": limits})
-    return rows
+            if rulings or limits:
+                merged_at, closed_at = pr.get("merged_at"), pr.get("closed_at")
+                rows.append({"repo": repo, "pr": pr["number"],
+                             "merged": bool(merged_at) and merged_at <= until,
+                             "open": pr["created_at"] <= until and not (closed_at and closed_at <= until),
+                             "rulings": rulings, "usage_limit_messages": limits})
+    return rows, reverts
 
 
-def summary(rows: list[dict]) -> dict:
+def summary(record: dict) -> dict:
+    limits = {"usage_limit_messages": sum(row["usage_limit_messages"] for row in record["rows"]),
+              "prs_with_usage_limit_messages": sum(bool(row["usage_limit_messages"]) for row in record["rows"]),
+              "revert_prs": len(record["reverts"])}
+    rows = [row for row in record["rows"] if row["rulings"]]
     rulings = [r for row in rows for r in row["rulings"]]
     if not rulings:
-        return {"prs": 0, "rulings": 0}
+        return {"prs": 0, "rulings": 0, **limits}
     passed = [r for r in rulings if r["agent_review_passed_first"]]
     on_passed = [row for row in rows if any(r["agent_review_passed_first"] and r["findings"] for r in row["rulings"])]
     p1_on_passed = [row for row in rows
@@ -120,8 +140,7 @@ def summary(rows: list[dict]) -> dict:
         "prs_past_round_5": sum(n >= 6 for n in counted),
         "median_max_round": statistics.median(counted) if counted else None,
         "by_round": dict(sorted(by_round.items())),
-        "usage_limit_messages": sum(row["usage_limit_messages"] for row in rows),
-        "prs_with_usage_limit_messages": sum(bool(row["usage_limit_messages"]) for row in rows),
+        **limits,
     }
 
 
@@ -132,18 +151,20 @@ def main(argv: list[str]) -> int:
     c.add_argument("--org", required=True)
     c.add_argument("--repo", action="append", required=True)
     c.add_argument("--since", required=True)
+    c.add_argument("--until", required=True)
     c.add_argument("--out", required=True)
     s = sub.add_parser("summary")
     s.add_argument("file")
     a = ap.parse_args(argv)
     if a.cmd == "collect":
-        rows = collect(a.org, a.repo, a.since)
+        rows, reverts = collect(a.org, a.repo, a.since, a.until)
         with open(a.out, "w", encoding="utf-8") as f:
-            json.dump({"org": a.org, "since": a.since, "rows": rows}, f, indent=1)
+            json.dump({"org": a.org, "repos": a.repo, "since": a.since, "until": a.until, "rows": rows,
+                       "reverts": reverts}, f, indent=1)
             f.write("\n")
         return 0
     with open(a.file, encoding="utf-8") as f:
-        print(json.dumps(summary(json.load(f)["rows"]), indent=1))
+        print(json.dumps(summary(json.load(f)), indent=1))
     return 0
 
 
