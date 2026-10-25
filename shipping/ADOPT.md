@@ -79,9 +79,9 @@ Build the reviewer as a workflow that has all of these properties. The reference
 
 ### Step 6 · Second-vendor review on authority lanes
 
-On every L2 and L3 PR, the Builder posts a `HANDOFF:` comment after the Agent Review verdict, and marks the PR ready only after a `CLEAR` on its current head, or 2 hours with no ruling (recorded as "PM timeout"), using [`templates/HANDOFF.md`](templates/HANDOFF.md). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
+On every L2 and L3 PR, the Builder marks the PR ready, waits for CI and Agent Review to go green on its head, and then posts one `HANDOFF:` naming that head, using [`templates/HANDOFF.md`](templates/HANDOFF.md). An L2 PR may land on a `CLEAR` for its current head, or after 2 hours with no ruling (recorded as "PM timeout"). An L3 PR lands only on a `CLEAR` (step 8). The second reviewer is a model from a different vendor, so approval is never one model agreeing with itself. Make the handoff part of the lane checklist, and have something check that the reply exists before the PR is treated as reviewed. A handoff the author may skip is a reviewer nobody calls ([case](../cases/the-reviewer-nobody-called.md)).
 
-A `CORRECT` or `HOLD` blocks ready, a push restarts the clock, and an Agent Review approval never replaces a CLEAR. The timeout keeps a quiet reviewer from stalling the line. Ordinary L0 and L1 work needs only green CI and a passing Agent Review. The reference repo first required the second vendor on every PR. On 14 October the owner dropped that as overly cautious; its written rules are still being updated to match.
+A `CORRECT` or `HOLD` blocks the merge, a push revokes every ruling and needs a new HANDOFF, and an Agent Review approval never replaces a CLEAR. On L2 the timeout keeps a quiet reviewer from stalling the line. Ordinary L0 and L1 work needs only green CI and a passing Agent Review. The reference repo first required the second vendor on every PR; on 14 October the owner dropped that as overly cautious.
 
 ## Level 3 · Autonomous landing
 

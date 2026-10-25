@@ -224,8 +224,8 @@ subscription (`CLAUDE_CODE_OAUTH_TOKEN`, from `claude setup-token`); any API
 key is stripped from the reviewer's environment. A subscription usage limit
 gives `action_required` ("not reviewed"), never an API bill.
 
-From 2026-11-02 GitHub blocks `pull_request_target` by default in public
-repositories that are still on the default event policy. A public caller must
+From 2026-11-02 GitHub enforces a default policy that blocks `pull_request_target`
+in public repositories that have no Actions event policy of their own. A public caller must
 allow the event in its Actions policy, or this reviewer stops running, and the
 merge lane, which needs a passing Agent Review, stops merging.
 
