@@ -131,9 +131,9 @@ rolled back.
 [The second-vendor record](reports/SECOND_VENDOR_RECORD_2026-10-25.md) covers 103 PRs and 307 PM rulings in five
 repositories, 16 to 25 October 2026, rebuilt from GitHub by [`scripts/pm_record.py`](../scripts/pm_record.py).
 
-- 302 rulings were on heads Claude's Agent Review had already passed. On those heads Codex made 280 findings, 134 of
-  them P1, across 63 PRs. 44 PRs drew at least one P1.
-- 41 PRs cleared on their first counted ruling. Of the 63 PRs whose rulings state a round, the median took 2 rounds and 13
+- 288 rulings answered a HANDOFF posted after Claude's Agent Review had passed the head. In those, Codex made 271
+  findings, 133 of them P1, across 61 PRs. 43 PRs drew at least one P1.
+- 41 PRs cleared on their first ruling. Of the 63 PRs whose rulings state a round, the median took 2 rounds and 13
   went past round 5.
 - Findings are counted, not checked for validity, so they show the reviewers disagree, not that either was right.
   Nothing measures what both reviewers missed.
@@ -147,7 +147,7 @@ Which rules CI or git enforce, and which rest on convention:
 | A finding posted after the CLEAR still blocks | Merge gate, which reads twice, 90 s apart, before merging | "a Codex finding posted after the CLEAR blocks the merge", "a finding that lands between the reads stops the merge" |
 | Agent Review counts only from the default branch's workflow, run for this head | Merge gate | "a newer Agent Review from a PR-branch copy of agent-review.yml does not count", "a pass claiming a run started for another PR's head blocks" |
 | Held scope never merges on the timeout | Merge gate | "held scope waits for a CLEAR even 4 hours after the HANDOFF" |
-| Ask the second vendor only after Agent Review passes | Convention | 302 of the record's 307 rulings (it leaves out 14 made before Codex finished) |
+| Ask the second vendor only after Agent Review passes | Convention | 288 of the record's 307 rulings answered a HANDOFF posted after Agent Review passed; 19 did not (the record leaves out 14 made before Codex finished) |
 | The round budget (owner's word from round 6) | Convention; the PM states it in every ruling | 13 of 63 PRs went past round 5 |
 | One purpose per PR; sweep by class before a HANDOFF | Convention | Not measured |
 
@@ -175,7 +175,7 @@ These are open, and a reviewer should look at them first.
 - **The reviewer gates before it has earned it.** Rule 5 says a reviewer reports without blocking until it clears a
   measured bar, but the merge gate already requires a passing Agent Review on HANDOFF and held PRs, and no record shows
   the bar was cleared. The second vendor's CLEAR is the check that holds the line meanwhile; in the record Codex
-  flagged a P1 on 44 PRs Agent Review had passed.
+  flagged a P1 on 43 PRs after Agent Review had passed them.
 - **Some merged trees were never tested.** Evidence counts only for the exact tree it judged. The shared merge lane
   refuses a PR that GitHub reports as behind its base, but GitHub reports that only where branch protection requires
   branches to be up to date; without that setting a behind PR can merge, a wider form of the same gap. The reference
@@ -202,7 +202,7 @@ If you build harnesses yourself, these are the questions where an outside view h
 2. **Where would you collapse layers?** Two judges, lanes, a merge gate and a constitution with a detail document all
    cost tokens, CI minutes and latency. Which parts don't pay for themselves on a one-person project?
 3. **Is the cross-vendor reviewer independent?** Both reviewers read the same diff, so their errors may be
-   correlated. The record shows their findings disagree (Codex flagged a P1 on 44 PRs Agent Review had passed), but
+   correlated. The record shows their findings disagree (Codex flagged a P1 on 43 PRs after Agent Review had passed them), but
    not which were right or what both missed. What would you measure to tell?
 4. **How do you handle long-run state?** This system relies on threads, issues, an append-only ledger and gated
    memory instead of a `progress.md`. Does yours recover better after compaction or a dead runner?

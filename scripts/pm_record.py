@@ -27,6 +27,7 @@ FINDINGS = re.compile(r"Codex code review of this exact head: (\d+) finding")
 PRIORITY = re.compile(r"^- \*\*(P[0-3])\*\*", re.M)
 HEAD = re.compile(r"Exact reviewed head:\*\* `([0-9a-f]{40})`")
 FAILED = re.compile(r"### Failed checks\n((?:- .*\n?)+)")
+CONSUMED = re.compile(r"(?m)^PM-HANDOFF-CONSUMED: (\d+)$")
 UNFINISHED = "Codex (OpenAI, on the ChatGPT plan) had not finished its review of"
 USAGE_LIMIT = "reached your Codex usage limits"
 PM_BOT, CODEX_BOT = "github-actions[bot]", "chatgpt-codex-connector[bot]"
@@ -51,9 +52,17 @@ def when(s: str) -> datetime:
     return datetime.fromisoformat(s.replace("Z", "+00:00"))
 
 
+def posted_at(org: str, repo: str, comment_id: str) -> str | None:
+    """When a comment was posted, or None if it is gone."""
+    try:
+        return gh(f"repos/{org}/{repo}/issues/comments/{comment_id}")["created_at"]
+    except subprocess.CalledProcessError:
+        return None
+
+
 def reviewed_before(org: str, repo: str, head: str, at: str) -> bool:
-    """Whether a passing Agent Review on this head had completed before the PM ruled on it. `filter=all` keeps the
-    runs a re-run replaced, which the default (latest only) hides."""
+    """Whether a passing Agent Review on this head had completed by `at`. `filter=all` keeps the runs a re-run
+    replaced, which the default (latest only) hides."""
     page = 1
     while True:
         runs = gh(f"repos/{org}/{repo}/commits/{head}/check-runs?check_name=Agent%20Review&filter=all"
@@ -83,7 +92,7 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
             seen.add(pr["number"])
             if start <= when(pr["created_at"]) <= end and "revert" in (pr.get("title") or "").lower():
                 reverts.append({"repo": repo, "pr": pr["number"]})
-            rulings, limits, unfinished = [], 0, []
+            rulings, limits, unfinished, handoffs = [], 0, [], []
             for c in pages(f"repos/{org}/{repo}/issues/{pr['number']}/comments?since={since}"):
                 body, login = c.get("body") or "", c["user"]["login"]
                 if not start <= when(c["created_at"]) <= end:
@@ -96,6 +105,14 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
                 if login != PM_BOT or not RULING.match(body) or CODEX not in body:
                     continue
                 rnd, found, head, failed = ROUND.search(body), FINDINGS.search(body), HEAD.search(body), FAILED.search(body)
+                # The convention is to ask Codex only after Agent Review passes, so the pass is timed against the
+                # HANDOFF the ruling answered, not the ruling, which can come after a pass that landed mid-review.
+                consumed = CONSUMED.search(body)
+                asked = posted_at(org, repo, consumed.group(1)) if consumed else None
+                # A re-run that finds blocking evidence posts a second ruling for the same HANDOFF, which replaces
+                # the first; the PM counts both as one round. Kept as the HANDOFF's place on the PR, not its id.
+                if consumed and consumed.group(1) not in handoffs:
+                    handoffs.append(consumed.group(1))
                 rulings.append({
                     "at": c["created_at"],
                     "verdict": RULING.match(body).group(1),
@@ -103,7 +120,9 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
                     "findings": int(found.group(1)) if found else 0,
                     "priorities": PRIORITY.findall(body),
                     "failed_checks": len(failed.group(1).strip().splitlines()) if failed else 0,
-                    "agent_review_passed_first": bool(head) and reviewed_before(org, repo, head.group(1), c["created_at"]),
+                    "handoff": handoffs.index(consumed.group(1)) + 1 if consumed else None,
+                    "handoff_found": asked is not None,
+                    "agent_review_passed_first": bool(head and asked) and reviewed_before(org, repo, head.group(1), asked),
                 })
             if rulings or limits or unfinished:
                 merged_at = pr.get("merged_at")
@@ -127,7 +146,15 @@ def summary(record: dict) -> dict:
     on_passed = [row for row in rows if any(r["agent_review_passed_first"] and r["findings"] for r in row["rulings"])]
     p1_on_passed = [row for row in rows
                     if any(r["agent_review_passed_first"] and "P1" in r["priorities"] for r in row["rulings"])]
-    first = [min(row["rulings"], key=lambda r: when(r["at"])) for row in rows]
+    def first_answer(row):
+        """The ruling that stood for the PR's first HANDOFF: its last ruling, since a later one replaces it."""
+        answered = [r for r in row["rulings"] if r["handoff"]]
+        if not answered:
+            return min(row["rulings"], key=lambda r: when(r["at"]))
+        first = min(r["handoff"] for r in answered)
+        return max((r for r in answered if r["handoff"] == first), key=lambda r: when(r["at"]))
+
+    first = [first_answer(row) for row in rows]
     rounds = [max([r["round"] or 0 for r in row["rulings"]]
                   + [n or 0 for n in row["rounds_of_rulings_before_codex_finished"]]) for row in rows]
     counted = [n for n in rounds if n]
@@ -145,6 +172,10 @@ def summary(record: dict) -> dict:
         "verdicts": dict(collections.Counter(r["verdict"] for r in rulings)),
         "first_ruling_clear": sum(r["verdict"] == "CLEAR" for r in first),
         "correct_from_failed_checks_only": sum(r["verdict"] == "CORRECT" and not r["findings"] for r in rulings),
+        "rulings_without_their_handoff": sum(not r["handoff_found"] for r in rulings),
+        "rulings_replacing_one_for_the_same_handoff": sum(
+            sum(1 for r in row["rulings"] if r["handoff"]) - len({r["handoff"] for r in row["rulings"] if r["handoff"]})
+            for row in rows),
         "rulings_after_agent_review_passed": len(passed),
         "findings_after_agent_review_passed": sum(r["findings"] for r in passed),
         "priorities_after_agent_review_passed": dict(collections.Counter(p for r in passed for p in r["priorities"])),

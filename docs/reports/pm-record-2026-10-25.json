@@ -34,6 +34,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -45,6 +47,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -56,6 +60,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -67,6 +73,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -89,6 +97,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -98,6 +108,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -118,6 +130,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -127,6 +141,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -145,6 +161,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -165,6 +183,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -174,6 +194,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -192,6 +214,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -215,6 +239,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -224,6 +250,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -244,6 +272,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -262,6 +292,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -286,6 +318,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -298,6 +332,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -311,6 +347,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -324,6 +362,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -337,6 +377,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -349,6 +391,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -360,6 +404,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -372,6 +418,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -393,6 +441,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -404,6 +454,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -415,7 +467,9 @@
       "P2"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-22T23:24:00Z",
@@ -427,7 +481,9 @@
       "P2"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-22T23:30:18Z",
@@ -436,7 +492,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 5,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     }
    ],
    "usage_limit_messages": 0,
@@ -456,6 +514,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -467,6 +527,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -487,6 +549,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -498,6 +562,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -524,6 +590,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -536,6 +604,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -547,6 +617,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -558,6 +630,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -569,6 +643,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -580,6 +656,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -600,6 +678,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -621,6 +701,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -632,6 +714,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -643,6 +727,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -654,6 +740,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -663,6 +751,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -683,6 +773,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -692,6 +784,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -712,6 +806,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -724,6 +820,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -735,6 +833,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -746,6 +846,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -758,6 +860,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -770,6 +874,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -781,6 +887,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -793,6 +901,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -829,6 +939,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -840,6 +952,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -851,6 +965,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -860,6 +976,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -880,6 +998,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -892,6 +1012,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -903,6 +1025,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -914,6 +1038,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -925,6 +1051,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -934,6 +1062,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -956,6 +1086,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -974,6 +1106,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -997,6 +1131,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1019,6 +1155,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1032,6 +1170,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1054,6 +1194,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1065,6 +1207,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1076,6 +1220,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1096,6 +1242,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1108,6 +1256,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1120,6 +1270,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1140,6 +1292,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1151,6 +1305,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1164,6 +1320,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1176,6 +1334,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1187,6 +1347,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1196,6 +1358,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1214,6 +1378,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1232,6 +1398,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1250,6 +1418,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1273,6 +1443,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1285,6 +1457,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1297,6 +1471,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1310,6 +1486,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1322,6 +1500,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1333,6 +1513,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1342,6 +1524,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1360,6 +1544,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1369,6 +1555,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1387,6 +1575,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1405,6 +1595,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1423,6 +1615,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1444,6 +1638,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1455,6 +1651,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1467,6 +1665,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1478,6 +1678,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1489,6 +1691,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1498,6 +1702,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1518,6 +1724,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1529,6 +1737,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1540,6 +1750,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1549,6 +1761,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1558,6 +1772,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1579,6 +1795,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1588,6 +1806,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1600,6 +1820,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1612,6 +1834,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1623,6 +1847,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1634,6 +1860,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1643,6 +1871,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1663,6 +1893,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1672,6 +1904,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1694,6 +1928,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1703,7 +1939,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
-     "agent_review_passed_first": true
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-19T15:05:09Z",
@@ -1714,6 +1952,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1723,6 +1963,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1741,6 +1983,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1759,6 +2003,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1780,6 +2026,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1789,6 +2037,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1807,6 +2057,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1828,6 +2080,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1839,6 +2093,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1848,6 +2104,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1866,6 +2124,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1886,6 +2146,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1897,6 +2159,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1908,6 +2172,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1919,6 +2185,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1930,6 +2198,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1939,6 +2209,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1950,6 +2222,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1961,6 +2235,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -1970,6 +2246,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -1990,6 +2268,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2001,6 +2281,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2012,6 +2294,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2023,6 +2307,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2034,6 +2320,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2046,6 +2334,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2057,6 +2347,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2068,6 +2360,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2079,6 +2373,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2088,6 +2384,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 10,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2108,6 +2406,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2128,6 +2428,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2139,6 +2441,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2150,6 +2454,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2159,6 +2465,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2168,6 +2476,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2177,6 +2487,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2186,6 +2498,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2204,6 +2518,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": false
     },
     {
@@ -2215,7 +2531,9 @@
       "P1"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-20T01:38:48Z",
@@ -2227,6 +2545,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2238,6 +2558,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2250,6 +2572,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2261,6 +2585,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2272,6 +2598,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2281,6 +2609,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2302,6 +2632,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2324,6 +2656,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2336,6 +2670,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2349,6 +2685,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2367,6 +2705,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2378,6 +2718,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2389,6 +2731,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2400,6 +2744,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2411,6 +2757,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2422,6 +2770,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2431,6 +2781,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": false
     },
     {
@@ -2440,6 +2792,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": false
     },
     {
@@ -2449,6 +2803,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2460,6 +2816,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 10,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2471,6 +2829,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 11,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2482,6 +2842,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 12,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2491,6 +2853,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 13,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2509,6 +2873,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2520,6 +2886,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2531,6 +2899,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2542,6 +2912,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2551,6 +2923,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2569,6 +2943,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2587,6 +2963,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": false
     },
     {
@@ -2598,6 +2976,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2607,6 +2987,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2627,6 +3009,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": false
     },
     {
@@ -2636,7 +3020,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     }
    ],
    "usage_limit_messages": 0,
@@ -2656,6 +3042,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2676,6 +3064,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2685,6 +3075,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2707,6 +3099,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2718,6 +3112,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2729,6 +3125,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2740,6 +3138,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2751,6 +3151,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2760,6 +3162,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2778,6 +3182,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2799,6 +3205,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2808,6 +3216,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2828,6 +3238,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2837,6 +3249,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2855,6 +3269,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2875,6 +3291,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2884,6 +3302,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2902,6 +3322,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -2923,6 +3345,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2934,6 +3358,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2945,6 +3371,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2956,6 +3384,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2967,6 +3397,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2979,6 +3411,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -2988,6 +3422,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3016,6 +3452,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3025,6 +3463,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3045,6 +3485,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3054,6 +3496,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3075,6 +3519,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3086,6 +3532,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3098,6 +3546,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3109,6 +3559,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3120,6 +3572,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3131,6 +3585,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3142,6 +3598,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 7,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3153,6 +3611,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 8,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3164,6 +3624,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 9,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3178,6 +3640,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 10,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3189,6 +3653,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 11,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3201,6 +3667,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 12,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3212,6 +3680,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 13,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3223,6 +3693,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 14,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3232,6 +3704,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 15,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3252,6 +3726,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3261,6 +3737,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3279,6 +3757,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3297,7 +3777,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     }
    ],
    "usage_limit_messages": 0,
@@ -3315,6 +3797,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3335,6 +3819,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3346,6 +3832,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3358,6 +3846,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3367,6 +3857,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3387,6 +3879,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3396,6 +3890,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3416,6 +3912,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3427,6 +3925,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3438,6 +3938,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3447,6 +3949,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3465,6 +3969,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3487,6 +3993,8 @@
       "P3"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3498,6 +4006,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3509,6 +4019,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3520,6 +4032,8 @@
       "P3"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3531,6 +4045,8 @@
       "P3"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3540,6 +4056,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3558,6 +4076,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3578,6 +4098,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3589,6 +4111,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3600,6 +4124,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3609,6 +4135,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3627,6 +4155,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3645,6 +4175,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3673,6 +4205,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3684,6 +4218,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3702,6 +4238,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3720,6 +4258,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3738,6 +4278,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3747,6 +4289,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3765,6 +4309,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3774,6 +4320,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 1,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3783,6 +4331,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3803,6 +4353,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3812,6 +4364,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3830,6 +4384,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3848,6 +4404,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3874,6 +4432,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3894,6 +4454,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3914,6 +4476,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3923,6 +4487,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -3943,6 +4509,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3954,6 +4522,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3965,6 +4535,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3976,6 +4548,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -3989,6 +4563,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4001,6 +4577,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 6,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -4019,6 +4597,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -4039,6 +4619,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4050,6 +4632,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4059,6 +4643,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -4079,6 +4665,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4090,6 +4678,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4102,6 +4692,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 3,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4113,6 +4705,8 @@
       "P2"
      ],
      "failed_checks": 0,
+     "handoff": 4,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4124,6 +4718,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 5,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -4142,7 +4738,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     }
    ],
    "usage_limit_messages": 0,
@@ -4162,7 +4760,9 @@
       "P2"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-16T20:27:20Z",
@@ -4171,7 +4771,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     }
    ],
    "usage_limit_messages": 0,
@@ -4191,6 +4793,8 @@
       "P1"
      ],
      "failed_checks": 0,
+     "handoff": 1,
+     "handoff_found": true,
      "agent_review_passed_first": true
     },
     {
@@ -4200,6 +4804,8 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
+     "handoff": 2,
+     "handoff_found": true,
      "agent_review_passed_first": true
     }
    ],
@@ -4221,7 +4827,9 @@
       "P2"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 1,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-16T19:22:24Z",
@@ -4232,7 +4840,9 @@
       "P2"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 2,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-16T19:27:55Z",
@@ -4243,7 +4853,9 @@
       "P2"
      ],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 3,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     },
     {
      "at": "2026-10-16T19:35:52Z",
@@ -4252,7 +4864,9 @@
      "findings": 0,
      "priorities": [],
      "failed_checks": 0,
-     "agent_review_passed_first": true
+     "handoff": 4,
+     "handoff_found": true,
+     "agent_review_passed_first": false
     }
    ],
    "usage_limit_messages": 0,

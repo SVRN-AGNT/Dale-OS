@@ -16,10 +16,13 @@ python scripts/pm_record.py summary docs/reports/pm-record-2026-10-25.json
 
 - **Ruling:** a `PM REVIEW —` comment by `github-actions[bot]` that says Codex completed its review of the head.
   All others are left out, among them those the PM made on an API key before 16 October and 14 made before Codex
-  had finished.
+  had finished. A re-run that finds new blocking evidence posts a second ruling for the same HANDOFF, which replaces
+  the first; both count here (1 such pair in the record), though the PM counts them as one round.
 - **Agent Review passed first:** a successful `Agent Review` check run on the ruled head had completed before the
-  ruling was posted. It is read from all the head's check runs, re-runs included, not from the HANDOFF's own claim,
-  and unlike the merge gate it does not check which workflow posted the run.
+  HANDOFF the ruling answered was posted, which is when Codex was asked. It is read from all the head's check runs,
+  re-runs included, not from the HANDOFF's own claim, and unlike the merge gate it does not check which workflow
+  posted the run.
+- **First ruling:** the ruling that stood for the first HANDOFF on the PR that Codex finished reviewing.
 - **Finding:** an item listed under the ruling's Blocking heading, with Codex's priority (P0 to P3). A finding that
   Codex repeats on a later head counts again.
 - **Round:** the round the ruling states. The PM began stating it on 19 October; it counts that PR's earlier
@@ -31,11 +34,11 @@ python scripts/pm_record.py summary docs/reports/pm-record-2026-10-25.json
 |---|---|
 | PRs with at least one ruling | 103, of which 97 merged by the cutoff |
 | Rulings | 307: 210 `CORRECT`, 97 `CLEAR` |
-| Rulings on a head Agent Review had already passed | 302 of 307 |
-| Codex findings on those heads | 280: 134 P1, 143 P2, 3 P3, no P0 |
-| PRs with a Codex finding after Agent Review passed | 63 of 103 |
-| PRs where that included a P1 | 44 of 103 |
-| PRs whose first counted ruling was `CLEAR` | 41 of 103 |
+| Rulings answering a HANDOFF posted after Agent Review passed the head | 288 of 307 |
+| Codex findings in those rulings | 271: 133 P1, 135 P2, 3 P3, no P0 |
+| PRs with a Codex finding after Agent Review passed | 61 of 103 |
+| PRs where that included a P1 | 43 of 103 |
+| PRs whose first ruling was `CLEAR` | 41 of 103 |
 | `CORRECT` rulings caused only by a failed check, with no Codex finding | 8 |
 | PRs past round 5 (of 63 with stated rounds) | 13; the most was 10 rounds; the median 2 |
 | Codex "usage limits" messages | 55, on 32 PRs |
@@ -51,8 +54,8 @@ converges:
 
 ## How to read it
 
-- **The two reviewers' findings disagree.** On 44 PRs Codex rated something P1 on a head Claude's reviewer had
-  already passed. Until the findings are audited, that shows disagreement, not that one reviewer caught defects the
+- **The two reviewers' findings disagree.** On 43 PRs Codex rated something P1 on a head Claude's reviewer had
+  already passed when Codex was asked. Until the findings are audited, that shows disagreement, not that one reviewer caught defects the
   other missed: a P1 may be a false positive. Nor does it show independence: both read the same diff, and nothing
   here counts the defects both missed.
 - **Findings are counted, not audited.** Nobody has checked each finding for validity. A finding the author thinks is
