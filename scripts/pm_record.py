@@ -17,7 +17,7 @@ import re
 import statistics
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 RULING = re.compile(r"^PM REVIEW — (CLEAR|CORRECT|HOLD|OWNER_GATE)")
 CODEX = "Codex (OpenAI, on the ChatGPT plan) completed a code review of"  # a ruling made before Codex finished says
@@ -83,6 +83,7 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
     title names a revert (kept as numbers only). A PR's state is kept only as whether it merged by `until`: a merge
     never changes afterwards, while a close can be undone by a reopen."""
     start, end = when(since), when(until)
+    stamp = start.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")  # a "+" offset would decode as a space
     rows, reverts = [], []
     for repo in repos:
         # Every PR, oldest-created last: creation order never changes, so a PR updated mid-collection cannot jump
@@ -96,7 +97,7 @@ def collect(org: str, repos: list[str], since: str, until: str) -> tuple[list[di
             if start <= when(pr["created_at"]) <= end and "revert" in (pr.get("title") or "").lower():
                 reverts.append({"repo": repo, "pr": pr["number"]})
             rulings, limits, unfinished, handoffs = [], 0, [], []
-            for c in pages(f"repos/{org}/{repo}/issues/{pr['number']}/comments?since={since}"):
+            for c in pages(f"repos/{org}/{repo}/issues/{pr['number']}/comments?since={stamp}"):
                 body, login = c.get("body") or "", c["user"]["login"]
                 if not start <= when(c["created_at"]) <= end:
                     continue
