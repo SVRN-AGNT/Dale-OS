@@ -12,7 +12,7 @@ description: Prove cost basis and realized gain from replayable acquisition lots
 ## Workflow
 
 1. Order economic events by the canonical economic date, not arbitrary import time.
-2. Replay acquisitions and disposals under the declared lot method.
+2. Replay acquisitions and disposals under the lot method the account actually applied. If that method is unknown, do not assume one; stop when the choice would change the result, and pass `method` to the script explicitly rather than relying on its default.
 3. For each disposal, show shares requested, shares supported, source lots, proven basis, and any unsupported remainder.
 4. If shares sold exceed replayable shares, classify the disposal as unverified/oversold. Partial basis does not make the entire gain verified.
 5. Never coerce missing basis to zero in realized-gain arithmetic.
