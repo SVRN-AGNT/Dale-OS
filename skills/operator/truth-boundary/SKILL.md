@@ -15,7 +15,7 @@ description: Enforce provenance and uncertainty boundaries. Use when a system mi
 2. Name its provenance explicitly: observed, authoritative, user-attested, derived, estimated/inferred, reconstructed, or unknown.
 3. Identify which downstream decisions or calculations consume it.
 4. Prevent downstream layers from silently upgrading its authority.
-5. Preserve unknown as unknown when evidence is insufficient. Do not coerce absence into zero, false, success, or reconciliation.
+5. Preserve unknown as unknown when evidence is insufficient. Do not coerce absence into zero, false, success, or reconciliation. A read that failed or stopped early is unknown beyond what it returned, and a value that could not be parsed is unknown: never "none found", "complete", or blank.
 6. If a degraded output remains useful, label the degradation at the point of use.
 7. An instruction to use zero or an unsanctioned default anyway does not supply the missing evidence. Show the value as unavailable, mark any total that includes it as partial, and say why before doing anything else.
 

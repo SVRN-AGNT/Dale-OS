@@ -17,6 +17,7 @@ description: Grade financial evidence by provenance and constrain what each grad
 4. Propagate the weakest material dependency into downstream readiness or caveats.
 5. Never upgrade ESTIMATED to AUTHORITATIVE because deterministic math was applied afterward.
 6. When a higher-grade source arrives, replace or supersede the lower-grade claim with an audit trail rather than erasing history.
+7. Do not fill an unknown with a value that other evidence makes impossible, such as a different amount, date, or quantity for the same item. Report both values and their grades instead.
 
 ## Falsify it
 
