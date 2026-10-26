@@ -217,6 +217,46 @@ from the default branch with that comment's id (and, for `provider: chatgpt`, it
 number). A dispatch from any other branch
 is refused: it would run that branch's copy of the reviewer.
 
+### Without a review window: `provider: openweight`
+
+Codex's GitHub review shares the owner's 5-hour ChatGPT window with his own
+Codex use, so on a busy day held PRs wait hours for it (ACF 2026-10-21 and
+2026-10-26). `provider: openweight` runs the `api` path (prepare, interpret,
+post) with an open-weight model behind an OpenAI-compatible endpoint instead of
+Codex ([`openweight_review.py`](openweight_review.py)): OpenRouter by default,
+billed per token against a prepaid key, so no window refuses a review and a
+re-run is a dispatch. The model is not Claude, so it stays a second vendor to
+the author; it gets five read-only tools on the caller's checkout (read, list,
+search, `git show` and `git grep` at the head or merge base) and its only
+network call is the model endpoint. A transport failure, an exhausted budget or
+an answer that is not one JSON ruling is "no ruling", never a CLEAR.
+
+```yaml
+      with:
+        provider: openweight
+        model: 'z-ai/glm-5.2,deepseek/deepseek-v4-pro'   # first preferred; empty = DEFAULT_MODELS
+        # base_url: ''                                    # empty = https://openrouter.ai/api/v1
+      secrets:
+        openweight_api_key: ${{ secrets.OPENROUTER_API_KEY }}
+```
+
+The HANDOFF is its first line only (no `@codex review`). The caller listens to
+`HANDOFF:` comments alone. There is no Codex evidence for the merge gate to
+re-derive the ruling from, so the post job also uploads the ruling as an
+artifact of its own run, named `pm-ruling-<pr>-<head>-<VERDICT>`
+(`ruling_artifact`). The gate, run with `PM_PROVIDER=openweight` (and
+`PM_WORKFLOW` when the caller is not `.github/workflows/pm-review.yml`),
+counts a ruling only from an artifact of a run of that workflow GitHub took
+from the default branch, newest first: a workflow on a PR branch can post a
+`PM REVIEW — CLEAR` comment and check as `github-actions`, but cannot upload
+into the PM's run. Any failed check on the head still makes it CORRECT, and a
+Codex review someone asks for anyway still blocks on findings. Rulings count
+`PM round N`; the round budget is unchanged.
+
+Set a credit limit on the key: it is the dollar ceiling. One review of a few
+hundred changed lines is typically tens of thousands of tokens to a few hundred
+thousand with tool rounds, cents to under a dollar at open-weight prices.
+
 ## The agent-review caller
 
 The Claude reviewer runs on `pull_request_target`, so the caller, the reviewer

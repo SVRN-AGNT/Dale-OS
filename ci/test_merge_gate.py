@@ -457,6 +457,83 @@ check("a dispatch runs only the default branch's caller (it holds INTEGRATION_TO
 check("the lane and its caller can read commit statuses (private repos 403 without it)",
       "statuses: read" in code and "statuses: read" in caller)
 
+# provider openweight: the PM's ruling is the artifact its own trusted run recorded, not Codex's comments
+OW_COMMENTS = [dict(handoff(), body=f"HANDOFF: {HEAD}"), ruling()]
+
+
+def ow(art="CLEAR", **kw):
+    return mg.verdict(
+        pr=kw.get("pr", PR), head=HEAD, held=kw.get("held", True), pr_comments=list(kw.get("comments", OW_COMMENTS)),
+        review_comments=list(kw.get("review", ())), check_runs=list(kw.get("checks", GREEN)), paths=["a.py"],
+        allowed=["Tataku"], now=kw.get("now", NOW), identify=proven, failed=kw.get("failed"), required=(CI,),
+        workflow_runs=[wfrun()], foreign_edits=(), reviewed_head=lambda r: HEAD, provider="openweight", pm_artifact=art)
+
+
+check("openweight: a recorded CLEAR, the CLEAR comment and Agent Review merge a held head", ow()["allow"])
+check("openweight: no Codex review is needed", ow()["allow"] and not any("Codex" in r for r in ow()["reasons"]))
+r = ow(art=None)
+check("openweight: a CLEAR comment with no recorded ruling behind it does not merge held scope",
+      not r["allow"] and r["state"] == "wait")
+check("openweight: a recorded CORRECT blocks", ow(art="CORRECT")["block"])
+check("openweight: a recorded OWNER_GATE blocks", ow(art="OWNER_GATE")["block"])
+check("openweight: a failed check on the head outranks a recorded CLEAR",
+      ow(checks=GREEN + [run("ci", "failure", rid=3)])["block"])
+check("openweight: a recorded CLEAR with a CORRECT comment standing blocks",
+      ow(comments=[OW_COMMENTS[0], ruling("CORRECT")])["block"])
+cx_review = {"user": {"login": "chatgpt-codex-connector[bot]", "type": "Bot"},
+             "body": f"<!-- codex-review-receipt:v1 -->\n**Reviewed commit:** `{HEAD[:10]}`\nP1 something"}
+check("openweight: a submitted Codex review with findings on this head blocks",
+      mg.verdict(pr=PR, head=HEAD, held=True, pr_comments=OW_COMMENTS, review_comments=[], check_runs=GREEN,
+                 paths=["a.py"], allowed=["Tataku"], now=NOW, identify=proven, required=(CI,), workflow_runs=[wfrun()],
+                 reviewed_head=lambda r: HEAD, codex_reviews=[cx_review], provider="openweight", pm_artifact="CLEAR")["block"])
+check("openweight: a non-held PR with no recorded ruling still merges on the 2-hour timeout",
+      ow(art=None, held=False, comments=[dict(handoff(at="2026-10-16T08:00:00Z"), body=f"HANDOFF: {HEAD}")])["allow"])
+check("openweight: held scope never merges on the timeout",
+      not ow(art=None, comments=[dict(handoff(at="2026-10-16T08:00:00Z"), body=f"HANDOFF: {HEAD}")])["allow"])
+
+# artifact_ruling trusts only an artifact from a default-branch run of the PM workflow
+PMWF = mg.PM_WORKFLOW
+
+
+def art_fetch(arts, runs):
+    def fetch(path):
+        if path.startswith("/actions/artifacts?name="):
+            name = path.split("name=", 1)[1].split("&", 1)[0]
+            return {"artifacts": [a for a in arts if a["name"] == name]}
+        if path.startswith("/actions/runs/"):
+            return runs[int(path.rsplit("/", 1)[1])]
+        if path.startswith("/branches/"):
+            return {"commit": {"sha": "tip"}}
+        if path.startswith("/compare/"):
+            return {"status": "identical"}
+        raise AssertionError(path)
+    return fetch
+
+
+def art(verdict, rid, at="2026-10-16T11:00:00Z", aid=1, name=None):
+    return {"id": aid, "name": name or mg.pm.ruling_artifact(12, HEAD, verdict), "created_at": at, "workflow_run": {"id": rid}}
+
+
+RUNS = {1: {"id": 1, "path": PMWF, "event": "issue_comment"},
+        2: {"id": 2, "path": PMWF, "event": "pull_request", "head_branch": "x"},
+        3: {"id": 3, "path": ".github/workflows/other.yml", "event": "issue_comment"},
+        4: {"id": 4, "path": PMWF, "event": "workflow_dispatch", "head_branch": "main", "head_sha": "tip"},
+        5: {"id": 5, "path": PMWF, "event": "workflow_dispatch", "head_branch": "feature", "head_sha": "x"}}
+ar = lambda arts: mg.artifact_ruling(12, HEAD, "main", art_fetch(arts, RUNS))  # noqa: E731
+check("artifact: a PM run on a comment counts", ar([art("CLEAR", 1)]) == "CLEAR")
+check("artifact: a dispatch from the default branch counts", ar([art("CLEAR", 4)]) == "CLEAR")
+check("artifact: a pull_request run's artifact is ignored", ar([art("CLEAR", 2)]) is None)
+check("artifact: another workflow's artifact is ignored", ar([art("CLEAR", 3)]) is None)
+check("artifact: a dispatch on a branch is ignored", ar([art("CLEAR", 5)]) is None)
+check("artifact: the newest trusted ruling wins",
+      ar([art("CLEAR", 1, "2026-10-16T11:00:00Z", 1), art("CORRECT", 4, "2026-10-16T11:30:00Z", 2)]) == "CORRECT")
+check("artifact: a forged newer CLEAR does not beat a trusted CORRECT",
+      ar([art("CORRECT", 1, "2026-10-16T11:00:00Z", 1), art("CLEAR", 2, "2026-10-16T12:00:00Z", 2)]) == "CORRECT")
+check("artifact: a ruling for another head is not this head's",
+      ar([art("CLEAR", 1, name=mg.pm.ruling_artifact(12, OTHER, "CLEAR"))]) is None)
+check("artifact: an unreadable listing is no evidence",
+      mg.artifact_ruling(12, HEAD, "main", lambda p: (_ for _ in ()).throw(OSError("x"))) is None)
+
 if errors:
     print("FAIL:\n  " + "\n  ".join(errors))
     raise SystemExit(1)

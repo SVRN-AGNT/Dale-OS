@@ -18,8 +18,12 @@ Why OpenAI: the PM is the second opinion on Claude's work, so it must be a
 different vendor. Codex runs read-only (no writes, no network) on the PR written
 as files; nothing from the PR is checked out or executed.
 
-Two providers. `api` (the original) runs openai/codex-action, which needs an
-OpenAI API key. `chatgpt` reads Codex's own GitHub code review, which runs on the
+Three providers. `api` (the original) runs openai/codex-action, which needs an
+OpenAI API key. `openweight` runs the same prepare/interpret/post steps with an
+open-weight model behind an OpenAI-compatible endpoint (`openweight_review.py`),
+billed per token to a prepaid key, so no review window can refuse it; its ruling
+is also recorded as an artifact of the PM's own run, which the merge gate reads
+(`ruling_artifact`) because there is no Codex evidence to re-derive it from. `chatgpt` reads Codex's own GitHub code review, which runs on the
 owner's ChatGPT plan with no API key: the HANDOFF carries `@codex review`, Codex
 reviews the PR, and the PM turns Codex's review of the exact head into the ruling
 (no findings -> CLEAR; a blocking-priority finding -> CORRECT). The workflow runs
@@ -183,10 +187,10 @@ def codex_round(pr_comments, handoff_id) -> int:
     return len(seen) + (str(handoff_id) not in seen)
 
 
-def round_budget(n: int, verdict) -> str:
+def round_budget(n: int, verdict, reviewer: str = "Codex") -> str:
     """The round line every ruling carries, ahead of its body so truncation never drops it; from round 3 it names the
     stop the next HANDOFF must respect."""
-    line = f"**Codex round {n} on this PR.**"
+    line = f"**{reviewer} round {n} on this PR.**"
     when = "If this PR changes again, b" if verdict == "CLEAR" else "B"
     if n == 3:
         return (f"{line} {when}efore the next HANDOFF, run a full Claude review of the whole PR and check whether to "
@@ -629,8 +633,22 @@ def interpret(final_message, head_sha: str = "") -> dict:
             "body": "\n".join(lines).strip()}
 
 
-def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, provider: str = "api", budget: str = "") -> str:
+def ruling_artifact(pr, head_sha, verdict) -> str:
+    """The name of the artifact a PM run uploads for its ruling. Only a run of the caller's PM workflow, defined on the
+    default branch, can upload into that run, so the merge gate trusts this name where it cannot trust a comment or a
+    check (any workflow on a PR branch can post those as github-actions)."""
+    return f"pm-ruling-{int(pr)}-{str(head_sha).lower()}-{str(verdict).replace(' ', '_')}"
+
+
+def reviewer_name(provider: str) -> str:
+    return "PM" if provider == "openweight" else "Codex"
+
+
+def ruling_comment(ruling: dict, pr, head_sha, base_sha, handoff_id, run_url, provider: str = "api", budget: str = "",
+                   model: str = "") -> str:
     by = ("Codex's code review on the ChatGPT plan, read by the shared Dale-OS PM workflow" if provider == "chatgpt"
+          else f"Independent PM review by the open-weight model `{model or 'unknown'}`, run by the shared Dale-OS PM workflow"
+          if provider == "openweight"
           else "Independent PM review by OpenAI Codex, run by the shared Dale-OS PM workflow")
     label = "OWNER GATE" if ruling["verdict"] == "OWNER_GATE" else ruling["verdict"]
     return "\n".join([
@@ -934,9 +952,13 @@ def cmd_post() -> None:
             say(f"**PM:** {env['NOTICE']}\n\n_[run]({run_url})_")
         return
     head, handoff = env["HEAD_SHA"], env.get("HANDOFF_ID", "")
+    provider = env.get("PROVIDER", "api")
     if env.get("HAS_KEY") != "true":
+        secret = ("an open-weight provider key (the caller passes `OPENROUTER_API_KEY` as `openweight_api_key`)"
+                  if provider == "openweight" else
+                  "an OpenAI key (the caller passes `OPENAI_API_KEY` as `openai_api_key`)")
         ruling = {"ruled": False, "conclusion": "neutral", "title": "PM review not configured",
-                  "body": "No OpenAI key reached the PM workflow (the caller passes `OPENAI_API_KEY` as `openai_api_key`), "
+                  "body": f"{secret[0].upper() + secret[1:]} did not reach the PM workflow, "
                           "so the PM did not review this HANDOFF. Any review timeout applies."}
     elif env.get("FINAL_MESSAGE", "").strip():
         ruling = interpret(env["FINAL_MESSAGE"], head)
@@ -944,21 +966,31 @@ def cmd_post() -> None:
         ruling = {"ruled": False, "conclusion": "action_required", "title": f"No PM ruling on {head[:8]}",
                   "body": f"The PM run ended ({env.get('REVIEW_RESULT')}) without a ruling. This is not a CLEAR. "
                           f"Re-run the PM workflow with comment_id {handoff}."}
-    _post_ruling(ruling, pr, head, env.get("BASE_SHA", ""), handoff, run_url)
+    _post_ruling(ruling, pr, head, env.get("BASE_SHA", ""), handoff, run_url, provider, env.get("MODEL", ""))
 
 
-def _post_ruling(ruling: dict, pr: int, head: str, base: str, handoff, run_url: str, provider: str = "api") -> None:
-    budget = round_budget(codex_round(_paginate(f"/issues/{pr}/comments"), handoff), ruling.get("verdict")) if ruling.get("ruled") else ""
+def _post_ruling(ruling: dict, pr: int, head: str, base: str, handoff, run_url: str, provider: str = "api",
+                 model: str = "") -> None:
+    budget = (round_budget(codex_round(_paginate(f"/issues/{pr}/comments"), handoff), ruling.get("verdict"),
+                           reviewer_name(provider)) if ruling.get("ruled") else "")
     _api("POST", "/check-runs", {
         "name": "PM Review", "head_sha": head, "status": "completed", "conclusion": ruling["conclusion"],
         "external_id": f"handoff:{handoff}", "details_url": run_url,
         "output": {"title": ruling["title"], "summary": "\n\n".join(filter(None, [budget, str(ruling["body"])]))[:60000]},
     })
     if ruling.get("ruled"):
-        body = ruling_comment(ruling, pr, head, base, handoff, run_url, provider, budget)
+        body = ruling_comment(ruling, pr, head, base, handoff, run_url, provider, budget, model)
     else:
         body = f"**PM: {ruling['title']}.** {ruling['body']}\n\n_HANDOFF {handoff} · [run]({run_url})_"
     _api("POST", f"/issues/{pr}/comments", {"body": body})
+    if ruling.get("ruled") and os.environ.get("GITHUB_OUTPUT"):
+        # Recorded after the comment, so the artifact never names a ruling the PR does not show. The workflow uploads
+        # it under this name; a ruling with no artifact is one the merge gate does not count (fails closed).
+        art = Path(os.environ.get("RUNNER_TEMP", ".")) / "pm-ruling"
+        art.mkdir(parents=True, exist_ok=True)
+        (art / "ruling.json").write_text(json.dumps({"pr": pr, "head": head, "verdict": ruling["verdict"],
+                                                     "handoff": str(handoff), "provider": provider, "model": model}))
+        _outputs(artifact=ruling_artifact(pr, head, ruling["verdict"]), artifact_dir=str(art))
     print(f"{ruling.get('verdict') or 'no ruling'}: {ruling['title']}")
 
 

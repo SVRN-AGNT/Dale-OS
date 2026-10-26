@@ -28,6 +28,13 @@ not trusted alone: any workflow on a PR branch can post as github-actions.
 Codex's comments can only be created by Codex's GitHub app, but write access can edit any comment, so a Codex
 comment last edited by anyone else blocks the PR.
 
+With the PM on provider `openweight` (an open-weight model, no Codex review to re-derive from), point 2 reads the
+ruling from the artifact the PM's own run uploaded (`artifact_ruling`): only a run of the caller's PM workflow, defined
+on the default branch, can upload into that run, so a workflow on a PR branch that posts a CLEAR comment and check as
+github-actions still cannot make one count. Any failed check on the head still turns it into CORRECT, and a Codex
+review someone asks for anyway still blocks on its findings. Set PM_PROVIDER=openweight (and PM_WORKFLOW when the
+caller's PM workflow is not `.github/workflows/pm-review.yml`).
+
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
 HANDOFF are blocked by a CORRECT or HOLD, wait for a ruling up to 2 hours, and
@@ -48,6 +55,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -67,6 +75,7 @@ AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 MANUAL_EVENTS = ("workflow_dispatch", "repository_dispatch")
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
 PM_TIMEOUT = dt.timedelta(hours=2)
+PM_WORKFLOW = ".github/workflows/pm-review.yml"
 
 
 # ---------------------------------------------------------------- pure logic
@@ -92,7 +101,7 @@ def newest(runs, name: str):
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
             identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True, codex_reviews=(),
-            reviewed_head=None) -> dict:
+            reviewed_head=None, provider: str = "chatgpt", pm_artifact=None) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
@@ -104,7 +113,9 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     `reviewed_head` reads the commit GitHub's own record of the run an Agent Review names was started for; the pass
     counts only when that is this head. Without it, no Agent Review counts.
     `foreign_edits` lists Codex comments someone other than Codex last edited: write access can edit any comment and
-    the author stays Codex, so any such edit blocks (it could have erased a finding)."""
+    the author stays Codex, so any such edit blocks (it could have erased a finding).
+    `provider` "openweight" takes the PM's ruling from `pm_artifact` (artifact_ruling's answer: the newest verdict a
+    trusted PM run recorded for this head, or None) instead of re-deriving it from Codex's comments."""
     now = now or dt.datetime.now(dt.timezone.utc)
     head = str(head or "").lower()
     out = {"pr": pr.get("number"), "head": head, "held": bool(held), "handoff": False,
@@ -147,18 +158,27 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
         return done("block" if held else "allow", f"no HANDOFF names {head[:8]}" +
                     ("; held scope needs the PM's CLEAR on its exact head" if held else ""))
 
-    # The PM's own derivation, exactly as its dispatch re-check runs it.
-    live = pm.codex_ruling(pm.codex_review_for(pr_comments, head), pm.codex_findings(review_comments, head), head,
-                           pm.reviewer_instruction_edits(paths, instruction_paths),
-                           pm.failed_checks(check_runs) if failed is None else failed,
-                           pm.codex_clean_receipt(pr_comments, head))
-    live_v = live.get("verdict")
-    if live_v in ("CORRECT", "HOLD"):
-        return done("block", f"PM {live_v} on {head[:8]} from Codex's evidence now ({live.get('title')})")
+    if provider == "openweight":
+        # The open-weight PM ruled inside its own run; its recorded verdict is the evidence, and a failed check on the
+        # head still outranks a CLEAR, as the Codex derivation below has it.
+        failed_now = pm.failed_checks(check_runs) if failed is None else failed
+        live_v = "CORRECT" if failed_now else pm_artifact
+        if live_v not in (None, "CLEAR"):
+            why = f"failed checks: {', '.join(failed_now)}" if failed_now else "recorded by the PM's run"
+            return done("block", f"PM {live_v} on {head[:8]} ({why})")
+    else:
+        # The PM's own derivation, exactly as its dispatch re-check runs it.
+        live = pm.codex_ruling(pm.codex_review_for(pr_comments, head), pm.codex_findings(review_comments, head), head,
+                               pm.reviewer_instruction_edits(paths, instruction_paths),
+                               pm.failed_checks(check_runs) if failed is None else failed,
+                               pm.codex_clean_receipt(pr_comments, head))
+        live_v = live.get("verdict")
+        if live_v in ("CORRECT", "HOLD"):
+            return done("block", f"PM {live_v} on {head[:8]} from Codex's evidence now ({live.get('title')})")
     if out["pm"] not in (None, "CLEAR"):
         return done("block", f"the PM's standing ruling on {head[:8]} is {out['pm']}")
 
-    if live_v is None and pm.codex_review_for(pr_comments, head):
+    if provider != "openweight" and live_v is None and pm.codex_review_for(pr_comments, head):
         # Codex finished reviewing this head but no ruling can be read from it (a finding in a form the PM cannot
         # parse, or one that was deleted). The timeout is for "no review arrived", never for this.
         return done("wait", f"Codex finished reviewing {head[:8]} but no ruling can be read from it; "
@@ -316,7 +336,10 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
     complete = getattr(paths, "records", len(paths)) >= int(pr.get("changed_files") or 0)
     # A caller's --held can only raise the bar: the gate's own held-path test always applies too.
     held = bool(held_flag) or bool(pm.held_scope(paths, held_rx)) or not complete
-    return verdict(pr=pr, head=head, held=held, complete=complete, pr_comments=pm._paginate(f"/issues/{n}/comments"),
+    provider = (os.environ.get("PM_PROVIDER") or "chatgpt").lower()
+    default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch") or ""
+    return verdict(provider=provider, pm_artifact=artifact_ruling(n, head, default_branch) if provider == "openweight" else None,
+                   pr=pr, head=head, held=held, complete=complete, pr_comments=pm._paginate(f"/issues/{n}/comments"),
                    review_comments=pm._paginate(f"/pulls/{n}/comments"),
                    check_runs=pm._paginate(f"/commits/{head}/check-runs?filter=all"),
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
@@ -325,6 +348,34 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
                    workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n),
                    codex_reviews=pm._paginate(f"/pulls/{n}/reviews")) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
                                                                                       "mergeable": pr.get("mergeable")}
+
+
+def artifact_ruling(n: int, head: str, default_branch: str, fetch=None, workflow: str = "") -> str | None:
+    """The newest verdict a run of the caller's PM workflow, defined on the default branch, recorded for this exact
+    head (pm_review.ruling_artifact), or None. An artifact from any other run (a pull_request run, a branch's copy of
+    the file, another workflow) is ignored, so it cannot stand in for the PM. Fails closed: unreadable is None."""
+    fetch = fetch or (lambda path: pm._api("GET", path))
+    workflow = workflow or os.environ.get("PM_WORKFLOW") or PM_WORKFLOW
+    best = None
+    for v in pm.VERDICTS:
+        name = pm.ruling_artifact(n, head, v)
+        try:
+            arts = (fetch(f"/actions/artifacts?name={urllib.parse.quote(name)}&per_page=100") or {}).get("artifacts") or []
+        except Exception:  # noqa: BLE001 - unreadable evidence is no evidence
+            continue
+        for a in arts:
+            run_id = (a.get("workflow_run") or {}).get("id")
+            if a.get("name") != name or not run_id:
+                continue
+            try:
+                wf = fetch(f"/actions/runs/{int(run_id)}") or {}
+                trusted = str(wf.get("path") or "").split("@")[0] == workflow and pm._defined_on(wf, default_branch, fetch)
+            except Exception:  # noqa: BLE001
+                trusted = False
+            key = (a.get("created_at") or "", a.get("id") or 0)
+            if trusted and (best is None or key > best[0]):
+                best = (key, v)
+    return best[1] if best else None
 
 
 def _workflow_runs(head: str) -> list[dict]:

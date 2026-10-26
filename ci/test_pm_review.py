@@ -718,6 +718,50 @@ finally:
     if saved_env is not None:
         os.environ["IGNORE_CHECKS"] = saved_env
 
+# provider openweight
+check("the ruling artifact names the PR, the exact head and the verdict",
+      pm.ruling_artifact(12, HEAD.upper(), "OWNER_GATE") == f"pm-ruling-12-{HEAD}-OWNER_GATE")
+check("an open-weight ruling counts PM rounds, not Codex rounds", pm.round_budget(1, "CLEAR", pm.reviewer_name("openweight"))
+      .startswith("**PM round 1"))
+check("a Codex ruling still counts Codex rounds", pm.round_budget(1, "CLEAR").startswith("**Codex round 1"))
+ow_comment = pm.ruling_comment({"verdict": "CLEAR", "body": "b"}, 12, HEAD, "x", 9, "u", "openweight", "", "z-ai/glm-5.2")
+check("an open-weight ruling names its model", "`z-ai/glm-5.2`" in ow_comment and "Codex" not in ow_comment)
+check("an open-weight ruling keeps the header the gate reads", pm.RULING_HEADER.match(ow_comment) is not None)
+wf = (HERE.parent / ".github" / "workflows" / "ci-pm-review.yml").read_text()
+step = wf.split("- name: PM ruling (open-weight model, read-only)", 1)[1].split("\n  post:", 1)[0]
+check("the open-weight key is passed only to the open-weight step",
+      wf.count("secrets.openweight_api_key }}") == 1 and "OPENWEIGHT_API_KEY: ${{ secrets.openweight_api_key }}" in step)
+check("the open-weight step is the last step of the review job", "- name:" not in step and "uses:" not in step)
+check("the post job records the ruling as an artifact named by the PM",
+      "name: ${{ steps.post.outputs.artifact }}" in wf and "actions/upload-artifact@" in wf)
+
+import tempfile  # noqa: E402
+_t = Path(tempfile.mkdtemp())
+_saved = (pm._api, pm._paginate, os.environ.get("GITHUB_OUTPUT"), os.environ.get("RUNNER_TEMP"))
+posted = []
+pm._api = lambda method, path, body=None: posted.append((path, body))
+pm._paginate = lambda path: []
+os.environ["GITHUB_OUTPUT"], os.environ["RUNNER_TEMP"] = str(_t / "out"), str(_t)
+try:
+    pm._post_ruling({"ruled": True, "verdict": "CLEAR", "conclusion": "success", "title": "PM CLEAR", "body": "b"},
+                    12, HEAD, "x", 9, "u", "openweight", "m")
+    out = (_t / "out").read_text()
+    rec = json.loads((_t / "pm-ruling" / "ruling.json").read_text())
+    check("a ruling is recorded for the artifact after its comment",
+          f"artifact=pm-ruling-12-{HEAD}-CLEAR" in out and rec["verdict"] == "CLEAR" and rec["head"] == HEAD
+          and [p for p, _ in posted] == ["/check-runs", "/issues/12/comments"])
+    (_t / "out").write_text("")
+    pm._post_ruling({"ruled": False, "conclusion": "action_required", "title": "No PM ruling", "body": "b"},
+                    12, HEAD, "x", 9, "u", "openweight", "m")
+    check("no ruling records no artifact", "artifact=" not in (_t / "out").read_text())
+finally:
+    pm._api, pm._paginate = _saved[0], _saved[1]
+    for k, val in (("GITHUB_OUTPUT", _saved[2]), ("RUNNER_TEMP", _saved[3])):
+        if val is None:
+            os.environ.pop(k, None)
+        else:
+            os.environ[k] = val
+
 if errors:
     print("PM REVIEW TEST FAILED")
     for e in errors:
