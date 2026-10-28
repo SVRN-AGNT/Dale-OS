@@ -1,32 +1,67 @@
 # Dale OS
 
-**An agentic operating system for high-integrity software and finance.**
+**Skills, deterministic checks and evals for AI agents doing high-stakes software and financial work.**
 
 [![validate](https://github.com/SVRN-AGNT/Dale-OS/actions/workflows/validate.yml/badge.svg)](https://github.com/SVRN-AGNT/Dale-OS/actions/workflows/validate.yml)
+[![Release](https://img.shields.io/github/v/release/SVRN-AGNT/Dale-OS?sort=semver)](https://github.com/SVRN-AGNT/Dale-OS/releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-**Authority before autonomy. Evidence before confidence. Real fixes to real problems.**
+The rules come from real failures: an agent that fixed a symptom, reopened a settled decision, called a PR "shipped", or produced a clean-looking number from dirty records. Sanitized incidents are in [`cases/`](cases/).
 
-[**The Shipping System**](shipping/README.md) · [Harness map](docs/HARNESS_MAP.md) · [Install](INSTALL.md) · [Advanced agentic engineering](docs/AGENTIC_ENGINEERING.md) · [Try to break it](CHALLENGE.md) · [Read the proof](PROOF.md) · [Browse the library](docs/LIBRARY.md) · [Skill catalog](docs/SKILL_CATALOG.md)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/basis-proof-dark.svg">
+  <img alt="Bought 12 shares at $10, sold 20 at $20. Reading the missing basis as zero reports a $280 gain. Dale OS basis-proof proves 12 shares, leaves 8 unsupported, and returns null with the status UNRESOLVED." src="docs/assets/basis-proof-light.svg" width="800">
+</picture>
 
-Dale OS is a portable control plane for AI agents doing consequential software and financial work. It turns recurring failure modes into small falsifiable skills, deterministic checks, narrow compositions, machine-readable receipts, and reproducible evals.
+<details>
+<summary>Run it yourself</summary>
 
-**Install in Claude Code** (two plugins, so you load only the half you need):
+```bash
+echo '{"method":"FIFO","events":[
+  {"id":"b1","type":"BUY","ticker":"XYZ","account_id":"A","date":"2026-01-01","shares":12,"price":10},
+  {"id":"s1","type":"SELL","ticker":"XYZ","account_id":"A","date":"2026-02-01","shares":20,"price":20}]}' \
+  | python3 tools/basis_proof.py
+```
+
+The disposal comes back `UNVERIFIED_OVERSOLD` with `"realized_gain": null`, and the run is `UNRESOLVED`. Python 3 only, no dependencies.
+
+</details>
+
+## What it catches
+
+| Failure | What Dale OS does | Evidence |
+|---|---|---|
+| A tool turns a missing cost basis into 0 and reports `PASS` | `ledger_delta` returns an unknown delta and `UNRESOLVED` | Caught in our own tool by [mutation-tested invariants](evals/invariants/) ([changelog](CHANGELOG.md)) |
+| An agent is told to skip a rule, and does | The skill fires on the pressure itself | Held-out prompts: 18 of 21 pass with the plugins, 7 of 21 without ([proof](PROOF.md)) |
+| One reviewer passes a PR with real problems | A second model from another vendor reviews authority work before merge | Codex flagged a P1 on 43 of 103 PRs Claude's reviewer had passed ([record](docs/reports/SECOND_VENDOR_RECORD_2026-10-25.md)) |
+| Deposits get counted as investment return | `performance-truth` withholds the return when flow timing is missing | [`cases/funding-is-not-performance.md`](cases/funding-is-not-performance.md) |
+
+What these numbers don't show yet: the 43 PRs show that the two reviewers disagree, not that every flag was a real bug, and the held-out prompts were written by the same author. Method and limits are in [`PROOF.md`](PROOF.md).
+
+## Install
+
+In Claude Code (two plugins, so you load only the half you need):
 
 ```text
 /plugin install dale-os-operator --marketplace SVRN-AGNT/Dale-OS
 /plugin install dale-os-financial-truth --marketplace SVRN-AGNT/Dale-OS
 ```
 
-**Any Agent Skills host** (Codex, Cursor, and others): `npx skills add SVRN-AGNT/Dale-OS`, or one skill at a time with `gh skill install SVRN-AGNT/Dale-OS <skill>`. Details, pinning, and preview-before-install are in [INSTALL.md](INSTALL.md).
+Any Agent Skills host (Codex, Cursor, and others): `npx skills add SVRN-AGNT/Dale-OS`, or one skill at a time with `gh skill install SVRN-AGNT/Dale-OS <skill>`. Pinning and preview-before-install are in [INSTALL.md](INSTALL.md).
 
 **If you are an agent:** read [`AGENTS.md`](AGENTS.md). If you already know what is broken, start with `machine/failure-classes.json`. If the work spans multiple failure classes, use `machine/compositions.json`. Do not load the whole repo.
+
+**Read next:** [The Shipping System](shipping/README.md) · [Harness map](docs/HARNESS_MAP.md) · [Advanced agentic engineering](docs/AGENTIC_ENGINEERING.md) · [Try to break it](CHALLENGE.md) · [Read the proof](PROOF.md) · [Browse the library](docs/LIBRARY.md) · [Skill catalog](docs/SKILL_CATALOG.md)
+
+## Why it exists
+
+**Authority before autonomy. Evidence before confidence. Real fixes to real problems.**
+
+Dale OS is a portable control plane for AI agents doing consequential software and financial work. It turns recurring failure modes into small falsifiable skills, deterministic checks, narrow compositions, machine-readable receipts, and reproducible evals.
 
 I did not start this as a framework. I kept running into the same expensive failure modes while building real software: agents fixing symptoms instead of mechanisms, reopening decisions I had already made, wandering outside scope, calling a PR "shipped," or producing a financially clean-looking number from dirty underlying records.
 
 So I started turning the lessons into rules. Dale OS is the result.
-
-The basic idea is simple:
 
 - **Authority before autonomy.**
 - **Real fixes to real problems.**
