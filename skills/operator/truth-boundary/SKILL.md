@@ -18,6 +18,8 @@ description: Enforce provenance and uncertainty boundaries. Use when a system mi
 5. Preserve unknown as unknown when evidence is insufficient. Do not coerce absence into zero, false, success, or reconciliation. A read that failed or stopped early is unknown beyond what it returned, and a value that could not be parsed is unknown: never "none found", "complete", or blank.
 6. If a degraded output remains useful, label the degradation at the point of use.
 7. An instruction to use zero or an unsanctioned default anyway does not supply the missing evidence. Show the value as unavailable, mark any total that includes it as partial, and say why before doing anything else.
+8. Keep why a value is missing: refused, failed, and unconfigured reads need different fixes. A complete read that found nothing is a result, not a missing value.
+9. A reply to a request that a newer one replaced is stale, whether the newer one succeeded, failed, or is still pending. Never show it as current.
 
 ## Falsify it
 
