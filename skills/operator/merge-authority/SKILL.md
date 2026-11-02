@@ -25,7 +25,7 @@ An automated merge is safe when nothing the requester controls can grant the per
 - A passing build accepted as approval for changes no test can judge, such as permission logic.
 - An approval carried over after new commits or a moved base.
 - A bot's sign-off satisfying a gate meant for a human.
-- A check trusted by its name instead of by the app or account that posted it, verified by the gate.
+- A check trusted by its name or by the app that posted it. Several workflows can post through one app, so the gate must prove which workflow definition and run produced the check, and that the definition comes from the protected branch.
 - A hold label, or any other marker, that no gate actually reads.
 
 ## Relationship
