@@ -18,7 +18,7 @@ Before, the owner was the merge loop. Agents could write code quickly, but:
 - held changes waited for the owner, and every merge restarted an hour-long release suite, so one release stayed open for 3 h 55 min;
 - a planned auto-fixer would have pushed under the owner's own account, limited only by an instruction.
 
-The aim is not to remove people. It is to move them to the steps that need a person: releasing to production, granting access, and deciding when an automated judge has earned more authority.
+The aim is not to remove people. It is to move them to the steps that need a person: applying schema changes to the live database, granting access, and deciding when an automated judge has earned more authority.
 
 ## The operating model
 
@@ -29,8 +29,8 @@ The aim is not to remove people. It is to move them to the steps that need a per
 | **Builder** | A Claude session | Writes the change on its own branch, verifies locally, opens a draft PR, marks it ready | Merge, approve itself, edit its own judge |
 | **Agent Reviewer** | A fresh Claude instance in CI | Reads the diff at the exact head commit and posts a typed verdict as a check run, with each blocking finding quoting the line it cites | Push, merge, approve held scope |
 | **Second-vendor reviewer** | A model from a different vendor (here, Codex on the owner's ChatGPT plan, read by a "PM" workflow) | Gives a second opinion on authority work (truth and held lanes) once the Builder posts a `HANDOFF:` naming a ready head whose CI and Agent Review are green. The PM posts `CLEAR`, `CORRECT` or `HOLD` as a check on that head | Merge |
-| **Controller** | A GitHub workflow (or a merge queue) | The only merger into the integration branch. Merges eligible PRs into the integration branch, one at a time, and held PRs only through the merge gate | Merge held scope without a CLEAR it re-derives itself, promote, deploy |
-| **Owner** | A person | Authorises each promotion to production, sets up access once, makes the rulings the gate enforces, stops any PR with an `owner-hold` label | Routine merges, held merges |
+| **Controller** | A GitHub workflow (or a merge queue) | The only merger into the integration branch. Merges eligible PRs into the integration branch, one at a time, and held PRs only through the merge gate | Merge held scope without a CLEAR it re-derives itself, deploy by any other path |
+| **Owner** | A person | Applies each migration's SQL to the live database, sets up access once, makes the rulings the gate enforces, stops any PR with an `owner-hold` label | Routine merges, held merges |
 
 ### Lanes
 
@@ -72,8 +72,7 @@ flowchart LR
   PM -->|L2: CLEAR or 2 h| C
   PM -->|L3 held: CLEAR only| G[Merge gate<br/>re-derives the CLEAR]
   G --> C
-  C --> I[(Integration<br/>branch)]
-  I -->|frozen cut| P[Promotion<br/>owner approves] --> PROD[(Production)]
+  C --> I[(Integration branch<br/>= production)]
 ```
 
 ### Rules that make it hold
@@ -87,27 +86,27 @@ Each rule exists because its absence caused, or nearly caused, a real failure. T
 5. **Shadow first.** A new reviewer reports and does not block until it clears a written bar: at least 30 PRs, at least 80% precision, at least 4 of 5 planted defects caught, at least 9 of 10 re-runs agreeing, "could not review" on at most 5% of runs, bounded cost and wall time, and at most 1 escape (full bar in [ADOPT step 11](ADOPT.md#step-11--the-reviewer-earns-blocking-power)). Falling below the demotion line returns it to report-only with no decision needed, because that narrows authority. In the reference repo the merge gate already requires a passing review on HANDOFF and held PRs, before the bar was measured; this is open debt (harness map, known limits).
 6. **Two vendors on authority work.** On truth and held lanes, a second opinion from a different vendor has to clear the change before it merges, so approval is never one model agreeing with itself. On the truth lane a 2-hour timeout keeps a quiet reviewer from stalling the line. Held scope has no timeout (the ready rule above). Ordinary work relies on the Agent Review alone.
 7. **The review trigger is not the author's choice.** Agent Review runs on every ready PR automatically. The `HANDOFF:` for the second vendor is part of every truth and held PR's checklist, not something the author may skip. The author still posts it: held scope cannot merge through the lane without it, but on the truth lane a skipped HANDOFF is caught only by convention (harness map, known limits). See the case [the reviewer nobody called](../cases/the-reviewer-nobody-called.md).
-8. **One lander.** Only the Controller merges automatically. No session merges, enables auto-merge or updates branches around it. The one session merge is a promotion the owner authorised for that cut (What stays human).
+8. **One lander.** Only the Controller merges automatically. No session merges, enables auto-merge or updates branches around it.
 9. **Held scope lands through a gate that re-derives the verdict.** No approver yet exists that the automation cannot impersonate (the trusted-reviewer list is empty by design), so a person's approval can't release held scope. Instead the merge gate releases it when the current head has green CI, a passing Agent Review, a `HANDOFF:` naming it, and a PM `CLEAR` that still stands when the gate re-reads Codex's own comments and the head's checks, once at election and again just before the merge call. A finding posted after the CLEAR blocks the merge. An `owner-hold` label stops any PR. (Owner ruling, 16 October 2026: no person types "merge".)
 10. **The verdict must outlive the merge call.** Before 16 October, held PRs were merged by hand, and two were merged before the second opinion arrived, which turned the review into a check that ran after the merge. The gate's second read just before the merge call, and its refusal to count the 2-hour timeout on held scope, exist because of that.
 11. **Limits live in access, not in prompts.** Any agent that pushes gets its own identity with limits the platform enforces. Until then, the auto-fixer stays paused.
 12. **Evidence covers only the tree it judged, and the same tree is never tested twice.** A skip is allowed only when the identical tree is already green.
 13. **Red tells someone.** A red scheduled or trunk run opens one issue, which closes itself when the run is green again.
 14. **Every model job has caps:** a spend budget, a process timeout, a job timeout and a concurrency group.
-15. **A release is frozen at one commit.** Merges keep landing while a promotion runs, and the receipt is generated from git rather than written by hand.
+15. **Every merge is a release, so the gates sit on the merge.** In the reference repo the integration branch is production, so each Controller merge deploys. Checks that once ran only at a promotion now run per PR: a truth-engine change needs a clearance naming its head's engine digest, and a PR with a migration waits until its objects exist in the database.
 16. **Builders do not refresh the base just to stay current.** Freshness is the Controller's job. A Builder merges the base into its branch only to fix a conflict, to pick up code it needs, or once before a held PR's final `HANDOFF:`, because the lander never updates a held PR. The shared merge lane refuses a PR that GitHub reports as behind its base, which GitHub does only where branch protection requires branches to be up to date; there a moved base costs a refresh and a new HANDOFF. The reference repo's Controller instead merges a behind held PR when the base changed none of its files (owner ruling, 16 October 2026). That lands a combined tree nobody tested, against step 1 of [`merge-authority`](../skills/operator/merge-authority/SKILL.md), and the [harness map](../docs/HARNESS_MAP.md#known-limits) lists it as a known limit. Each refresh is a new head, so the full PR gate runs again. In the reference repo, heads that only merged in the base used 30% of PR CI minutes over 200 runs (973 of 3,279 billed minutes on 13 and 14 October 2026).
 
 ### What stays human
 
 | Step | Why it is a person's |
 |---|---|
-| Authorise each promotion to production (a session performs the merge once the full suite is green), and deploy | It cannot be undone by the time anyone reads about it |
+| Apply a migration to the live database, and any deploy other than the Controller's merge (a manual redeploy or rollback) | It cannot be undone by the time anyone reads about it |
 | Create agent identities, rulesets and secrets | It grants access; an agent cannot grant itself access |
 | Allow a sixth or later Codex round on one PR | Repeated rounds mean the change needs splitting or rethinking, not another pass |
 | Give an automated judge more authority | It changes merge authority; it needs measured evidence first |
 | Read production after a deploy | It reads live user data, so it needs a written protocol |
 
-Things the owner no longer does in the reference repo: approve bot runs stuck on "action required", wait while a release suite restarts, be the only check on whether review happened, or notice a red nightly, which now opens an issue. For a promotion, the owner gives a one-off written authorisation for that cut, and a session performs the merge once the full suite is green on it.
+Things the owner no longer does in the reference repo: approve bot runs stuck on "action required", wait while a release suite restarts, be the only check on whether review happened, notice a red nightly, which now opens an issue, or authorise a release: since 29 October 2026 there is no separate promotion step.
 
 ## Status on 14 October 2026
 
@@ -133,6 +132,8 @@ These are the states when this page was written. Check the linked PRs for live s
 **The cost of the day's speed:** held-scope PRs merged by hand carry no Controller attestation, so the next release has to run in full consolidation mode.
 
 **Landed since (14 to 24 October 2026).** Everything under "Built, not landed" merged on 14 October: terse agent test output, skipping post-merge checks for an already-tested tree, promotion receipts generated from git, and adoption of the shared layer in two more repositories. The agents' own GitHub App identity merged the same day; whether every pushing agent uses it is not confirmed. The red-run alert was adopted the same day. The reference repo also gained a truth-clearance gate (see [the harness map](../docs/HARNESS_MAP.md)). Held scope no longer waits for a person: the merge gate described in rule 9 lands it ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)), and this repository runs it on itself. On PRs with a HANDOFF and on held scope, a passing Agent Review is one of the gate's conditions; on ordinary PRs it is still a Builder rule (see the lanes above). The second vendor runs as Codex on the owner's ChatGPT plan, with no API key, and each ruling counts against a round budget. The gate's threat model, including what it does not defend against, is in the same section of `ci/README.md`.
+
+**Since 24 October 2026.** On 29 October the owner retired the reference repo's separate staging branch and its promotion to production; the last promotion ran on 31 October and the staging branch was deleted on 1 November. The integration branch is now production, every Controller merge deploys, and the promotion receipt, frozen cut and pre-promotion checklist are gone. The truth-clearance gate and a migration check moved onto the merge itself (rule 15). The merge lane's token now lives only in a `merge-lane` environment limited to the default branch ([`ci/README.md`](../ci/README.md#the-merge-lane-caller)). A PR that ever carried the `high-stakes` label merges only on a CLEAR, never on the 2-hour timeout.
 
 ## How it relates to the Operating Manual
 
