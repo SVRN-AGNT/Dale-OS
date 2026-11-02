@@ -60,8 +60,8 @@ workflow is the only merger. Here, `merge-lane.yml` considers only PRs that carr
 gate allows it; a PR without a HANDOFF is left to the repository's own merge rule. For every PR with a HANDOFF, the merge gate
 ([`ci/merge_gate.py`](../ci/merge_gate.py)) re-reads Codex's own comments and the head's checks at election and again
 just before the merge call, so a finding posted after a `CLEAR` still blocks. A push revokes every verdict.
-Production promotion is frozen at one commit and needs the owner's written authorisation for that cut; a session
-performs the merge only after the full suite is green on it.
+In the reference repo the integration branch is production (since 29 October 2026), so every Controller merge
+deploys; there is no separate promotion. Any other deploy (a manual redeploy or rollback) needs the owner.
 
 **3. Truth states are part of the type system.** Unknown, stale, unavailable, inferred, estimated and observed stay
 distinguishable everywhere downstream. Missing evidence is never zero, and analytics degrade or withhold when the
@@ -85,7 +85,7 @@ ends in a precise stop that names the blocker and what would clear it. The const
 plan is not allowed to become code.
 
 **7. The fleet has a shape.** Builder sessions never merge held scope, never merge around the lander, and never
-promote without the owner's word for that cut. A coordinator session talks to the owner and
+deploy by any path other than the lander's merge. A coordinator session talks to the owner and
 starts one thread per piece of work. A separate research lane hands findings to the build lane as labelled issues, not
 as pasted text. Each session opens with an execution charter (objective, risk class, scope in and out, stop conditions,
 verification, writeback), and its context budget scales with the risk class
@@ -99,7 +99,7 @@ and a standing invitation to break the claims ([`evals/`](../evals/), [`CHALLENG
 
 **9. Tests are feedback; clearance comes from outside.** In the reference repo the portfolio truth engine is a named
 component whose manifest lists its exact import closure, and a boundary test fails on any drift, so "the engine" means
-the same files everywhere it is copied. A promotion is refused unless an
+the same files everywhere it is copied. A merge that changes the engine is refused unless an
 external Truth Kit, using independent verifiers and planted bugs, has cleared that exact engine digest. A green
 in-repo suite never turns that check green, and a new money rule needs independently written test books before any
 clearance can name it. Financial extraction follows the same split: a model may read a document's layout, but code
