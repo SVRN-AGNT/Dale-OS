@@ -299,7 +299,8 @@ jobs:
     # A fallback ruling's job is named after it ("PM fallback CLEAR #<pr> <head>"). Job names come from this file
     # alone, so that name is the record the merge gate trusts (merge_gate.fallback_verdicts), not the comment.
     # A fallback run whose judge never finished is still sealed NONE, so it counts as a try.
-    name: ${{ needs.review.outputs.review == 'claude' && (needs.judge.outputs.seal || format('PM fallback NONE #{0} {1}', needs.review.outputs.pr, needs.review.outputs.head_sha)) || 'Post the PM ruling' }}
+    # Quoted: unquoted, YAML reads ` #{0}` as the start of a comment and GitHub rejects the whole file.
+    name: "${{ needs.review.outputs.review == 'claude' && (needs.judge.outputs.seal || format('PM fallback NONE #{0} {1}', needs.review.outputs.pr, needs.review.outputs.head_sha)) || 'Post the PM ruling' }}"
     needs: [review, judge]
     if: always() && needs.review.outputs.pr != ''
     runs-on: ubuntu-latest
