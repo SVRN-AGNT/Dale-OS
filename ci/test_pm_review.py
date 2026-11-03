@@ -308,6 +308,7 @@ def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(),
         pm._paginate = lambda path: pages[path]
         os.environ.update({"GITHUB_OUTPUT": str(out), "RUNNER_TEMP": d, "ALLOWED_AUTHORS": "Tataku", "CONTROL_ISSUE": "0",
                            "HELD_PATHS": "", "COMMENT_ID": str(comment["id"]), "GITHUB_REPOSITORY": "o/r", "PROVIDER": "chatgpt",
+                           "GITHUB_WORKFLOW_REF": "o/r/.github/workflows/pm-review.yml@refs/heads/main",
                            **extra_env})
         try:
             pm.cmd_resolve()
