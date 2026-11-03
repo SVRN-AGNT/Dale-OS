@@ -75,12 +75,12 @@ def proven(r):
 
 
 def v(held=True, comments=CLEAR_COMMENTS, review=(), checks=GREEN, pr=PR, paths=("a.py",), now=NOW, identify=proven,
-      failed=None, required=(CI,), workflow_runs=None, foreign_edits=(), reviewed_head=lambda r: HEAD):
+      failed=None, required=(CI,), workflow_runs=None, foreign_edits=(), reviewed_head=lambda r: HEAD, fallback=None):
     return mg.verdict(pr=pr, head=HEAD, held=held, pr_comments=list(comments), review_comments=list(review),
                       check_runs=list(checks), paths=list(paths), allowed=["Tataku"], now=now, identify=identify,
                       failed=failed, required=required,
                       workflow_runs=[wfrun()] if workflow_runs is None else workflow_runs, foreign_edits=foreign_edits,
-                      reviewed_head=reviewed_head)
+                      reviewed_head=reviewed_head, fallback=fallback)
 
 
 # the happy path the owner asked for: no person types
@@ -456,6 +456,111 @@ check("a dispatch runs only the default branch's caller (it holds INTEGRATION_TO
       in caller)
 check("the lane and its caller can read commit statuses (private repos 403 without it)",
       "statuses: read" in code and "statuses: read" in caller)
+
+# ---------------------------------------------------------------- Claude fallback (Codex at its usage limit)
+import pm_review as pmr  # noqa: E402
+
+FB_RUN = "https://github.com/o/r/actions/runs/55"
+
+
+def fb_ruling(verdict="CLEAR", head=HEAD, run=FB_RUN, login="github-actions[bot]", cid=3):
+    return {"id": cid, "user": {"login": login},
+            "body": f"PM REVIEW — {verdict}\n\n**PR:** #12 · **Exact reviewed head:** `{head}` · **Base:** `x`\n"
+                    f"PM-HANDOFF-CONSUMED: 1\n{pmr.FALLBACK_MARK}\n\nbody\n\n---\n_Claude fallback ([run]({run}))._"}
+
+
+FB_COMMENTS = [handoff(), fb_ruling()]
+
+
+def seals(*verdicts):
+    return lambda comments, head, checks: list(verdicts)
+
+
+check("a sealed Claude fallback CLEAR with no Codex evidence merges held scope",
+      v(comments=FB_COMMENTS, fallback=seals("CLEAR"))["allow"]
+      and "Claude fallback" in v(comments=FB_COMMENTS, fallback=seals("CLEAR"))["reasons"][-1])
+check("an unsealed fallback CLEAR waits (any workflow can post the comment)",
+      v(comments=FB_COMMENTS, fallback=seals())["state"] == "wait")
+check("without the fallback reader a fallback CLEAR waits", v(comments=FB_COMMENTS)["state"] == "wait")
+check("any sealed fallback verdict that is not CLEAR blocks",
+      v(comments=FB_COMMENTS, fallback=seals("CLEAR", "CORRECT"))["block"])
+check("a Codex finding after the fallback CLEAR still blocks",
+      v(comments=FB_COMMENTS, review=[finding()], fallback=seals("CLEAR"))["block"])
+check("a failed check after the fallback CLEAR still blocks",
+      v(comments=FB_COMMENTS, failed=["ci"], fallback=seals("CLEAR"))["block"])
+check("the fallback CLEAR still needs a passing Agent Review",
+      v(comments=FB_COMMENTS, checks=[run("Agent Review", "failure"), run("ci", rid=2)], fallback=seals("CLEAR"))["block"])
+check("a standing fallback CORRECT blocks without reading seals",
+      v(comments=[handoff(), fb_ruling("CORRECT")], fallback=seals("CLEAR"))["block"])
+check("a completed Codex review rules over the fallback",
+      v(comments=[handoff(), summary(), fb_ruling()], fallback=lambda c, h, k: (_ for _ in ()).throw(AssertionError("read")))["allow"])
+
+PM_WF = ".github/workflows/pm-review.yml"
+SEAL = f"pm / PM fallback CLEAR #12 {HEAD}"
+os.environ["GITHUB_REPOSITORY"] = "o/r"
+
+
+def fb_fetch(runs=None, jobs=None):
+    """GitHub's records: by default run 55 is the default branch's PM run, sealed CLEAR."""
+    runs = runs if runs is not None else {55: run_of()}
+    jobs = jobs if jobs is not None else {(55, 1): [{"name": SEAL, "conclusion": "success"}]}
+    table = {**{f"/actions/runs/{r}": w for r, w in runs.items()},
+             **{f"/actions/runs/{r}/attempts/{a}/jobs?per_page=100": {"jobs": j} for (r, a), j in jobs.items()}}
+    return lambda path: table[path]
+
+
+def run_of(**over):
+    return dict({"id": 55, "path": PM_WF, "event": "issue_comment", "run_attempt": 1}, **over)
+
+
+def fv(fetch=None, ids=("55",)):
+    return pmr.fallback_verdicts(12, HEAD, list(ids), fetch or fb_fetch(), "main", PM_WF)
+
+
+pm_check = {"name": "PM Review", "app": {"slug": "github-actions"}, "external_id": "handoff:1;run:56"}
+check("run pointers come from the PM's comments about the head and its PM Review checks",
+      pmr.fallback_run_ids(FB_COMMENTS, [pm_check, dict(pm_check, name="ci", external_id="handoff:1;run:77"),
+                                         dict(pm_check, app={"slug": "other"}, external_id="handoff:1;run:78")], HEAD, "o/r") == ["55", "56"])
+check("a comment about another head or repository names no run",
+      pmr.fallback_run_ids([fb_ruling(head=OTHER), fb_ruling(run="https://github.com/x/y/actions/runs/9")], [], HEAD, "o/r") == [])
+check("a default-branch PM run with its seal job proves CLEAR", fv() == ["CLEAR"])
+check("a run of another workflow file proves nothing", fv(fb_fetch(runs={55: run_of(path=".github/workflows/forged.yml")})) == [])
+check("a pull_request run of the PM file (a PR's own copy) proves nothing", fv(fb_fetch(runs={55: run_of(event="pull_request")})) == [])
+check("a seal for another head or PR proves nothing",
+      fv(fb_fetch(jobs={(55, 1): [{"name": f"pm / PM fallback CLEAR #12 {OTHER}", "conclusion": "success"},
+                                  {"name": f"pm / PM fallback CLEAR #13 {HEAD}", "conclusion": "success"}]})) == [])
+check("a CLEAR seal job that did not succeed proves nothing",
+      fv(fb_fetch(jobs={(55, 1): [{"name": SEAL, "conclusion": "failure"}]})) == [])
+check("a CORRECT seal counts whatever its job's conclusion",
+      fv(fb_fetch(jobs={(55, 1): [{"name": f"pm / PM fallback CORRECT #12 {HEAD}", "conclusion": "cancelled"}]})) == ["CORRECT"])
+check("a job merely containing the seal text proves nothing",
+      fv(fb_fetch(jobs={(55, 1): [{"name": SEAL + " x", "conclusion": "success"}]})) == [])
+check("every attempt is read: a re-run cannot hide an earlier CORRECT",
+      sorted(fv(fb_fetch(runs={55: run_of(run_attempt=2)}, jobs={
+          (55, 1): [{"name": f"pm / PM fallback CORRECT #12 {HEAD}", "conclusion": "success"}],
+          (55, 2): [{"name": SEAL, "conclusion": "success"}]}))) == ["CLEAR", "CORRECT"])
+try:
+    fv(ids=("55", "404"))
+    check("a named run that cannot be read (deleted) fails closed", False)
+except KeyError:
+    check("a named run that cannot be read (deleted) fails closed", True)
+
+# The worker's attacks on e4edca2 and 39b6811: the PM's CORRECT comment is deleted, Claude is asked again and says
+# CLEAR. The CORRECT run is still named by its PM Review check, which cannot be deleted, so the gate blocks; and with
+# no comment left saying CLEAR, a non-held PR does not reach the timeout either.
+two_runs = fb_fetch(runs={55: run_of(), 56: run_of(id=56)}, jobs={
+    (56, 1): [{"name": f"pm / PM fallback CORRECT #12 {HEAD}", "conclusion": "success"}],
+    (55, 1): [{"name": SEAL, "conclusion": "success"}]})
+real = lambda comments, head, checks: pmr.fallback_verdicts(  # noqa: E731
+    12, head, pmr.fallback_run_ids(comments, checks, head, "o/r"), two_runs, "main", PM_WF)
+with_check = GREEN + [pm_check]
+check("a deleted fallback CORRECT plus a later CLEAR still blocks", v(comments=FB_COMMENTS, checks=with_check, fallback=real)["block"])
+late = NOW + dt.timedelta(hours=3)
+check("a deleted fallback CORRECT with no ruling left never merges a non-held PR on the timeout",
+      v(held=False, comments=[handoff()], checks=with_check, fallback=real, now=late)["block"])
+one_run = lambda comments, head, checks: pmr.fallback_verdicts(  # noqa: E731
+    12, head, pmr.fallback_run_ids(comments, checks, head, "o/r"), fb_fetch(), "main", PM_WF)
+check("the gate with the real reader allows a sealed CLEAR", v(comments=FB_COMMENTS, fallback=one_run)["allow"])
 
 if errors:
     print("FAIL:\n  " + "\n  ".join(errors))

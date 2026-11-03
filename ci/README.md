@@ -212,6 +212,52 @@ the session acts on. A run with no ruling is not a round. The count reads
 comments by `github-actions[bot]`, which a workflow on a PR branch can also post
 as; a forged ruling can only raise the count, which brings the stop sooner.
 
+### Claude fallback when Codex is at its usage limit: `fallback: claude`
+
+Owner, 2026-11-03: "when my Codex weekly limit is hit we just use the Claude
+review agent in its place", for the 5-hour limit too. With `provider: chatgpt`
+and `fallback: claude`, Codex's own refusal ("You have reached your Codex usage
+limits for code reviews", never edited, created after the HANDOFF that asked)
+wakes the PM. If Codex has left no completed review, finding or failed check on
+the head, a fresh Claude session reviews it read-only (no shell, no writes, no
+network) with the `api` PM's prompt and schema, on the Claude subscription, and
+the ruling is posted like any other. The caller adds the refusal to its `if`,
+`fallback: claude` to `with`, and `claude_code_oauth_token` to `secrets`.
+
+- **Codex stays first.** The fallback never runs while Codex has evidence on
+  the head, and a Codex review or finding arriving later still overrules a
+  Claude `CLEAR` (re-derived by the dispatch re-run and the merge gate).
+- **Not second-vendor.** Claude also wrote the change and ran Agent Review, so
+  the ruling says so. What it keeps: a fresh session, an adversarial PM prompt,
+  and none of Agent Review's verdict.
+- **Not a Codex round.** A fallback ruling carries `PM-REVIEWER: claude-fallback`
+  and the round count skips it.
+- **Provenance.** Any workflow can post as github-actions, and a PR's own
+  workflow token can delete the PM's comments, so no comment is trusted. The
+  fallback run's post job is named after the ruling (`PM fallback CLEAR #<pr>
+  <head>`, or `NONE` for no ruling); job names come from the workflow file,
+  which for `issue_comment` and default-branch dispatches is the default
+  branch's. `pm_review.fallback_run_ids` collects the runs the PR's own records
+  name (each PM comment's run link, and the run in each `PM Review` check's
+  `external_id`; check runs cannot be deleted), and
+  `pm_review.fallback_verdicts` reads each run's record and the jobs of every
+  attempt. A named run that cannot be read fails closed. Whenever Codex has no
+  completed review of the head, the merge gate blocks on any sealed `CORRECT`,
+  `HOLD` or `OWNER GATE` (whatever its job's conclusion and whatever the
+  comments say), and accepts a `CLEAR` only from a successful sealed job. The
+  caller must be `.github/workflows/pm-review.yml` (or set `PM_WORKFLOW` for
+  the gate).
+- **Once per head.** Before running Claude the PM reads the same records: a
+  head that already has a sealed ruling, or two fallback runs with no ruling,
+  is not reviewed again (push a new head, or ask Codex after its reset).
+- **Residual.** Erasing a sealed `CORRECT` takes deleting its comment,
+  rewriting its check and deleting its run, which only a workflow granted
+  actions and checks write can do. That workflow is itself a
+  `.github/workflows/` change: held scope, read by Agent Review.
+- **Codex's completed review rules.** When Codex has completed a review of the
+  head, the gate re-derives the ruling from Codex as before and does not read
+  the fallback.
+
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id (and, for `provider: chatgpt`, its PR
 number). A dispatch from any other branch

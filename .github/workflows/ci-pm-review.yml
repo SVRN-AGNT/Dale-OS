@@ -37,6 +37,19 @@
 #       concurrency: { group: 'pm-review-${{ github.event.issue.number || inputs.pr }}', cancel-in-progress: false }
 #       with: { provider: chatgpt, expected_pr: '${{ inputs.pr }}', ... }   # and no secrets; dispatch takes comment_id and pr
 #
+# fallback: claude (with provider chatgpt) lets a fresh, read-only Claude rule
+# when Codex answers the HANDOFF with its usage-limit refusal (5-hour or weekly)
+# and has left nothing on the head. The caller passes the subscription token and
+# also wakes on that refusal:
+#
+#   if: ... || (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' && contains(github.event.comment.body, 'reached your Codex usage limits'))
+#   with: { provider: chatgpt, fallback: claude, ... }
+#   secrets: { claude_code_oauth_token: '${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}' }
+#
+# The post job of a fallback run is named after its ruling ("PM fallback CLEAR
+# #<pr> <head>"): the merge gate trusts a fallback ruling only through that
+# name, which only this file's definition can give a job.
+#
 # It reviews; it never approves, merges, marks ready or deploys.
 name: ci-pm-review
 
@@ -91,8 +104,22 @@ on:
         description: "api: run Codex with an OpenAI API key. chatgpt: read Codex's own GitHub review (ChatGPT plan, no key)"
         type: string
         default: api
+      fallback:
+        description: "chatgpt only: 'claude' = when Codex refuses the HANDOFF at its usage limit, a fresh read-only Claude rules instead ('' = wait for Codex)"
+        type: string
+        default: ''
+      fallback_model:
+        description: Claude model for the fallback PM (the reasoning tier)
+        type: string
+        default: opus
+      fallback_budget_usd:
+        description: Cap on the plan usage one fallback review may take (notional dollars on the subscription)
+        type: string
+        default: '3'
     secrets:
       openai_api_key:
+        required: false
+      claude_code_oauth_token:
         required: false
 
 permissions:
@@ -120,7 +147,7 @@ jobs:
       base_sha: ${{ steps.prepare.outputs.base_sha }}
       handoff_id: ${{ steps.resolve.outputs.handoff_id }}
       has_key: ${{ steps.cred.outputs.available }}
-      final_message: ${{ steps.codex.outputs.final-message }}
+      final_message: ${{ steps.codex.outputs.final-message || steps.claude.outputs.final_message }}
       ruling: ${{ steps.resolve.outputs.ruling }}
       resolved_base_sha: ${{ steps.resolve.outputs.base_sha }}
       supersede: ${{ steps.resolve.outputs.supersede }}
@@ -159,17 +186,30 @@ jobs:
           INSTRUCTION_PATHS: ${{ inputs.instruction_paths }}
           EXPECTED_PR: ${{ inputs.expected_pr }}
           IGNORE_CHECKS: ${{ inputs.ignore_checks }}
+          FALLBACK: ${{ inputs.provider == 'chatgpt' && inputs.fallback || '' }}
         run: python3 shared/ci/pm_review.py resolve
 
       - name: Check provider credential
         id: cred
-        if: steps.resolve.outputs.review == 'true' && inputs.provider == 'api'
+        if: (steps.resolve.outputs.review == 'true' && inputs.provider == 'api') || steps.resolve.outputs.review == 'claude'
         env:
+          REVIEW: ${{ steps.resolve.outputs.review }}
           HAS_KEY: ${{ secrets.openai_api_key != '' }}
-        run: echo "available=${HAS_KEY}" >> "$GITHUB_OUTPUT"
+          HAS_CLAUDE: ${{ secrets.claude_code_oauth_token != '' }}
+        run: |
+          if [ "$REVIEW" = claude ]; then echo "available=${HAS_CLAUDE}"; else echo "available=${HAS_KEY}"; fi >> "$GITHUB_OUTPUT"
+
+      - name: Checkout the caller's merged default branch for the Claude fallback (never the PR)
+        if: steps.resolve.outputs.review == 'claude' && steps.cred.outputs.available == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: caller
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Fetch the PR as objects (no checkout)
-        if: inputs.provider == 'api' && steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        if: ((inputs.provider == 'api' && steps.resolve.outputs.review == 'true') || steps.resolve.outputs.review == 'claude') && steps.cred.outputs.available == 'true'
         working-directory: caller
         env:
           TOKEN: ${{ github.token }}
@@ -184,8 +224,9 @@ jobs:
 
       - name: Write the PM's inputs
         id: prepare
-        if: inputs.provider == 'api' && steps.resolve.outputs.review == 'true' && steps.cred.outputs.available == 'true'
+        if: ((inputs.provider == 'api' && steps.resolve.outputs.review == 'true') || steps.resolve.outputs.review == 'claude') && steps.cred.outputs.available == 'true'
         env:
+          REVIEWER: ${{ steps.resolve.outputs.review == 'claude' && 'claude' || 'codex' }}
           CALLER_DIR: caller
           PR_NUMBER: ${{ steps.resolve.outputs.pr }}
           HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
@@ -193,6 +234,23 @@ jobs:
           HELD: ${{ steps.resolve.outputs.held }}
           CONTRACT_PATH: ${{ inputs.contract_path }}
         run: python3 shared/ci/pm_review.py prepare
+
+      - name: Install the fallback reviewer CLI
+        if: steps.resolve.outputs.review == 'claude' && steps.cred.outputs.available == 'true'
+        # Exact version, the one ci-agent-review.yml pins: this job holds the subscription token.
+        run: npm install --global --no-audit --no-fund @anthropic-ai/claude-code@2.1.296
+
+      # The last step that runs in a fallback job (the Codex step below is api-only): nothing may run after the
+      # model in a job that holds a token. Read-only tools; the ruling is judged in the next job.
+      - name: PM ruling (Claude fallback, read-only)
+        id: claude
+        if: steps.resolve.outputs.review == 'claude' && steps.cred.outputs.available == 'true'
+        env:
+          CALLER_DIR: caller
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.claude_code_oauth_token }}
+          MODEL: ${{ inputs.fallback_model }}
+          BUDGET_USD: ${{ inputs.fallback_budget_usd }}
+        run: python3 shared/ci/pm_review.py claude
 
       # LAST STEP OF THE JOB: drop-sudo is irreversible for the runner, and
       # nothing may run after the model in a job that holds a token.
@@ -210,9 +268,39 @@ jobs:
           model: ${{ inputs.model }}
           effort: ${{ inputs.effort }}
 
-  post:
-    name: Post the PM ruling
+  judge:
+    name: Judge the Claude fallback ruling
     needs: review
+    if: always() && needs.review.outputs.review == 'claude'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      ruling: ${{ steps.judge.outputs.ruling }}
+      seal: ${{ steps.judge.outputs.seal }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: SVRN-AGNT/Dale-OS
+          ref: ${{ inputs.ref }}
+          path: shared
+          sparse-checkout: ci
+          persist-credentials: false
+      - name: Judge
+        id: judge
+        env:
+          HEAD_SHA: ${{ needs.review.outputs.head_sha }}
+          PR_NUMBER: ${{ needs.review.outputs.pr }}
+          FINAL_MESSAGE: ${{ needs.review.outputs.final_message }}
+        run: python3 shared/ci/pm_review.py judge
+
+  post:
+    # A fallback ruling's job is named after it ("PM fallback CLEAR #<pr> <head>"). Job names come from this file
+    # alone, so that name is the record the merge gate trusts (merge_gate.fallback_verdicts), not the comment.
+    # A fallback run whose judge never finished is still sealed NONE, so it counts as a try.
+    name: ${{ needs.review.outputs.review == 'claude' && (needs.judge.outputs.seal || format('PM fallback NONE #{0} {1}', needs.review.outputs.pr, needs.review.outputs.head_sha)) || 'Post the PM ruling' }}
+    needs: [review, judge]
     if: always() && needs.review.outputs.pr != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -238,7 +326,7 @@ jobs:
           HAS_KEY: ${{ needs.review.outputs.has_key }}
           HEAD_SHA: ${{ needs.review.outputs.head_sha }}
           BASE_SHA: ${{ needs.review.outputs.base_sha || needs.review.outputs.resolved_base_sha }}
-          RULING: ${{ needs.review.outputs.ruling }}
+          RULING: ${{ needs.review.outputs.ruling || needs.judge.outputs.ruling }}
           HANDOFF_ID: ${{ needs.review.outputs.handoff_id }}
           SUPERSEDE: ${{ needs.review.outputs.supersede }}
           FINAL_MESSAGE: ${{ needs.review.outputs.final_message }}
