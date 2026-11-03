@@ -232,14 +232,24 @@ the ruling is posted like any other. The caller adds the refusal to its `if`,
   and none of Agent Review's verdict.
 - **Not a Codex round.** A fallback ruling carries `PM-REVIEWER: claude-fallback`
   and the round count skips it.
-- **Provenance.** Any workflow can post as github-actions, so the merge gate
-  never trusts the comment. The fallback run's post job is named after the
-  ruling (`PM fallback CLEAR #<pr> <head>`); job names come from the workflow
+- **Provenance.** Any workflow can post as github-actions, and a PR's own
+  workflow token can delete the PM's comments, so nothing trusts the comment.
+  The fallback run's post job is named after the ruling (`PM fallback CLEAR
+  #<pr> <head>`, or `NONE` for no ruling); job names come from the workflow
   file, which for `issue_comment` and default-branch dispatches is the default
-  branch's. The gate (`fallback_verdicts`) reads that run's record and the jobs
-  of every attempt, and any sealed verdict for the head that is not `CLEAR`
-  blocks. The caller must be `.github/workflows/pm-review.yml` (or set
-  `PM_WORKFLOW` for the gate).
+  branch's. `pm_review.fallback_verdicts` lists the PM workflow's own runs since
+  the head's first check suite and reads the jobs of every attempt. The merge
+  gate accepts a fallback `CLEAR` only from a successful sealed job, and any
+  sealed `CORRECT`, `HOLD` or `OWNER GATE` for the head blocks whatever its
+  job's conclusion. The caller must be `.github/workflows/pm-review.yml` (or
+  set `PM_WORKFLOW` for the gate).
+- **Once per head.** Before running Claude the PM reads the same records: a
+  head that already has a sealed ruling, or two runs with no ruling, is not
+  reviewed again (push a new head, or ask Codex after its reset). So deleting a
+  `CORRECT` and asking again cannot reroll it.
+- **Codex's completed review rules.** When Codex has completed a review of the
+  head, the gate re-derives the ruling from Codex as before and does not read
+  the fallback.
 
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id (and, for `provider: chatgpt`, its PR

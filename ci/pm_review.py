@@ -273,12 +273,57 @@ def codex_capped(pr_comments, handoff: dict) -> bool:
 
 # The name GitHub gives the post job of a fallback run: the only record of a Claude ruling that a workflow on a PR
 # branch cannot write, because job names come from the run's workflow file (the default branch's, for the PM).
-FALLBACK_SEAL = re.compile(r"(?:^|/ )PM fallback (CLEAR|CORRECT|HOLD|OWNER_GATE) #([0-9]+) ([0-9a-f]{40})$")
+# NONE seals a fallback run that reached no ruling, so the attempts can be counted.
+FALLBACK_SEAL = re.compile(r"(?:^|/ )PM fallback (CLEAR|CORRECT|HOLD|OWNER_GATE|NONE) #([0-9]+) ([0-9a-f]{40})$")
 RUN_LINK = re.compile(r"\(https://github\.com/([^/\s]+/[^/\s]+)/actions/runs/([0-9]+)\)")
+PM_WORKFLOW = ".github/workflows/pm-review.yml"
+# Claude runs at most this many times for one PR head when it reaches no ruling (a crash, a budget stop).
+FALLBACK_TRIES = 2
 
 
 def fallback_seal(verdict, pr, head) -> str:
-    return f"PM fallback {verdict} #{pr} {head}" if verdict in VERDICTS and re.fullmatch(r"[0-9a-f]{40}", str(head)) else ""
+    ok = verdict in VERDICTS or verdict == "NONE"
+    return f"PM fallback {verdict} #{pr} {head}" if ok and re.fullmatch(r"[0-9a-f]{40}", str(head)) else ""
+
+
+def fallback_verdicts(pr_number, head: str, fetch, default_branch: str, workflow_path: str = PM_WORKFLOW,
+                      since: str = "") -> list[str]:
+    """Every sealed Claude fallback verdict for this PR and head, read from GitHub's own run records.
+
+    Runs are listed from the PM workflow itself, never found through comments (a PR's own workflow token can delete
+    the PM's comments, and could then have Claude asked again until it says CLEAR). A run counts only when GitHub took
+    its file from the default branch (`_defined_on`); job names come from that file, so no workflow on a PR branch can
+    write a seal. Every attempt is read, so a re-run hides nothing. A CLEAR counts only from a job that succeeded (its
+    ruling was posted); any other verdict counts whatever its job's conclusion, and NONE marks a run with no ruling.
+    `since` bounds the listing: no seal for a head can predate the head's first check suite (a time GitHub sets on
+    push), or the PR's creation when no suite is listed. Raises on an unreadable record (callers fail closed)."""
+    head = str(head).lower()
+    if not since:
+        suites = (fetch(f"/commits/{head}/check-suites?per_page=100") or {}).get("check_suites") or []
+        stamps = [x.get("created_at") for x in suites if x.get("created_at")]
+        since = min(stamps) if stamps else (fetch(f"/pulls/{int(pr_number)}") or {})["created_at"]
+    wf_file = urllib.parse.quote(workflow_path.rsplit("/", 1)[-1], safe="")
+    out, page = [], 1
+    while True:
+        batch = (fetch(f"/actions/workflows/{wf_file}/runs?created=%3E%3D{urllib.parse.quote(since)}"
+                       f"&per_page=100&page={page}") or {}).get("workflow_runs") or []
+        for wf in batch:
+            if wf.get("conclusion") == "skipped" or wf.get("event") not in ("issue_comment", "workflow_dispatch"):
+                continue
+            if str(wf.get("path") or "").split("@")[0] != workflow_path or not _defined_on(wf, default_branch, fetch):
+                continue
+            for attempt in range(1, int(wf.get("run_attempt") or 1) + 1):
+                jobs = (fetch(f"/actions/runs/{wf['id']}/attempts/{attempt}/jobs?per_page=100") or {}).get("jobs") or []
+                for j in jobs:
+                    m = FALLBACK_SEAL.search(str(j.get("name") or ""))
+                    if not m or int(m.group(2)) != int(pr_number) or m.group(3) != head:
+                        continue
+                    if m.group(1) == "CLEAR" and j.get("conclusion") != "success":
+                        continue
+                    out.append(m.group(1))
+        if len(batch) < 100:
+            return out
+        page += 1
 
 
 def codex_review_for(pr_comments, head: str):
@@ -871,7 +916,25 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
     failed = head_failed_checks(pr, head)
     if not state and not edits and not findings and not failed:
         if env.get("FALLBACK") == "claude" and handoff and codex_capped(pr_comments, handoff):
-            # Codex refused at its usage limit and left nothing on this head: a fresh Claude reviews it instead.
+            # Codex refused at its usage limit and left nothing on this head: a fresh Claude reviews it instead,
+            # once per head. Earlier fallback runs are read from GitHub's run records, not from comments.
+            wf_path = (env.get("GITHUB_WORKFLOW_REF", "").split("@")[0].split("/", 2)[-1]) or PM_WORKFLOW
+            default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch") or ""
+            try:
+                sealed = fallback_verdicts(pr_n, head, lambda path: _api("GET", path), default_branch, wf_path)
+            except Exception as e:  # noqa: BLE001 - unread history: no second review
+                sealed = None
+                print(f"::warning::Could not read earlier fallback runs ({type(e).__name__})")
+            ruled = [x for x in sealed or [] if x != "NONE"]
+            if sealed is None or ruled or len(sealed) >= FALLBACK_TRIES:
+                why = (f"a Claude fallback ruling ({ruled[0]}) is already sealed for {head[:8]}" if ruled else
+                       f"Claude already ran {len(sealed)} time(s) for {head[:8]} with no ruling" if sealed is not None
+                       else "earlier fallback runs could not be read")
+                print(f"::notice::No Claude fallback: {why}")
+                _outputs(review="waiting", pr=pr_n, head_sha=head, handoff_id=handoff_id, base_sha=pr["base"]["sha"],
+                         notice=f"Codex is at its usage limit, and {why}, so Claude does not review it again. "
+                                "Push a new head, or ask Codex again when its limit resets.")
+                return
             print(f"::notice::Codex is at its usage limit; Claude reviews {head[:8]} in its place")
             _write_review_inputs(pr, head, handoff, pr_comments, paths)
             _outputs(review="claude", pr=pr_n, head_sha=head, base_ref=pr["base"]["ref"], handoff_id=handoff_id,
@@ -1100,9 +1163,9 @@ def cmd_judge() -> None:
     head, pr = env["HEAD_SHA"], env["PR_NUMBER"]
     ruling = interpret(env.get("FINAL_MESSAGE", ""), head) if env.get("FINAL_MESSAGE", "").strip() else None
     if not ruling:
-        _outputs(ruling="", seal="")
+        _outputs(ruling="", seal=fallback_seal("NONE", pr, head))
         return
-    _outputs(ruling=json.dumps(ruling), seal=fallback_seal(ruling.get("verdict"), pr, head) if ruling.get("ruled") else "")
+    _outputs(ruling=json.dumps(ruling), seal=fallback_seal(ruling.get("verdict") if ruling.get("ruled") else "NONE", pr, head))
     print(f"{ruling.get('verdict') or 'no ruling'}: {ruling['title']}")
 
 

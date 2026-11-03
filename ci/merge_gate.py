@@ -29,10 +29,9 @@ Codex's comments can only be created by Codex's GitHub app, but write access can
 comment last edited by anyone else blocks the PR.
 
 When Codex refused the HANDOFF at its usage limit, the PM's Claude fallback may rule instead. Its CLEAR counts
-only while Codex has left no evidence on the head (Codex's later review or finding still rules), and only through
-`fallback_verdicts`: the PM ruling's run must be a run of the default branch's PM caller, and GitHub's own record of
-its jobs must carry the seal job naming that verdict, PR and head. Any sealed fallback verdict for the head that is
-not CLEAR, in any attempt of any such run, blocks.
+only while Codex has no completed review of the head (Codex's review or finding, arriving later, rules instead),
+and only through `pm.fallback_verdicts`: GitHub's records of the default branch's PM runs must hold a job sealed
+with that verdict, PR and head. Any sealed fallback verdict for the head that is not CLEAR blocks.
 
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
@@ -73,8 +72,6 @@ AGENT_REVIEW_PATH = ".github/workflows/agent-review.yml"
 MANUAL_EVENTS = ("workflow_dispatch", "repository_dispatch")
 HOLD_LABELS = ("integration-hold", "do-not-merge", "owner-hold")
 PM_TIMEOUT = dt.timedelta(hours=2)
-# The calling repository's PM workflow: the only file whose runs can seal a Claude fallback ruling.
-PM_WORKFLOW = ".github/workflows/pm-review.yml"
 
 
 # ---------------------------------------------------------------- pure logic
@@ -109,7 +106,7 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     (Codex P1s on #41: a HANDOFF can clear before CI starts; a check is only a name a workflow can post).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts.
-    `fallback(pr_comments, head)` is `fallback_verdicts` for this PR: the sealed Claude fallback verdicts for the head.
+    `fallback(pr_comments, head)` is `pm.fallback_verdicts` for this PR: the sealed Claude fallback verdicts for the head.
     Without it, no fallback ruling counts.
     `reviewed_head` reads the commit GitHub's own record of the run an Agent Review names was started for; the pass
     counts only when that is this head. Without it, no Agent Review counts.
@@ -256,43 +253,6 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     return done("allow", f"Agent Review passed and the PM's {out['pm'] or 'timeout'}{by} on {head[:8]} still stands")
 
 
-def fallback_verdicts(pr_comments, pr_number: int, head: str, fetch, default_branch: str, repo: str,
-                      pm_workflow: str = PM_WORKFLOW) -> list[str]:
-    """Every Claude fallback verdict for this PR and head that GitHub's own records seal.
-
-    A fallback ruling comment names its run. The run counts only when it is a run of the repository's PM workflow file
-    that GitHub took from the default branch (`pm._defined_on`), and the verdict only when a job of that run, in any
-    attempt, succeeded under the name `pm.fallback_seal` gives it. Job names come from the workflow file, so no
-    workflow on a PR branch can write one. Every attempt is read so a re-run cannot hide an earlier verdict. A ruling
-    comment whose run is not the PM's adds nothing; a run that cannot be read raises (the gate blocks). Residual: deleting the PM's comment hides its pointer; that needs
-    repository write access, which can also edit the workflows."""
-    out = []
-    seen = set()
-    for c in pr_comments:
-        body = c.get("body") or ""
-        m = pm.RULING_HEADER.match(body)
-        if not (pm._bot_post(c) and m and m.group(2) == head and pm.FALLBACK_MARK in body):
-            continue
-        for link_repo, rid in pm.RUN_LINK.findall(body):
-            if link_repo.lower() != repo.lower() or rid in seen:
-                continue
-            seen.add(rid)
-            try:
-                wf = fetch(f"/actions/runs/{rid}") or {}
-                if str(wf.get("path") or "").split("@")[0] != pm_workflow or not pm._defined_on(wf, default_branch, fetch):
-                    continue
-                jobs = []
-                for attempt in range(1, int(wf.get("run_attempt") or 1) + 1):
-                    jobs += (fetch(f"/actions/runs/{rid}/attempts/{attempt}/jobs?per_page=100") or {}).get("jobs") or []
-            except Exception as e:  # noqa: BLE001 - an unread run could hold a CORRECT, so the read fails closed
-                raise ValueError(f"cannot read the fallback PM run {rid} ({e})") from e
-            for j in jobs:
-                s = pm.FALLBACK_SEAL.search(str(j.get("name") or ""))
-                if s and j.get("conclusion") == "success" and int(s.group(2)) == int(pr_number) and s.group(3) == head:
-                    out.append(s.group(1))
-    return out
-
-
 def claimed_run(r: dict):
     """The workflow run (and attempt) a check names: its run stamp, or the run in its job link. None when neither."""
     m = pm.RUN_STAMP.match(r.get("external_id") or "")
@@ -360,9 +320,9 @@ def _fallback(pr: dict):
             cache[path] = pm._api("GET", path)
         return cache[path]
 
-    return lambda comments, head: fallback_verdicts(comments, pr["number"], head, fetch, default_branch,
-                                                    os.environ.get("GITHUB_REPOSITORY", ""),
-                                                    os.environ.get("PM_WORKFLOW") or PM_WORKFLOW)
+    return lambda comments, head: [v for v in pm.fallback_verdicts(pr["number"], head, fetch, default_branch,
+                                                                   os.environ.get("PM_WORKFLOW") or pm.PM_WORKFLOW)
+                                   if v != "NONE"]
 
 
 def _reviewed_head(r: dict):

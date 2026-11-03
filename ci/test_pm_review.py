@@ -746,11 +746,41 @@ check("a refusal before an edit of the HANDOFF does not",
       not pm.codex_capped([limit()], dict(fb_ask, updated_at="2026-11-02T23:50:00Z")))
 check("a HANDOFF that never asked Codex is never capped",
       not pm.codex_capped([limit()], dict(fb_ask, body=f"HANDOFF: {HEAD}")))
-fb = resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude")
+SINCE = "2026-11-02T20:00:00Z"
+RUNS_PATH = "/actions/workflows/pm-review.yml/runs?created=%3E%3D2026-11-02T20%3A00%3A00Z&per_page=100&page=1"
+
+
+def pm_history(*jobs_per_run, event="issue_comment", path=".github/workflows/pm-review.yml"):
+    """GitHub's records of earlier PM runs: one run per list of job names."""
+    api = {f"/commits/{HEAD}/check-suites?per_page=100": {"check_suites": [{"created_at": SINCE}]},
+           RUNS_PATH: {"workflow_runs": [{"id": 100 + i, "path": path, "event": event, "run_attempt": 1,
+                                          "conclusion": "success"} for i in range(len(jobs_per_run))]}}
+    for i, jobs in enumerate(jobs_per_run):
+        api[f"/actions/runs/{100 + i}/attempts/1/jobs?per_page=100"] = {"jobs": [{"name": n, "conclusion": "success"} for n in jobs]}
+    return api
+
+
+fb = resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs=pm_history())
 check("Codex's refusal wakes the PM and Claude reviews in its place",
       fb.get("review") == "claude" and fb.get("head_sha") == HEAD and fb.get("handoff_id") == "8")
 check("without the fallback input a refusal still waits on Codex",
       resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()]).get("review") == "waiting")
+for hist, why in ((pm_history([f"pm / PM fallback CORRECT #12 {HEAD}"]), "a sealed CORRECT (its comment deleted)"),
+                  (pm_history([f"pm / PM fallback CLEAR #12 {HEAD}"]), "a sealed CLEAR"),
+                  (pm_history([f"pm / PM fallback NONE #12 {HEAD}"], [f"pm / PM fallback NONE #12 {HEAD}"]), "two runs with no ruling")):
+    again = resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs=hist)
+    check(f"Claude does not review a head again after {why}", again.get("review") == "waiting"
+          and "does not review it again" in again.get("notice", ""))
+check("one run with no ruling allows one retry",
+      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude",
+                      workflow_runs=pm_history([f"pm / PM fallback NONE #12 {HEAD}"])).get("review") == "claude")
+check("seals for another PR or head, or from a PR's own copy of the file, do not count",
+      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs={
+          **pm_history([f"pm / PM fallback CLEAR #13 {HEAD}", f"pm / PM fallback CLEAR #12 {OTHER}"])}).get("review") == "claude"
+      and resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs=pm_history(
+          [f"pm / PM fallback CLEAR #12 {HEAD}"], event="pull_request")).get("review") == "claude")
+check("unreadable fallback history means no Claude review",
+      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude").get("review") == "waiting")
 check("a refusal for an earlier ask does not start the fallback",
       resolve_chatgpt(fb_ask, pr_comments=[limit(at="2026-11-02T23:00:00Z"), fb_ask], FALLBACK="claude").get("review") == "waiting")
 check("a failed check on the head is CORRECT without spending a Claude review",
@@ -805,8 +835,8 @@ check("a verified CLEAR is sealed CLEAR", judge(ruling()).get("seal") == f"PM fa
 check("a CLEAR that lists a blocking defect is sealed CORRECT",
       judge(ruling(blocking=[{"file": "a", "line": 1, "evidence": "x", "problem": "p", "failure": "f"}])).get("seal")
       == f"PM fallback CORRECT #12 {HEAD}")
-check("a CLEAR with nothing verified is no ruling and no seal", judge(ruling(verified=[])).get("seal") == "")
-check("no answer is no ruling and no seal", judge("").get("seal") == "" and judge("").get("ruling") == "")
+check("a CLEAR with nothing verified is no ruling, sealed NONE", judge(ruling(verified=[])).get("seal") == f"PM fallback NONE #12 {HEAD}")
+check("no answer is no ruling, sealed NONE", judge("").get("seal") == f"PM fallback NONE #12 {HEAD}" and judge("").get("ruling") == "")
 
 if errors:
     print("PM REVIEW TEST FAILED")
