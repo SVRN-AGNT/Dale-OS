@@ -30,8 +30,9 @@ comment last edited by anyone else blocks the PR.
 
 When Codex refused the HANDOFF at its usage limit, the PM's Claude fallback may rule instead. Its CLEAR counts
 only while Codex has no completed review of the head (Codex's review or finding, arriving later, rules instead),
-and only through `pm.fallback_verdicts`: GitHub's records of the default branch's PM runs must hold a job sealed
-with that verdict, PR and head. Any sealed fallback verdict for the head that is not CLEAR blocks.
+and only through `pm.fallback_verdicts`: a run the PM's comments or `PM Review` checks name must be a default-branch
+PM run holding a job sealed with that verdict, PR and head. Any sealed fallback verdict for the head that is not
+CLEAR blocks, whatever the comments say; a named run that cannot be read blocks too.
 
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
@@ -106,7 +107,7 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     (Codex P1s on #41: a HANDOFF can clear before CI starts; a check is only a name a workflow can post).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts.
-    `fallback(pr_comments, head)` is `pm.fallback_verdicts` for this PR: the sealed Claude fallback verdicts for the head.
+    `fallback(pr_comments, head, check_runs)` returns the sealed Claude fallback verdicts for the head (`pm.fallback_verdicts`).
     Without it, no fallback ruling counts.
     `reviewed_head` reads the commit GitHub's own record of the run an Agent Review names was started for; the pass
     counts only when that is this head. Without it, no Agent Review counts.
@@ -165,13 +166,13 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     if out["pm"] not in (None, "CLEAR"):
         return done("block", f"the PM's standing ruling on {head[:8]} is {out['pm']}")
 
-    if live_v is None and not pm.codex_review_for(pr_comments, head) and fallback is not None and out["pm"] == "CLEAR":
-        # No Codex evidence on the head and a CLEAR stands: it can only be the Claude fallback's, and it counts only
-        # through the seal GitHub wrote for it.
-        sealed = fallback(pr_comments, head)
+    if live_v is None and not pm.codex_review_for(pr_comments, head) and fallback is not None:
+        # No Codex review of the head: any Claude fallback ruling counts, and only through the seal GitHub wrote for
+        # it. A sealed non-CLEAR blocks whatever the comments say (a deleted CORRECT must not reach the timeout).
+        sealed = [x for x in fallback(pr_comments, head, check_runs) if x != "NONE"]
         if any(x != "CLEAR" for x in sealed):
             return done("block", f"a sealed Claude fallback ruling on {head[:8]} is not CLEAR ({', '.join(sorted(set(sealed)))})")
-        if sealed:
+        if sealed and out["pm"] == "CLEAR":
             live_v = "CLEAR"
             out["pm_reviewer"] = "claude-fallback"
     if live_v is None and pm.codex_review_for(pr_comments, head):
@@ -320,9 +321,9 @@ def _fallback(pr: dict):
             cache[path] = pm._api("GET", path)
         return cache[path]
 
-    return lambda comments, head: [v for v in pm.fallback_verdicts(pr["number"], head, fetch, default_branch,
-                                                                   os.environ.get("PM_WORKFLOW") or pm.PM_WORKFLOW)
-                                   if v != "NONE"]
+    return lambda comments, head, checks: pm.fallback_verdicts(
+        pr["number"], head, pm.fallback_run_ids(comments, checks, head, os.environ.get("GITHUB_REPOSITORY", "")),
+        fetch, default_branch, os.environ.get("PM_WORKFLOW") or pm.PM_WORKFLOW)
 
 
 def _reviewed_head(r: dict):

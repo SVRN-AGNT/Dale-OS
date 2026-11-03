@@ -286,44 +286,53 @@ def fallback_seal(verdict, pr, head) -> str:
     return f"PM fallback {verdict} #{pr} {head}" if ok and re.fullmatch(r"[0-9a-f]{40}", str(head)) else ""
 
 
-def fallback_verdicts(pr_number, head: str, fetch, default_branch: str, workflow_path: str = PM_WORKFLOW,
-                      since: str = "") -> list[str]:
-    """Every sealed Claude fallback verdict for this PR and head, read from GitHub's own run records.
+CHECK_RUN_POINTER = re.compile(r";run:([0-9]+)$")
 
-    Runs are listed from the PM workflow itself, never found through comments (a PR's own workflow token can delete
-    the PM's comments, and could then have Claude asked again until it says CLEAR). A run counts only when GitHub took
-    its file from the default branch (`_defined_on`); job names come from that file, so no workflow on a PR branch can
-    write a seal. Every attempt is read, so a re-run hides nothing. A CLEAR counts only from a job that succeeded (its
-    ruling was posted); any other verdict counts whatever its job's conclusion, and NONE marks a run with no ruling.
-    `since` bounds the listing: no seal for a head can predate the head's first check suite (a time GitHub sets on
-    push), or the PR's creation when no suite is listed. Raises on an unreadable record (callers fail closed)."""
+
+def fallback_run_ids(pr_comments, check_runs, head: str, repo: str) -> list[str]:
+    """The workflow runs that may hold a fallback seal for this head, from every record the PM leaves: the run link in
+    each github-actions comment about the head, and the run named in each `PM Review` check on the head (check runs
+    cannot be deleted). Bounded by the PR's own records, never by repository-wide run listings."""
+    ids = []
+    for c in pr_comments:
+        body = c.get("body") or ""
+        if _bot_post(c) and str(head)[:8] in body:
+            ids += [rid for r, rid in RUN_LINK.findall(body) if r.lower() == str(repo).lower()]
+    for r in check_runs:
+        m = CHECK_RUN_POINTER.search(str(r.get("external_id") or ""))
+        if r.get("name") == PM_CHECK and (r.get("app") or {}).get("slug") == "github-actions" and m:
+            ids.append(m.group(1))
+    return sorted(set(ids), key=int)
+
+
+def fallback_verdicts(pr_number, head: str, run_ids, fetch, default_branch: str, workflow_path: str = PM_WORKFLOW) -> list[str]:
+    """Every sealed Claude fallback verdict for this PR and head in the named runs, read from GitHub's run records.
+
+    A run counts only when it is a run of the PM workflow file that GitHub took from the default branch
+    (`_defined_on`); job names come from that file, so no workflow on a PR branch can write a seal. Every attempt is
+    read, so a re-run hides nothing. A CLEAR counts only from a job that succeeded (its ruling was posted); any other
+    verdict counts whatever its job's conclusion, and NONE marks a fallback run with no ruling. A named run that cannot
+    be read raises, so a deleted run fails closed. Residual: erasing a verdict needs its comment deleted, its check
+    rewritten and its run deleted, which only a workflow that asks for actions and checks write can do; such a workflow
+    is a `.github/workflows/` change, held scope that Agent Review reads."""
     head = str(head).lower()
-    if not since:
-        suites = (fetch(f"/commits/{head}/check-suites?per_page=100") or {}).get("check_suites") or []
-        stamps = [x.get("created_at") for x in suites if x.get("created_at")]
-        since = min(stamps) if stamps else (fetch(f"/pulls/{int(pr_number)}") or {})["created_at"]
-    wf_file = urllib.parse.quote(workflow_path.rsplit("/", 1)[-1], safe="")
-    out, page = [], 1
-    while True:
-        batch = (fetch(f"/actions/workflows/{wf_file}/runs?created=%3E%3D{urllib.parse.quote(since)}"
-                       f"&per_page=100&page={page}") or {}).get("workflow_runs") or []
-        for wf in batch:
-            if wf.get("conclusion") == "skipped" or wf.get("event") not in ("issue_comment", "workflow_dispatch"):
-                continue
-            if str(wf.get("path") or "").split("@")[0] != workflow_path or not _defined_on(wf, default_branch, fetch):
-                continue
-            for attempt in range(1, int(wf.get("run_attempt") or 1) + 1):
-                jobs = (fetch(f"/actions/runs/{wf['id']}/attempts/{attempt}/jobs?per_page=100") or {}).get("jobs") or []
-                for j in jobs:
-                    m = FALLBACK_SEAL.search(str(j.get("name") or ""))
-                    if not m or int(m.group(2)) != int(pr_number) or m.group(3) != head:
-                        continue
-                    if m.group(1) == "CLEAR" and j.get("conclusion") != "success":
-                        continue
-                    out.append(m.group(1))
-        if len(batch) < 100:
-            return out
-        page += 1
+    out = []
+    for rid in run_ids:
+        wf = fetch(f"/actions/runs/{int(rid)}") or {}
+        if wf.get("event") not in ("issue_comment", "workflow_dispatch"):
+            continue
+        if str(wf.get("path") or "").split("@")[0] != workflow_path or not _defined_on(wf, default_branch, fetch):
+            continue
+        for attempt in range(1, int(wf.get("run_attempt") or 1) + 1):
+            jobs = (fetch(f"/actions/runs/{int(rid)}/attempts/{attempt}/jobs?per_page=100") or {}).get("jobs") or []
+            for j in jobs:
+                m = FALLBACK_SEAL.search(str(j.get("name") or ""))
+                if not m or int(m.group(2)) != int(pr_number) or m.group(3) != head:
+                    continue
+                if m.group(1) == "CLEAR" and j.get("conclusion") != "success":
+                    continue
+                out.append(m.group(1))
+    return out
 
 
 def codex_review_for(pr_comments, head: str):
@@ -921,7 +930,9 @@ def _codex_outputs(pr: dict, head: str, handoff_id, handoff_body, pr_comments, p
             wf_path = (env.get("GITHUB_WORKFLOW_REF", "").split("@")[0].split("/", 2)[-1]) or PM_WORKFLOW
             default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch") or ""
             try:
-                sealed = fallback_verdicts(pr_n, head, lambda path: _api("GET", path), default_branch, wf_path)
+                pm_checks = _paginate(f"/commits/{head}/check-runs?filter=all&check_name=PM%20Review")
+                ids = fallback_run_ids(pr_comments, pm_checks, head, env.get("GITHUB_REPOSITORY", ""))
+                sealed = fallback_verdicts(pr_n, head, ids, lambda path: _api("GET", path), default_branch, wf_path)
             except Exception as e:  # noqa: BLE001 - unread history: no second review
                 sealed = None
                 print(f"::warning::Could not read earlier fallback runs ({type(e).__name__})")
@@ -1094,13 +1105,15 @@ def cmd_post() -> None:
 
 
 def _post_ruling(ruling: dict, pr: int, head: str, base: str, handoff, run_url: str, provider: str = "api") -> None:
+    # A fallback run's check names the run, so its seal can be found even if the comment is deleted.
+    external = f"handoff:{handoff}" + (f";run:{os.environ.get('GITHUB_RUN_ID', '')}" if provider == "claude" else "")
     if provider == "claude":
         budget = "**Claude fallback ruling: Codex was at its usage limit. This is not a Codex round.**" if ruling.get("ruled") else ""
     else:
         budget = round_budget(codex_round(_paginate(f"/issues/{pr}/comments"), handoff), ruling.get("verdict")) if ruling.get("ruled") else ""
     _api("POST", "/check-runs", {
         "name": "PM Review", "head_sha": head, "status": "completed", "conclusion": ruling["conclusion"],
-        "external_id": f"handoff:{handoff}", "details_url": run_url,
+        "external_id": external, "details_url": run_url,
         "output": {"title": ruling["title"], "summary": "\n\n".join(filter(None, [budget, str(ruling["body"])]))[:60000]},
     })
     if ruling.get("ruled"):

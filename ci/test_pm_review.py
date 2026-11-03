@@ -290,7 +290,7 @@ check("a Codex ruling keeps the header the dedupe reads", pm.RULING_HEADER.match
 
 
 def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD, checks=(),
-                    workflow_runs=None, **extra_env) -> dict:
+                    workflow_runs=None, extra_pages=None, **extra_env) -> dict:
     pr_n = 12
     api = {f"/issues/comments/{comment['id']}": comment, f"/issues/{pr_n}": {"pull_request": {"url": "u"}},
            f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
@@ -299,7 +299,7 @@ def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(),
     api.update(workflow_runs or {})
     pages = {f"/issues/{pr_n}/comments": list(pr_comments), f"/pulls/{pr_n}/files": list(files),
              f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs?filter=all": list(checks),
-             f"/commits/{live_head}/check-runs": list(checks)}
+             f"/commits/{live_head}/check-runs": list(checks), **(extra_pages or {})}
     saved = (pm._api, pm._paginate, dict(os.environ))
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "out"
@@ -747,21 +747,27 @@ check("a refusal before an edit of the HANDOFF does not",
       not pm.codex_capped([limit()], dict(fb_ask, updated_at="2026-11-02T23:50:00Z")))
 check("a HANDOFF that never asked Codex is never capped",
       not pm.codex_capped([limit()], dict(fb_ask, body=f"HANDOFF: {HEAD}")))
-SINCE = "2026-11-02T20:00:00Z"
-RUNS_PATH = "/actions/workflows/pm-review.yml/runs?created=%3E%3D2026-11-02T20%3A00%3A00Z&per_page=100&page=1"
+PM_CHECKS = f"/commits/{HEAD}/check-runs?filter=all&check_name=PM%20Review"
 
 
 def pm_history(*jobs_per_run, event="issue_comment", path=".github/workflows/pm-review.yml"):
-    """GitHub's records of earlier PM runs: one run per list of job names."""
-    api = {f"/commits/{HEAD}/check-suites?per_page=100": {"check_suites": [{"created_at": SINCE}]},
-           RUNS_PATH: {"workflow_runs": [{"id": 100 + i, "path": path, "event": event, "run_attempt": 1,
-                                          "conclusion": "success"} for i in range(len(jobs_per_run))]}}
+    """GitHub's records of earlier fallback runs on the head, each named by a PM Review check (one per list of job names)."""
+    api = {}
     for i, jobs in enumerate(jobs_per_run):
+        api[f"/actions/runs/{100 + i}"] = {"id": 100 + i, "path": path, "event": event, "run_attempt": 1}
         api[f"/actions/runs/{100 + i}/attempts/1/jobs?per_page=100"] = {"jobs": [{"name": n, "conclusion": "success"} for n in jobs]}
-    return api
+    checks = [{"name": "PM Review", "app": {"slug": "github-actions"}, "external_id": f"handoff:8;run:{100 + i}"}
+              for i in range(len(jobs_per_run))]
+    return api, checks
 
 
-fb = resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs=pm_history())
+def resolve_fb(hist=None, **kw):
+    api, checks = hist or pm_history()
+    return resolve_chatgpt(limit(), pr_comments=kw.pop("pr_comments", [fb_ask, limit()]), FALLBACK="claude",
+                           workflow_runs=api, extra_pages={PM_CHECKS: checks}, **kw)
+
+
+fb = resolve_fb()
 check("Codex's refusal wakes the PM and Claude reviews in its place",
       fb.get("review") == "claude" and fb.get("head_sha") == HEAD and fb.get("handoff_id") == "8")
 check("without the fallback input a refusal still waits on Codex",
@@ -769,25 +775,22 @@ check("without the fallback input a refusal still waits on Codex",
 for hist, why in ((pm_history([f"pm / PM fallback CORRECT #12 {HEAD}"]), "a sealed CORRECT (its comment deleted)"),
                   (pm_history([f"pm / PM fallback CLEAR #12 {HEAD}"]), "a sealed CLEAR"),
                   (pm_history([f"pm / PM fallback NONE #12 {HEAD}"], [f"pm / PM fallback NONE #12 {HEAD}"]), "two runs with no ruling")):
-    again = resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs=hist)
+    again = resolve_fb(hist)
     check(f"Claude does not review a head again after {why}", again.get("review") == "waiting"
           and "does not review it again" in again.get("notice", ""))
-check("one run with no ruling allows one retry",
-      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude",
-                      workflow_runs=pm_history([f"pm / PM fallback NONE #12 {HEAD}"])).get("review") == "claude")
+check("one run with no ruling allows one retry", resolve_fb(pm_history([f"pm / PM fallback NONE #12 {HEAD}"])).get("review") == "claude")
 check("seals for another PR or head, or from a PR's own copy of the file, do not count",
-      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs={
-          **pm_history([f"pm / PM fallback CLEAR #13 {HEAD}", f"pm / PM fallback CLEAR #12 {OTHER}"])}).get("review") == "claude"
-      and resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude", workflow_runs=pm_history(
-          [f"pm / PM fallback CLEAR #12 {HEAD}"], event="pull_request")).get("review") == "claude")
-check("unreadable fallback history means no Claude review",
-      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], FALLBACK="claude").get("review") == "waiting")
+      resolve_fb(pm_history([f"pm / PM fallback CLEAR #13 {HEAD}", f"pm / PM fallback CLEAR #12 {OTHER}"])).get("review") == "claude"
+      and resolve_fb(pm_history([f"pm / PM fallback CLEAR #12 {HEAD}"], event="pull_request")).get("review") == "claude")
+gone = pm_history([f"pm / PM fallback CORRECT #12 {HEAD}"])
+del gone[0]["/actions/runs/100"]
+check("a named fallback run that was deleted means no Claude review", resolve_fb(gone).get("review") == "waiting")
 check("a refusal for an earlier ask does not start the fallback",
       resolve_chatgpt(fb_ask, pr_comments=[limit(at="2026-11-02T23:00:00Z"), fb_ask], FALLBACK="claude").get("review") == "waiting")
 check("a failed check on the head is CORRECT without spending a Claude review",
-      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()], checks=[runs[0]], FALLBACK="claude").get("review") == "codex")
+      resolve_fb(checks=[runs[0]]).get("review") == "codex")
 check("a completed Codex review of the head rules, not the fallback",
-      resolve_chatgpt(limit(), pr_comments=[codex_summary(HEAD), fb_ask, limit()], FALLBACK="claude").get("review") == "codex")
+      resolve_fb(pr_comments=[codex_summary(HEAD), fb_ask, limit()]).get("review") == "codex")
 check("the caller wakes on Codex's refusal and passes the subscription token",
       "contains(github.event.comment.body, 'reached your Codex usage limits')" in gate and "fallback: claude" in gate
       and "claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" in gate)

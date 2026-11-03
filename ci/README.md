@@ -233,20 +233,27 @@ the ruling is posted like any other. The caller adds the refusal to its `if`,
 - **Not a Codex round.** A fallback ruling carries `PM-REVIEWER: claude-fallback`
   and the round count skips it.
 - **Provenance.** Any workflow can post as github-actions, and a PR's own
-  workflow token can delete the PM's comments, so nothing trusts the comment.
-  The fallback run's post job is named after the ruling (`PM fallback CLEAR
-  #<pr> <head>`, or `NONE` for no ruling); job names come from the workflow
-  file, which for `issue_comment` and default-branch dispatches is the default
-  branch's. `pm_review.fallback_verdicts` lists the PM workflow's own runs since
-  the head's first check suite and reads the jobs of every attempt. The merge
-  gate accepts a fallback `CLEAR` only from a successful sealed job, and any
-  sealed `CORRECT`, `HOLD` or `OWNER GATE` for the head blocks whatever its
-  job's conclusion. The caller must be `.github/workflows/pm-review.yml` (or
-  set `PM_WORKFLOW` for the gate).
+  workflow token can delete the PM's comments, so no comment is trusted. The
+  fallback run's post job is named after the ruling (`PM fallback CLEAR #<pr>
+  <head>`, or `NONE` for no ruling); job names come from the workflow file,
+  which for `issue_comment` and default-branch dispatches is the default
+  branch's. `pm_review.fallback_run_ids` collects the runs the PR's own records
+  name (each PM comment's run link, and the run in each `PM Review` check's
+  `external_id`; check runs cannot be deleted), and
+  `pm_review.fallback_verdicts` reads each run's record and the jobs of every
+  attempt. A named run that cannot be read fails closed. Whenever Codex has no
+  completed review of the head, the merge gate blocks on any sealed `CORRECT`,
+  `HOLD` or `OWNER GATE` (whatever its job's conclusion and whatever the
+  comments say), and accepts a `CLEAR` only from a successful sealed job. The
+  caller must be `.github/workflows/pm-review.yml` (or set `PM_WORKFLOW` for
+  the gate).
 - **Once per head.** Before running Claude the PM reads the same records: a
-  head that already has a sealed ruling, or two runs with no ruling, is not
-  reviewed again (push a new head, or ask Codex after its reset). So deleting a
-  `CORRECT` and asking again cannot reroll it.
+  head that already has a sealed ruling, or two fallback runs with no ruling,
+  is not reviewed again (push a new head, or ask Codex after its reset).
+- **Residual.** Erasing a sealed `CORRECT` takes deleting its comment,
+  rewriting its check and deleting its run, which only a workflow granted
+  actions and checks write can do. That workflow is itself a
+  `.github/workflows/` change: held scope, read by Agent Review.
 - **Codex's completed review rules.** When Codex has completed a review of the
   head, the gate re-derives the ruling from Codex as before and does not read
   the fallback.
