@@ -212,6 +212,35 @@ the session acts on. A run with no ruling is not a round. The count reads
 comments by `github-actions[bot]`, which a workflow on a PR branch can also post
 as; a forged ruling can only raise the count, which brings the stop sooner.
 
+### Claude fallback when Codex is at its usage limit: `fallback: claude`
+
+Owner, 2026-11-03: "when my Codex weekly limit is hit we just use the Claude
+review agent in its place", for the 5-hour limit too. With `provider: chatgpt`
+and `fallback: claude`, Codex's own refusal ("You have reached your Codex usage
+limits for code reviews", never edited, created after the HANDOFF that asked)
+wakes the PM. If Codex has left no completed review, finding or failed check on
+the head, a fresh Claude session reviews it read-only (no shell, no writes, no
+network) with the `api` PM's prompt and schema, on the Claude subscription, and
+the ruling is posted like any other. The caller adds the refusal to its `if`,
+`fallback: claude` to `with`, and `claude_code_oauth_token` to `secrets`.
+
+- **Codex stays first.** The fallback never runs while Codex has evidence on
+  the head, and a Codex review or finding arriving later still overrules a
+  Claude `CLEAR` (re-derived by the dispatch re-run and the merge gate).
+- **Not second-vendor.** Claude also wrote the change and ran Agent Review, so
+  the ruling says so. What it keeps: a fresh session, an adversarial PM prompt,
+  and none of Agent Review's verdict.
+- **Not a Codex round.** A fallback ruling carries `PM-REVIEWER: claude-fallback`
+  and the round count skips it.
+- **Provenance.** Any workflow can post as github-actions, so the merge gate
+  never trusts the comment. The fallback run's post job is named after the
+  ruling (`PM fallback CLEAR #<pr> <head>`); job names come from the workflow
+  file, which for `issue_comment` and default-branch dispatches is the default
+  branch's. The gate (`fallback_verdicts`) reads that run's record and the jobs
+  of every attempt, and any sealed verdict for the head that is not `CLEAR`
+  blocks. The caller must be `.github/workflows/pm-review.yml` (or set
+  `PM_WORKFLOW` for the gate).
+
 To answer a HANDOFF posted before the caller existed, run the workflow by hand
 from the default branch with that comment's id (and, for `provider: chatgpt`, its PR
 number). A dispatch from any other branch
