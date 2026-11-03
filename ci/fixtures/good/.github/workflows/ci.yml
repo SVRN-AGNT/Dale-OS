@@ -17,3 +17,9 @@ jobs:
   alert:
     needs: [test]
     uses: example/Dale-OS/.github/workflows/ci-red-alert.yml@cccc
+  label:
+    name: "${{ format('run #{0}', github.run_number) }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo ok  # a trailing comment after a quoted value is fine

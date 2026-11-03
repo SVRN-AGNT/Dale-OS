@@ -10,6 +10,8 @@ runner time or hide a failure when they are missing:
   concurrency    a workflow triggered by pull_request cancels superseded runs
   double-run     a workflow on pull_request does not also run on push to every branch
   shared-ref     every use of the shared layer pins the same ref
+  yaml-comment   no unquoted `${{ ... }}` value holds ` #`: YAML reads it as a comment, the
+                 expression is cut short, and GitHub rejects the whole file at startup
 
 Usage:
   python ci/ci_hygiene.py [REPO_ROOT] [--strict] [--json]
@@ -25,6 +27,10 @@ import re
 import sys
 from pathlib import Path
 
+# An unquoted plain scalar that opens an expression and then holds " #" before it closes: YAML ends the
+# value at the " #", so the expression never closes and GitHub refuses the workflow (Dale-OS #63's
+# fallback job name, 2026-11-03: every PM run in every caller failed at startup with no job).
+UNQUOTED_EXPR_COMMENT = re.compile(r"^\s*(?:-\s+)?(?:[\w.-]+:\s+)?\$\{\{(?:(?!\}\}).)*?\s#")
 SHARED_LAYER = re.compile(r"uses:\s*['\"]?([\w.-]+/Dale-OS)/\.github/workflows/[\w.-]+@([\w./-]+)")
 
 
@@ -117,6 +123,10 @@ def check_workflow(path: Path, rel: str) -> list[dict]:
                 runs = any(b.startswith("runs-on:") for b in body)
                 if runs and not any(b.startswith("timeout-minutes:") for b in body):
                     add("timeout", n, f"job `{name}` has no timeout-minutes; a hung run bills up to six hours")
+
+    for n, raw in enumerate(lines, 1):
+        if not raw.lstrip().startswith("#") and UNQUOTED_EXPR_COMMENT.search(raw):
+            add("yaml-comment", n, "unquoted `${{ }}` value holds ` #`, which YAML reads as a comment; quote the value")
 
     if "pull_request" in on and not is_reusable_only:
         has_concurrency = "concurrency" in keys or any(
