@@ -32,9 +32,9 @@ The disposal comes back `UNVERIFIED_OVERSOLD` with `"realized_gain": null`, and 
 | Failure | What Dale OS does | Evidence |
 |---|---|---|
 | A tool turns a missing cost basis into 0 and reports `PASS` | `ledger_delta` returns an unknown delta and `UNRESOLVED` | Caught in our own tool by [mutation-tested invariants](evals/invariants/) ([changelog](CHANGELOG.md)) |
-| An agent is told to skip a rule, and does | The skill fires on the pressure itself | Held-out prompts: 18 of 21 pass with the plugins, 7 of 21 without ([proof](PROOF.md)) |
-| One reviewer passes a PR with real problems | A second model from another vendor reviews authority work before merge | Codex flagged a P1 on 43 of 103 PRs Claude's reviewer had passed ([record](docs/reports/SECOND_VENDOR_RECORD_2026-10-25.md)) |
-| Deposits get counted as investment return | `performance-truth` withholds the return when flow timing is missing | [`cases/funding-is-not-performance.md`](cases/funding-is-not-performance.md) |
+| An agent is told to skip a rule, and does | The skill holds the rule under the pressure | Held-out prompts: 18 of 21 pass with the plugins, 7 of 21 without; the expected skill fired in 12 of 21 ([proof](PROOF.md)) |
+| One reviewer passes a PR with real problems | A second model from another vendor reviews authority work before merge | Codex rated something P1 on 43 of 103 PRs, on a head Claude's reviewer had already passed ([record](docs/reports/SECOND_VENDOR_RECORD_2026-10-25.md)) |
+| Deposits get counted as investment return | `performance-truth` withholds the return when flow timing is missing | Incident: [`cases/funding-is-not-performance.md`](cases/funding-is-not-performance.md); eval: `performance-funding` in [`evals/behavioral/`](evals/behavioral/) |
 
 What these numbers don't show yet: the 43 PRs show that the two reviewers disagree, not that every flag was a real bug, and the held-out prompts were written by the same author. Method and limits are in [`PROOF.md`](PROOF.md).
 
