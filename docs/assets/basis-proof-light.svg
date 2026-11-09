@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 464" width="800" height="464" role="img" aria-labelledby="t d">
+<title id="t">No basis, no profit</title>
+<desc id="d">Bought 12 shares at $10 and sold 20 at $20. Reading the missing basis as zero reports a $280 realized gain. Dale OS basis-proof proves 12 shares, leaves 8 unsupported, returns a null gain and the status UNRESOLVED.</desc>
+<rect width="800" height="464" rx="6" fill="#f5f4ef"/>
+<g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">
+  <text x="40" y="58" font-size="17" letter-spacing="1.5" fill="#626760">INPUT</text>
+  <text x="40" y="92" font-size="24" fill="#111311">BUY 12 XYZ @ $10</text>
+  <text x="330" y="92" font-size="24" fill="#111311">SELL 20 XYZ @ $20</text>
+</g>
+<line x1="40" y1="122" x2="760" y2="122" stroke="#d9d8d0" stroke-width="2"/>
+<line x1="400" y1="150" x2="400" y2="370" stroke="#d9d8d0" stroke-width="2"/>
+<g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <text x="40" y="168" font-size="20" fill="#626760">Missing basis read as 0</text>
+  <text x="440" y="168" font-size="20" fill="#626760">Dale OS <tspan font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">basis-proof</tspan></text>
+</g>
+<g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace">
+  <text x="40" y="244" font-size="60" fill="#626760" text-decoration="line-through">$280.00</text>
+  <text x="40" y="290" font-size="22" fill="#626760">reported as a gain</text>
+  <text x="440" y="244" font-size="60" fill="#111311">null</text>
+  <text x="440" y="290" font-size="22" fill="#111311">12 shares proven</text>
+  <text x="440" y="322" font-size="22" fill="#111311">8 shares unsupported</text>
+  <text x="440" y="362" font-size="22" font-weight="700" letter-spacing="1" fill="#9b6423">UNRESOLVED</text>
+</g>
+<line x1="40" y1="396" x2="760" y2="396" stroke="#d9d8d0" stroke-width="2"/>
+<text x="40" y="434" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="21" fill="#111311">No basis, no profit. A missing number stays missing.</text>
+</svg>
