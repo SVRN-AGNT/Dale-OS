@@ -22,8 +22,11 @@ that removes only what a measurement shows is idle.
 | **Boundary** | Exists because of who may do what: held paths, owner gates, the merge lane's token, secrets, the agents' own identity, fail-closed verdicts | **Never.** A better model does not change who is authorised. Limits belong in access and actions, not in a model's instructions |
 | **Preference or owner limit** | Exists because a person chose it: a reply format, a spend cap | **No.** It is not a bet on the model, and only that person changes it |
 
-A piece can be both. The independent reviewer compensates for self-grading and also gates held scope. Only the
-compensation half is ever a candidate: its cost settings can move, its existence as a gate cannot.
+A piece can be both. The independent reviewer compensates for self-grading and also gates held scope. For such a
+mixed piece the gate is never switched off, not even for a test. Its retest runs in shadow: the piece is replayed
+offline on a fixed set of past diffs, its compensating parts (a verify step, a required field, a prompt rule) on and
+off, while the live gate stays authoritative on every real PR. Only those parts can be removed. The gate's existence
+is not a candidate.
 
 ## This repository's pieces
 
@@ -32,9 +35,9 @@ should keep its own table, because its pieces and their costs differ.
 
 | Piece | Kind | Bets that the model... | How to test removal |
 |---|---|---|---|
-| Agent Review on every ready PR by an allowlisted author ([`ci/README.md`](../ci/README.md)) | Compensation and boundary | ...misses its own defects when it grades its own work | Keep the gate. Its timeout may be retested against measured run times; its usage cap is an owner limit (below) |
+| Agent Review on every ready PR by an allowlisted author ([`ci/README.md`](../ci/README.md)) | Compensation and boundary | ...misses its own defects when it grades its own work | Shadow only: the gate stays. Its timeout may be retested against measured run times; its usage cap is an owner limit (below). Its compensating parts are separate rows |
 | The required quote beside every blocking finding | Compensation | ...reports findings that are not in the diff | Replay the reviewer with and without the field on a set of known-bad and known-good diffs; drop it only if false blocks stay at zero |
-| The second vendor on truth and held work | Compensation and boundary | ...shares blind spots with a reviewer of the same vendor | Keep the gate. The record shows the two vendors disagree, not which was right ([report](reports/SECOND_VENDOR_RECORD_2026-10-25.md)), so there is no evidence yet for removal |
+| The second vendor on truth and held work | Compensation and boundary | ...shares blind spots with a reviewer of the same vendor | Shadow only: the gate stays. A shadow retest replays past held diffs and counts findings only this vendor made. The record shows the two vendors disagree, not which was right ([report](reports/SECOND_VENDOR_RECORD_2026-10-25.md)), so there is no evidence yet for removal |
 | Skill descriptions that name the pressure moment ("use when told to skip this") | Compensation | ...won't load the rule when the prompt pushes against it | The behavioral ablation below |
 | The routing table in [`AGENTS.md`](../AGENTS.md) and the resolver | Compensation | ...won't pick the right skill from descriptions alone | The activation run already measures routing without the table, since `AGENTS.md` is not in its context ([`PROOF.md`](../PROOF.md)). The missing arm is a run with the table loaded, on vaguer prompts than the corpus uses; shrink the table to a pointer if that arm adds nothing |
 | The execution charter before non-trivial work | Compensation | ...over-reads context and widens scope | Compare tokens, wall time and scope violations on replayed tasks with and without it |
@@ -55,7 +58,7 @@ should keep its own table, because its pieces and their costs differ.
    ([Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)).
    Fix the grading criteria before the first run and do not change them after seeing results.
 3. **Run with and without the piece** on the current model. Record pass rate, false positives, tokens and wall
-   time.
+   time. For a mixed piece, run both arms offline in shadow and leave the live gate untouched.
 4. **Decide.** Remove the piece only if the run without it is no worse on correctness. Cost alone never justifies
    removing something that catches defects. A difference inside run-to-run noise is not evidence either way.
 5. **Ship the removal as its own PR**, citing the numbers from step 3, under the repository's normal lane. A
