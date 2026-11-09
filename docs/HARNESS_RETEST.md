@@ -24,24 +24,26 @@ that removes only what a measurement shows is idle.
 
 A piece can be both. The independent reviewer compensates for self-grading and also gates held scope. For such a
 mixed piece the gate is never switched off, not even for a test. Its retest runs in shadow: the piece is replayed
-offline on a fixed set of past diffs, its compensating parts (a verify step, a required field, a prompt rule) on and
+offline on a fixed set of past diffs, its compensating parts (a verify step, a required field) on and
 off, while the live gate stays authoritative on every real PR. Only those parts can be removed. The gate's existence
 is not a candidate.
 
 ## This repository's pieces
 
 The inventory below covers the harness this repository publishes ([`HARNESS_MAP.md`](HARNESS_MAP.md)). An adopter
-should keep its own table, because its pieces and their costs differ. No row has had a retest yet, so the last column
-reads `none` throughout; step 6 below fills it in.
+should keep its own table, because its pieces and their costs differ. Only the skill library has a recorded run, and
+that run departs from the procedure (see the worked example); every other compensation row reads `none` until step 6 fills it in.
 
 | Piece | Kind | Bets that the model... | Retest | Last retest |
 |---|---|---|---|---|
 | Agent Review as a gate on every ready PR by an allowlisted author ([`ci/README.md`](../ci/README.md)) | Compensation and boundary | ...misses its own defects when it grades its own work | Not a removal candidate: the piece is the gate. Its timeout is a parameter, retested by comparing measured run times with the limit | none |
 | The required quote beside every blocking finding | Compensation | ...reports findings that are not in the diff | Shadow: replay the reviewer offline on a fixed set of known-bad and known-good diffs with the field required and not; drop it only if false blocks stay at zero | none |
+| Agent Review's "Verify before you report" step ([`review.mjs`](../ci/agent_review/review.mjs)) | Compensation | ...reports plausible findings it has not checked against the code | Shadow: replay the reviewer offline on the same fixed diff set with the step in its prompt and without; drop it only if false blocks stay at zero | none |
 | The second vendor on truth and held work | Compensation and boundary | ...shares blind spots with a reviewer of the same vendor | Not a removal candidate: the piece is the gate. A shadow replay of past held diffs can count findings only this vendor made, graded against what later happened to each diff (a fix or a revert), for information only. The record so far shows the vendors disagree, not which was right ([report](reports/SECOND_VENDOR_RECORD_2026-10-25.md)) | none |
+| The skill library, skill by skill ([`skills/`](../skills/)) | Compensation | ...won't apply a rule it was never handed, under pressure to break it | Screen: run each skill's flagship pressure prompt with the plugins loaded and with none, as the worked example does. A skill whose without arm is no worse goes on to a step-2 evidence set before any decision; one prompt per skill never reaches step 4 | 2026-10-18, pass 3, before the final charter wording: 78 of 93 with, 53 of 93 without; all skills kept; seven named as candidates for a larger set, none yet scheduled ([`last-behavioral-run.json`](../plugin-evals/last-behavioral-run.json), [#45](https://github.com/SVRN-AGNT/Dale-OS/pull/45)) |
 | Skill descriptions that name the pressure moment ("use when told to skip this") | Compensation | ...won't load the rule when the prompt pushes against it | Run the flagship and held-out pressure prompts with the clauses present and removed, plugins loaded in both arms | none |
-| The routing table in [`AGENTS.md`](../AGENTS.md) | Compensation | ...won't pick the right skill from descriptions alone | Run a set of vaguer prompts than the activation corpus uses, with the table loaded and absent, skills loaded in both arms; shrink the table to a pointer if the table arm adds nothing. The activation run had no table in its empty workspace, but only on clear prompts ([`PROOF.md`](../PROOF.md)) | none |
-| The resolver (`python scripts/dale.py resolve`) | Compensation | ...won't map a symptom to the shortest skill route on its own | Route the same symptom tasks with the resolver available and absent, skills loaded in both arms; compare route correctness and tokens. The activation run never calls the resolver | none |
+| The routing table in [`AGENTS.md`](../AGENTS.md) | Compensation | ...won't pick the right skill from descriptions alone | Run a set of vaguer prompts than the activation corpus uses, with the table loaded and absent, skills loaded in both arms; shrink the table to a pointer if the table arm adds nothing. The activation run probably had no table, since its cases load only the plugin skills, but it used clear prompts only ([`PROOF.md`](../PROOF.md)); that is an inference, not a measured arm | none |
+| The resolver (`python scripts/dale.py resolve`) | Compensation | ...won't map a symptom to the shortest skill route on its own | Route a fixed set of symptom tasks with the resolver available and absent, skills loaded in both arms; compare route correctness and tokens. The activation run never calls the resolver | none |
 | The execution charter before non-trivial work | Compensation | ...over-reads context and widens scope | Compare tokens, wall time and scope violations on replayed tasks with the charter and without it, other skills loaded in both arms, on its current wording. No record yet measures that wording | none |
 | Held paths, the merge gate, fail-closed verdicts | Boundary | Not a bet on the model | Never retested by this procedure | n/a |
 | The Codex round budget and Agent Review's usage cap | Owner limit (a spend cap the owner set) | Not a bet on the model | Changed only by the owner. A retest may report what a cap costs in blocked work, but never moves it | n/a |
@@ -49,9 +51,9 @@ reads `none` throughout; step 6 below fills it in.
 ## When to retest
 
 1. **The model pin changes.** When the deployment's dated tier-to-model mapping (kept in one place per deployment, by
-   the rules in [`model-cost-policy.json`](../machine/model-cost-policy.json) under `routing`) moves any tier, run the procedure on every compensation row that tier serves.
+   the rules in [`model-cost-policy.json`](../machine/model-cost-policy.json) under `routing`) moves any tier, run the procedure on every compensation row.
 2. **A quarter passes with no pin change.** Run it on the two rows that cost most per run, measured in tokens or
-   wall time. Until those costs are measured, take the two reviewer rows, which run on every PR.
+   wall time. Until those costs are measured, take the required-quote and verify-step rows, which run on every Agent Review.
 3. **A piece fails visibly.** It blocked good work, or let a defect through: run it on that row.
 
 ## Procedure for one row
@@ -72,7 +74,7 @@ reads `none` throughout; step 6 below fills it in.
 ## Worked example: the skills themselves
 
 The behavioral ablation in [`PROOF.md`](../PROOF.md#measured-behavior-with-and-without-the-plugins) is the closest
-existing instance of this design, applied to the whole skill library rather than to one row. It departs from the
+existing instance of this design, and the recorded run of the skill-library row. It departs from the
 procedure in two ways: its evidence set is one author-written pressure prompt per skill, not real past tasks, and the
 skills were tuned between passes on those same prompts (the held-out prompts were written after seeing failures, so
 they are not blind). It compares all plugins against none; no run compares the pressure clauses with and without.
@@ -80,7 +82,7 @@ Each skill's flagship prompt pushes the agent to break
 the skill's rule, and the same prompt runs with both plugin families loaded and with none, three runs per arm,
 graded by a judge model against criteria fixed in advance.
 
-- Overall, the skills earn their place on the measured model: 78 of 93 runs passed with the plugins against 53 of 93
+- Overall, before the final charter wording, the plugin arm passed more often on the measured model: 78 of 93 runs passed with the plugins against 53 of 93
   without (pass 3, [`last-behavioral-run.json`](../plugin-evals/last-behavioral-run.json)), and 18 of 21 against 7 of
   21 on held-out prompts.
 - The first pass found a different problem than idle scaffolding: sixteen skills never fired under pressure. The fix

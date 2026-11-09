@@ -25,7 +25,7 @@ state, a lesson stored without proof read as a rule. The folders exist to keep t
 | Folder | Holds | Rule |
 |---|---|---|
 | `raw/` | Captured sources, as they arrived | **Immutable.** Never rewritten, reformatted or deleted. A correction is a new file linked to the old one. Metadata goes in a sibling ingestion note, never inside the source |
-| `wiki/` | Pages that synthesise sources: projects, repositories, operations, research | Every page cites its sources and carries a `Contradictions & Open Tensions` section |
+| `wiki/` | Pages that synthesise sources: projects, repositories, operations, research | A page is meant to cite its sources and carry a `Contradictions & Open Tensions` section; the direct writer's pages are exempt (below) |
 | `decisions/` | Numbered owner decisions, `NNNN-<slug>.md` | **Append-only.** See below |
 | `evidence-ledger/` | One Claim / Evidence / Verified table per long task | A row reads `Not yet` until checked, and is never reported as done |
 | `memory/` | Lessons, corrections, confirmed patterns, rejected ideas, standing owner rules, playbooks | Enters only through the promotion gate |
@@ -83,7 +83,7 @@ Each non-trivial session states its mode, and the mode limits what it may do:
 
 Assess is the default when the owner is thinking aloud or asks for an opinion. A session starts by loading, in
 order, the owner's current instruction, the repository state, the work-queue item, the relevant decisions and
-memory, the live git state and known prior failures, then states its goal and what must be verified before it can claim success. It closes with the outcome, the
+memory, the live git state and known risks and prior failures, then states its goal and what must be verified before it can claim success. It closes with the outcome, the
 evidence, what stayed unverified, and any memory it proposes. The execution charter
 ([`execution-charter`](../skills/operator/execution-charter/SKILL.md)) and the completion contract
 ([`completion-contract`](../skills/operator/completion-contract/SKILL.md)) are the portable halves of those rituals.
@@ -93,10 +93,11 @@ evidence, what stayed unverified, and any memory it proposes. The execution char
 More than one agent writes to the vault. Claude sessions land changes through pull requests that Agent Review checks;
 vault documents are not held scope and self-merge under a written owner decision, while code in the same
 repository goes through the held lane. A separate assistant writes its own pages directly to the default branch,
-most days, outside any pull request. Because
-one writer never opens a pull request, the vault's structural lint is advisory: when it was a merge gate, that
-writer's pages turned every pull request red, and sessions spent work repairing pages they had not written. A gate
-has to sit on the path every writer takes, or it punishes the wrong one.
+most days, outside any pull request. When the vault's structural lint was a merge gate, that writer's pages turned
+every pull request red, and sessions spent work repairing pages they had not written. The owner then ruled the lint
+advisory and exempted that writer's pages from the page contract, preferring fewer gates. The lesson we draw, an
+inference rather than the ruling's stated reason: a gate has to sit on the path every writer takes, or it punishes
+the wrong one.
 
 ## Known limits
 
