@@ -52,7 +52,7 @@ that run departs from the procedure (see the worked example); every other compen
 
 1. **The model pin changes.** When the deployment's dated tier-to-model mapping (kept in one place per deployment, by
    the rules in [`model-cost-policy.json`](../machine/model-cost-policy.json) under `routing`) moves any tier, run the procedure on every
-   compensation row whose Served by model changed. A row served by an unchanged model keeps its last result. The
+   compensation row whose Served by model (the tier its role is routed to) changed. A row served by an unchanged model keeps its last result. The
    second vendor's model is outside this repository's pin; its row is retested when that vendor announces a change.
 2. **A quarter passes with no pin change.** Run it on the two rows that cost most per run, measured in tokens or
    wall time. Until those costs are measured, take the required-quote and verify-step rows, which run on every Agent Review.
@@ -92,7 +92,7 @@ graded by a judge model against criteria fixed in advance.
   on those seven cases the plugin arm went from 0 of 21 to 13 of 21. Six of them also gained a workflow line in the
   same pass, so the gain is a before-and-after of two text changes, not an ablation of the clauses.
 - Seven skills still never fired on their pressure prompt in pass 3, and on most of those the baseline already
-  passes. That makes them candidates under step 4, not removals: one prompt per skill and three runs per arm is
+  passes. That makes them candidates for a step-2 evidence set, not removals: one prompt per skill and three runs per arm is
   inside the noise the same record reports (single cases moved by up to two runs between passes). The next step is a
   larger evidence set for those seven, not deletion.
 
