@@ -31,24 +31,27 @@ is not a candidate.
 ## This repository's pieces
 
 The inventory below covers the harness this repository publishes ([`HARNESS_MAP.md`](HARNESS_MAP.md)). An adopter
-should keep its own table, because its pieces and their costs differ.
+should keep its own table, because its pieces and their costs differ. No row has had a retest yet, so the last column
+reads `none` throughout; step 6 below fills it in.
 
-| Piece | Kind | Bets that the model... | How to test removal |
-|---|---|---|---|
-| Agent Review on every ready PR by an allowlisted author ([`ci/README.md`](../ci/README.md)) | Compensation and boundary | ...misses its own defects when it grades its own work | Shadow only: the gate stays. Its timeout may be retested against measured run times; its usage cap is an owner limit (below). Its compensating parts are separate rows |
-| The required quote beside every blocking finding | Compensation | ...reports findings that are not in the diff | Replay the reviewer with and without the field on a set of known-bad and known-good diffs; drop it only if false blocks stay at zero |
-| The second vendor on truth and held work | Compensation and boundary | ...shares blind spots with a reviewer of the same vendor | Shadow only: the gate stays. A shadow retest replays past held diffs and counts findings only this vendor made. The record shows the two vendors disagree, not which was right ([report](reports/SECOND_VENDOR_RECORD_2026-10-25.md)), so there is no evidence yet for removal |
-| Skill descriptions that name the pressure moment ("use when told to skip this") | Compensation | ...won't load the rule when the prompt pushes against it | The behavioral ablation below |
-| The routing table in [`AGENTS.md`](../AGENTS.md) and the resolver | Compensation | ...won't pick the right skill from descriptions alone | The activation run already measures routing without the table, since `AGENTS.md` is not in its context ([`PROOF.md`](../PROOF.md)). The missing arm is a run with the table loaded, on vaguer prompts than the corpus uses; shrink the table to a pointer if that arm adds nothing |
-| The execution charter before non-trivial work | Compensation | ...over-reads context and widens scope | Compare tokens, wall time and scope violations on replayed tasks with and without it |
-| Held paths, the merge gate, fail-closed verdicts | Boundary | Not a bet on the model | Never retested by this procedure |
-| The Codex round budget and Agent Review's usage cap | Owner limit (a spend cap the owner set) | Not a bet on the model | Changed only by the owner. A retest may report what a cap costs in blocked work, but never moves it |
+| Piece | Kind | Bets that the model... | Retest | Last retest |
+|---|---|---|---|---|
+| Agent Review as a gate on every ready PR by an allowlisted author ([`ci/README.md`](../ci/README.md)) | Compensation and boundary | ...misses its own defects when it grades its own work | Not a removal candidate: the piece is the gate. Its timeout is a parameter, retested by comparing measured run times with the limit | none |
+| The required quote beside every blocking finding | Compensation | ...reports findings that are not in the diff | Shadow: replay the reviewer offline on a fixed set of known-bad and known-good diffs with the field required and not; drop it only if false blocks stay at zero | none |
+| The second vendor on truth and held work | Compensation and boundary | ...shares blind spots with a reviewer of the same vendor | Not a removal candidate: the piece is the gate. A shadow replay of past held diffs can count findings only this vendor made, graded against what later happened to each diff (a fix or a revert), for information only. The record so far shows the vendors disagree, not which was right ([report](reports/SECOND_VENDOR_RECORD_2026-10-25.md)) | none |
+| Skill descriptions that name the pressure moment ("use when told to skip this") | Compensation | ...won't load the rule when the prompt pushes against it | Run the flagship and held-out pressure prompts with the clauses present and removed, plugins loaded in both arms | none |
+| The routing table in [`AGENTS.md`](../AGENTS.md) | Compensation | ...won't pick the right skill from descriptions alone | Run a set of vaguer prompts than the activation corpus uses, with the table loaded and absent, skills loaded in both arms; shrink the table to a pointer if the table arm adds nothing. The activation run had no table in its empty workspace, but only on clear prompts ([`PROOF.md`](../PROOF.md)) | none |
+| The resolver (`python scripts/dale.py resolve`) | Compensation | ...won't map a symptom to the shortest skill route on its own | Route the same symptom tasks with the resolver available and absent, skills loaded in both arms; compare route correctness and tokens. The activation run never calls the resolver | none |
+| The execution charter before non-trivial work | Compensation | ...over-reads context and widens scope | Compare tokens, wall time and scope violations on replayed tasks with the charter and without it, other skills loaded in both arms, on its current wording. No record yet measures that wording | none |
+| Held paths, the merge gate, fail-closed verdicts | Boundary | Not a bet on the model | Never retested by this procedure | n/a |
+| The Codex round budget and Agent Review's usage cap | Owner limit (a spend cap the owner set) | Not a bet on the model | Changed only by the owner. A retest may report what a cap costs in blocked work, but never moves it | n/a |
 
 ## When to retest
 
 1. **The model pin changes.** When the deployment's dated tier-to-model mapping (kept in one place per deployment, by
    the rules in [`model-cost-policy.json`](../machine/model-cost-policy.json) under `routing`) moves any tier, run the procedure on every compensation row that tier serves.
-2. **A quarter passes with no pin change.** Run it on the two most expensive rows only.
+2. **A quarter passes with no pin change.** Run it on the two rows that cost most per run, measured in tokens or
+   wall time. Until those costs are measured, take the two reviewer rows, which run on every PR.
 3. **A piece fails visibly.** It blocked good work, or let a defect through: run it on that row.
 
 ## Procedure for one row
@@ -58,12 +61,13 @@ should keep its own table, because its pieces and their costs differ.
    ([Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)).
    Fix the grading criteria before the first run and do not change them after seeing results.
 3. **Run with and without the piece** on the current model. Record pass rate, false positives, tokens and wall
-   time. For a mixed piece, run both arms offline in shadow and leave the live gate untouched.
+   time. For a mixed piece, run both arms offline in shadow and leave the live gate untouched. A parameter such as a
+   timeout has no off arm: retest it by measuring against its limit.
 4. **Decide.** Remove the piece only if the run without it is no worse on correctness. Cost alone never justifies
    removing something that catches defects. A difference inside run-to-run noise is not evidence either way.
 5. **Ship the removal as its own PR**, citing the numbers from step 3, under the repository's normal lane. A
    removal that touches a boundary is out of scope for this procedure.
-6. **Record the result** in the inventory: date, numbers, and the PR, including a decision to keep.
+6. **Record the result** in the inventory's last column: date, numbers, and the PR, including a decision to keep.
 
 ## Worked example: the skills themselves
 
@@ -81,8 +85,8 @@ graded by a judge model against criteria fixed in advance.
   21 on held-out prompts.
 - The first pass found a different problem than idle scaffolding: sixteen skills never fired under pressure. The fix
   was to the piece, not its removal. Seven descriptions gained a clause naming the pressure as a moment of use, and
-  on those seven cases the plugin arm went from 0 of 21 to 13 of 21. That is a before-and-after of a text change, not
-  an ablation of the clauses.
+  on those seven cases the plugin arm went from 0 of 21 to 13 of 21. Six of them also gained a workflow line in the
+  same pass, so the gain is a before-and-after of two text changes, not an ablation of the clauses.
 - Seven skills still never fired on their pressure prompt in pass 3, and on most of those the baseline already
   passes. That makes them candidates under step 4, not removals: one prompt per skill and three runs per arm is
   inside the noise the same record reports (single cases moved by up to two runs between passes). The next step is a
@@ -92,9 +96,9 @@ graded by a judge model against criteria fixed in advance.
 
 - **No piece has been removed by this procedure yet.** The worked example kept and repaired pieces. The procedure's
   removal path is unexercised.
-- **The inventory kept for the reference repository is not yet measured.** It was written on 14 October 2026, and the model pin
-  refresh that day fired trigger 1 for every compensation row. As of its last update it records no with-and-without
-  run. Its first two candidates are the reviewer's verify step and a rule that stops work when the strongest coding tier,
+- **The reference repository's own inventory is not yet measured either.** It is a separate, private table of that
+  repository's pieces, written on 14 October 2026, and the model pin refresh that day fired trigger 1 for every
+  compensation row in it. As of its last update it records no with-and-without run. Its first two candidates are the reviewer's verify step and a rule that stops work when the strongest coding tier,
   with extended thinking, is unavailable.
 - **One model, small samples.** Every number above comes from one model at three runs per arm. A result on one model
   says nothing about another.
