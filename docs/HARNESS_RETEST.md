@@ -63,12 +63,15 @@ that run departs from the procedure (see the worked example); every other compen
 1. **Name the assumption** in one sentence ("the model reports findings that are not in the diff").
 2. **Pick the evidence set.** Prefer 20 to 50 real past tasks or diffs drawn from real failures
    ([Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)).
-   Fix the grading criteria before the first run and do not change them after seeing results.
+   Fix the grading criteria before the first run and do not change them after seeing results. Fix the removal rule
+   too: the number of runs per task in each arm, and the largest drop in correctness you would accept (the margin).
 3. **Run with and without the piece** on the current model. Record pass rate, false positives, tokens and wall
    time. For a mixed piece, run both arms offline in shadow and leave the live gate untouched. A parameter such as a
    timeout has no off arm: retest it by measuring against its limit.
-4. **Decide.** Remove the piece only if the run without it is no worse on correctness. Cost alone never justifies
-   removing something that catches defects. A difference inside run-to-run noise is not evidence either way.
+4. **Decide.** Remove the piece only if the rule fixed in step 2 shows the run without it is no worse: the
+   one-sided 95% upper bound on the drop in correctness (paired by task) stays inside the margin. A tie on a small set
+   is not that. Cost alone never justifies removing something that catches defects, and a result short of the rule
+   means keep.
 5. **Ship the removal as its own PR**, citing the numbers from step 3, under the repository's normal lane. A
    removal that touches a boundary is out of scope for this procedure.
 6. **Record the result** in the inventory's last column: date, numbers, and the PR, including a decision to keep.
