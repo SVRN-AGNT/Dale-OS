@@ -19,6 +19,7 @@ Most dangerous defects produce values that look coherent. They live where two re
    - **Shape.** Does a result field read on one side exist under that name on the other? A success flag spelled differently reads as failure, or as success, by accident.
    - **Projection.** Does a summary or list view drop fields that carry the meaning, and does anything downstream treat it as the full record?
    - **Preview and commit.** Does the dry run check the same conditions as the real write?
+   - **Readers.** When several readers parse one external format, do they accept and reject the same files when each parses by the format's own quoting and spacing rules, never by matching raw text? Prefer one shared parser. Where several must remain, test them all against one shared synthetic fixture, so a format change reaches every one.
    - **Clocks.** Are event time, recorded time, settlement time, and effective time being collapsed into one?
    - **Lifecycle.** Does a delete stay deleted under merge, replay, or sync from another device?
    - **Grade.** Does an evidence or confidence level mean the same thing to the retriever, the scorer, the display, and the writer?
