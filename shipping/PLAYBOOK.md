@@ -101,7 +101,7 @@ Status is from the rollout tracker on 14 October 2026, with PR states checked li
 | R8 | A fast sampled PR tier plus a nightly full regression | F6, F11 | Partly done: the PR tier and nightly exist; further cuts are built |
 | R9 | Caps on every model job; reusable workflows across repos | F10 | Partly done: the reviewer is capped, and the shared layer is in this repo ([#20](https://github.com/SVRN-AGNT/Dale-OS/pull/20)) |
 | R10 | Instructions file under about 200 lines | F5 | Done: 411 to 225 lines |
-| R11 | Deterministic promotion gates | F4, F5 | In progress: tooling, the frozen cut and the receipt generated from git merged (receipt on 2026-10-14) |
+| R11 | Deterministic promotion gates | F4, F5 | Done, then moved: the frozen cut and the git-generated receipt merged on 2026-10-14. The reference repo retired promotion on 2026-10-29, and its truth-clearance and migration gates now run on each merge to production |
 | R12 | Post-deploy production check | F10 | Owner decides: built switched off |
 | R13 | Changelog fragments instead of one shared file | F9 | Not started (by analogy to F9; Anthropic does not describe changelogs) |
 | R14 | Screenshots on UI PRs, driven through the running app | F1, F2, F9 | Done: before and after screenshots on UI PRs (merged 2026-10-14) |

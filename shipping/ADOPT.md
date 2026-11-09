@@ -122,7 +122,7 @@ The owner decides, using the written bar: at least 30 PRs over at least 2 weeks 
 
 ### Step 12 · Releases
 
-Freeze each promotion at one commit on its own branch, generate its receipt from git, and keep the approval with a person. A post-deploy check that reads production needs the owner's account, secret and written protocol (**owner**).
+If a repository releases through a separate promotion, freeze each promotion at one commit on its own branch, generate its receipt from git, and keep the approval with a person. If the integration branch is production (the reference repo since 29 October 2026), put those gates on the merge instead: the checks a release needed run on every PR, and anything that must exist in the live system first (a migration, for example) blocks the merge until it does. A post-deploy check that reads production needs the owner's account, secret and written protocol (**owner**).
 
 ## Where each repository stands
 

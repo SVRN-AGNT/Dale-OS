@@ -28,6 +28,12 @@ not trusted alone: any workflow on a PR branch can post as github-actions.
 Codex's comments can only be created by Codex's GitHub app, but write access can edit any comment, so a Codex
 comment last edited by anyone else blocks the PR.
 
+When Codex refused the HANDOFF at its usage limit, the PM's Claude fallback may rule instead. Its CLEAR counts
+only while Codex has no completed review of the head (Codex's review or finding, arriving later, rules instead),
+and only through `pm.fallback_verdicts`: a run the PM's comments or `PM Review` checks name must be a default-branch
+PM run holding a job sealed with that verdict, PR and head. Any sealed fallback verdict for the head that is not
+CLEAR blocks, whatever the comments say; a named run that cannot be read blocks too.
+
 Held scope never merges on the PM's 2-hour timeout: §4a of the operating manual
 keeps "a timeout alone is not enough" for held scope. Non-held PRs that carry a
 HANDOFF are blocked by a CORRECT or HOLD, wait for a ruling up to 2 hours, and
@@ -92,7 +98,7 @@ def newest(runs, name: str):
 def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, check_runs, paths,
             allowed, instruction_paths: str = "", now: dt.datetime | None = None, failed=None,
             identify=None, required=(), workflow_runs=(), foreign_edits=(), complete=True, codex_reviews=(),
-            reviewed_head=None) -> dict:
+            reviewed_head=None, fallback=None) -> dict:
     """allow: automation may merge this head now. block: a reviewer or a check said no. wait: evidence is not in yet.
     `reasons` says why in words a person can act on. Fails closed: anything unreadable is not an allow.
     `failed` is the PM's list of failed checks on the head; without it every failed run on the head counts.
@@ -101,6 +107,8 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     (Codex P1s on #41: a HANDOFF can clear before CI starts; a check is only a name a workflow can post).
     `identify` is the PM's check_identity for this repository; an Agent Review counts only when it proves
     the check came from the default branch's agent-review.yml. Without it, no Agent Review counts.
+    `fallback(pr_comments, head, check_runs)` returns the sealed Claude fallback verdicts for the head (`pm.fallback_verdicts`).
+    Without it, no fallback ruling counts.
     `reviewed_head` reads the commit GitHub's own record of the run an Agent Review names was started for; the pass
     counts only when that is this head. Without it, no Agent Review counts.
     `foreign_edits` lists Codex comments someone other than Codex last edited: write access can edit any comment and
@@ -158,6 +166,15 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
     if out["pm"] not in (None, "CLEAR"):
         return done("block", f"the PM's standing ruling on {head[:8]} is {out['pm']}")
 
+    if live_v is None and not pm.codex_review_for(pr_comments, head) and fallback is not None:
+        # No Codex review of the head: any Claude fallback ruling counts, and only through the seal GitHub wrote for
+        # it. A sealed non-CLEAR blocks whatever the comments say (a deleted CORRECT must not reach the timeout).
+        sealed = [x for x in fallback(pr_comments, head, check_runs) if x != "NONE"]
+        if any(x != "CLEAR" for x in sealed):
+            return done("block", f"a sealed Claude fallback ruling on {head[:8]} is not CLEAR ({', '.join(sorted(set(sealed)))})")
+        if sealed and out["pm"] == "CLEAR":
+            live_v = "CLEAR"
+            out["pm_reviewer"] = "claude-fallback"
     if live_v is None and pm.codex_review_for(pr_comments, head):
         # Codex finished reviewing this head but no ruling can be read from it (a finding in a form the PM cannot
         # parse, or one that was deleted). The timeout is for "no review arrived", never for this.
@@ -233,7 +250,8 @@ def verdict(*, pr: dict, head: str, held: bool, pr_comments, review_comments, ch
                       if r.get("status") != "completed" and r.get("name") != pm.PM_CHECK and not superseded(r)})
     if running:
         return done("wait", f"checks still running on {head[:8]}: {', '.join(running)}")
-    return done("allow", f"Agent Review passed and the PM's {out['pm'] or 'timeout'} on {head[:8]} still stands")
+    by = " (Claude fallback: Codex was at its usage limit)" if out.get("pm_reviewer") else ""
+    return done("allow", f"Agent Review passed and the PM's {out['pm'] or 'timeout'}{by} on {head[:8]} still stands")
 
 
 def claimed_run(r: dict):
@@ -294,6 +312,20 @@ def _identify(pr: dict):
     return lambda r: pm.check_identity(r, default_branch, fetch)
 
 
+def _fallback(pr: dict):
+    default_branch = ((pr.get("base") or {}).get("repo") or {}).get("default_branch") or ""
+    cache: dict = {}
+
+    def fetch(path):
+        if path not in cache:
+            cache[path] = pm._api("GET", path)
+        return cache[path]
+
+    return lambda comments, head, checks: pm.fallback_verdicts(
+        pr["number"], head, pm.fallback_run_ids(comments, checks, head, os.environ.get("GITHUB_REPOSITORY", "")),
+        fetch, default_branch, os.environ.get("PM_WORKFLOW") or pm.PM_WORKFLOW)
+
+
 def _reviewed_head(r: dict):
     """The head_sha of GitHub's record of the run an Agent Review check names, or None when it cannot be read."""
     claim = claimed_run(r)
@@ -322,7 +354,7 @@ def evaluate(n: int, head: str | None, held_rx: str, held_flag: bool | None, all
                    paths=paths, allowed=allowed, instruction_paths=instruction_paths,
                    failed=pm.head_failed_checks(pr, head), identify=_identify(pr), reviewed_head=_reviewed_head,
                    required=required_workflows(),
-                   workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n),
+                   workflow_runs=_workflow_runs(head), foreign_edits=_foreign_edits(n), fallback=_fallback(pr),
                    codex_reviews=pm._paginate(f"/pulls/{n}/reviews")) | {"title": pr.get("title"), "mergeable_state": pr.get("mergeable_state"),
                                                                                       "mergeable": pr.get("mergeable")}
 

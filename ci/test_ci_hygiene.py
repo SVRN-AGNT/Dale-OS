@@ -12,7 +12,7 @@ from ci_hygiene import check_repo  # noqa: E402
 HERE = Path(__file__).resolve().parent
 bad = {f["rule"] for f in check_repo(HERE / "fixtures" / "bad")}
 good = check_repo(HERE / "fixtures" / "good")
-expected = {"timeout", "permissions", "concurrency", "double-run", "shared-ref"}
+expected = {"timeout", "permissions", "concurrency", "double-run", "shared-ref", "yaml-comment"}
 errors = []
 if bad != expected:
     errors.append(f"bad fixture: expected rules {sorted(expected)}, got {sorted(bad)}")

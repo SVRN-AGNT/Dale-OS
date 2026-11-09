@@ -74,13 +74,19 @@ check("prompt marks the HANDOFF as untrusted and live state as authoritative",
 # workflow shape
 wf = (HERE.parent / ".github" / "workflows" / "ci-pm-review.yml").read_text()
 code = re.sub(r"(?m)^\s*#.*$", "", wf)
-review = code.split("\n  post:")[0]
-check("PM is OpenAI Codex, never Claude", "uses: openai/codex-action@v1" in code and not re.search(r"anthropic|claude-code", code, re.I))
+review = code.split("\n  judge:")[0]
+steps = review.split("    steps:", 1)[1].split("- name:")
+claude_steps = [st for st in steps if re.search(r"anthropic|claude-code|claude_code_oauth_token|pm_review\.py claude", st, re.I)]
+check("PM is OpenAI Codex; Claude runs only as the fallback (owner, 2026-11-03)", "uses: openai/codex-action@v1" in code
+      and len(claude_steps) == 3 and all("steps.resolve.outputs.review == 'claude'" in st for st in claude_steps))
+fb_i = next(i for i, st in enumerate(steps) if st.lstrip().startswith("PM ruling (Claude fallback"))
+check("nothing that can run in a fallback job runs after the Claude step",
+      all("inputs.provider == 'api'" in st for st in steps[fb_i + 1:]) and len(steps[fb_i + 1:]) == 1)
 check("Codex is read-only with sudo dropped", "permission-profile: ':read-only'" in code and "safety-strategy: drop-sudo" in code)
 check("Codex is the last step of the review job", review.rstrip().split("- name:")[-1].lstrip().startswith("PM ruling"))
 check("review job can only read", not re.search(r":\s*write", review))
 check("every PM job stays on GitHub-hosted runners (Codex P1s on #42 and wallet-alpha-lab #168)",
-      re.findall(r"runs-on:\s*(.+)", code) == ["ubuntu-latest", "ubuntu-latest"] and "inputs.runner" not in code)
+      re.findall(r"runs-on:\s*(.+)", code) == ["ubuntu-latest"] * 3 and "inputs.runner" not in code)
 check("caller checkout is pinned to the default branch", "ref: ${{ github.event.repository.default_branch }}" in code)
 self_caller = (HERE.parent / ".github" / "workflows" / "pm-review.yml").read_text()
 check("dispatch only from the default branch", "github.ref_name == github.event.repository.default_branch" in self_caller)
@@ -284,7 +290,7 @@ check("a Codex ruling keeps the header the dedupe reads", pm.RULING_HEADER.match
 
 
 def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(), live_head: str = HEAD, checks=(),
-                    workflow_runs=None, **extra_env) -> dict:
+                    workflow_runs=None, extra_pages=None, **extra_env) -> dict:
     pr_n = 12
     api = {f"/issues/comments/{comment['id']}": comment, f"/issues/{pr_n}": {"pull_request": {"url": "u"}},
            f"/pulls/{pr_n}": {"number": pr_n, "state": "open", "title": "t", "user": {"login": "Tataku"}, "draft": False,
@@ -292,7 +298,8 @@ def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(),
                               "base": {"ref": "main", "sha": OTHER, "repo": {"default_branch": "main"}}}}
     api.update(workflow_runs or {})
     pages = {f"/issues/{pr_n}/comments": list(pr_comments), f"/pulls/{pr_n}/files": list(files),
-             f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs?filter=all": list(checks)}
+             f"/pulls/{pr_n}/comments": list(review_comments), f"/commits/{live_head}/check-runs?filter=all": list(checks),
+             f"/commits/{live_head}/check-runs": list(checks), **(extra_pages or {})}
     saved = (pm._api, pm._paginate, dict(os.environ))
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "out"
@@ -301,6 +308,7 @@ def resolve_chatgpt(comment: dict, pr_comments=(), review_comments=(), files=(),
         pm._paginate = lambda path: pages[path]
         os.environ.update({"GITHUB_OUTPUT": str(out), "RUNNER_TEMP": d, "ALLOWED_AUTHORS": "Tataku", "CONTROL_ISSUE": "0",
                            "HELD_PATHS": "", "COMMENT_ID": str(comment["id"]), "GITHUB_REPOSITORY": "o/r", "PROVIDER": "chatgpt",
+                           "GITHUB_WORKFLOW_REF": "o/r/.github/workflows/pm-review.yml@refs/heads/main",
                            **extra_env})
         try:
             pm.cmd_resolve()
@@ -717,6 +725,122 @@ finally:
     pm._paginate, pm._api = pages_saved, api_saved
     if saved_env is not None:
         os.environ["IGNORE_CHECKS"] = saved_env
+
+# ---------------------------------------------------------------- Claude fallback when Codex is at its usage limit
+LIMIT_BODY = ("You have reached your Codex usage limits for code reviews. You can see your limits in the "
+              "[Codex usage dashboard](https://chatgpt.com/codex/cloud/settings/usage).")
+
+
+def limit(at="2026-11-02T23:46:46Z", login="chatgpt-codex-connector[bot]", edited=None, cid=90):
+    return {"id": cid, "user": {"login": login, "type": "Bot"}, "body": LIMIT_BODY, "created_at": at,
+            "updated_at": edited or at, "issue_url": "https://api.github.com/repos/o/r/issues/12"}
+
+
+fb_ask = handoff(f"HANDOFF: {HEAD}\n@codex review", id=8, issue_url="https://api.github.com/repos/o/r/issues/12",
+                 created_at="2026-11-02T23:46:00Z", updated_at="2026-11-02T23:46:00Z")
+check("Codex's own limit refusal is read", pm.codex_limited(limit()))
+check("a person's copy of the refusal is not", not pm.codex_limited(limit(login="Tataku")))
+check("an edited refusal is not trusted", not pm.codex_limited(limit(edited="2026-11-03T00:00:00Z")))
+check("a refusal after the HANDOFF caps it", pm.codex_capped([fb_ask, limit()], fb_ask))
+check("a refusal before the HANDOFF does not", not pm.codex_capped([limit(at="2026-11-02T23:00:00Z"), fb_ask], fb_ask))
+check("a refusal before an edit of the HANDOFF does not",
+      not pm.codex_capped([limit()], dict(fb_ask, updated_at="2026-11-02T23:50:00Z")))
+check("a HANDOFF that never asked Codex is never capped",
+      not pm.codex_capped([limit()], dict(fb_ask, body=f"HANDOFF: {HEAD}")))
+PM_CHECKS = f"/commits/{HEAD}/check-runs?filter=all&check_name=PM%20Review"
+
+
+def pm_history(*jobs_per_run, event="issue_comment", path=".github/workflows/pm-review.yml"):
+    """GitHub's records of earlier fallback runs on the head, each named by a PM Review check (one per list of job names)."""
+    api = {}
+    for i, jobs in enumerate(jobs_per_run):
+        api[f"/actions/runs/{100 + i}"] = {"id": 100 + i, "path": path, "event": event, "run_attempt": 1}
+        api[f"/actions/runs/{100 + i}/attempts/1/jobs?per_page=100"] = {"jobs": [{"name": n, "conclusion": "success"} for n in jobs]}
+    checks = [{"name": "PM Review", "app": {"slug": "github-actions"}, "external_id": f"handoff:8;run:{100 + i}"}
+              for i in range(len(jobs_per_run))]
+    return api, checks
+
+
+def resolve_fb(hist=None, **kw):
+    api, checks = hist or pm_history()
+    return resolve_chatgpt(limit(), pr_comments=kw.pop("pr_comments", [fb_ask, limit()]), FALLBACK="claude",
+                           workflow_runs=api, extra_pages={PM_CHECKS: checks}, **kw)
+
+
+fb = resolve_fb()
+check("Codex's refusal wakes the PM and Claude reviews in its place",
+      fb.get("review") == "claude" and fb.get("head_sha") == HEAD and fb.get("handoff_id") == "8")
+check("without the fallback input a refusal still waits on Codex",
+      resolve_chatgpt(limit(), pr_comments=[fb_ask, limit()]).get("review") == "waiting")
+for hist, why in ((pm_history([f"pm / PM fallback CORRECT #12 {HEAD}"]), "a sealed CORRECT (its comment deleted)"),
+                  (pm_history([f"pm / PM fallback CLEAR #12 {HEAD}"]), "a sealed CLEAR"),
+                  (pm_history([f"pm / PM fallback NONE #12 {HEAD}"], [f"pm / PM fallback NONE #12 {HEAD}"]), "two runs with no ruling")):
+    again = resolve_fb(hist)
+    check(f"Claude does not review a head again after {why}", again.get("review") == "waiting"
+          and "does not review it again" in again.get("notice", ""))
+check("one run with no ruling allows one retry", resolve_fb(pm_history([f"pm / PM fallback NONE #12 {HEAD}"])).get("review") == "claude")
+check("seals for another PR or head, or from a PR's own copy of the file, do not count",
+      resolve_fb(pm_history([f"pm / PM fallback CLEAR #13 {HEAD}", f"pm / PM fallback CLEAR #12 {OTHER}"])).get("review") == "claude"
+      and resolve_fb(pm_history([f"pm / PM fallback CLEAR #12 {HEAD}"], event="pull_request")).get("review") == "claude")
+gone = pm_history([f"pm / PM fallback CORRECT #12 {HEAD}"])
+del gone[0]["/actions/runs/100"]
+check("a named fallback run that was deleted means no Claude review", resolve_fb(gone).get("review") == "waiting")
+check("a refusal for an earlier ask does not start the fallback",
+      resolve_chatgpt(fb_ask, pr_comments=[limit(at="2026-11-02T23:00:00Z"), fb_ask], FALLBACK="claude").get("review") == "waiting")
+check("a failed check on the head is CORRECT without spending a Claude review",
+      resolve_fb(checks=[runs[0]]).get("review") == "codex")
+check("a completed Codex review of the head rules, not the fallback",
+      resolve_fb(pr_comments=[codex_summary(HEAD), fb_ask, limit()]).get("review") == "codex")
+check("the caller wakes on Codex's refusal and passes the subscription token",
+      "contains(github.event.comment.body, 'reached your Codex usage limits')" in gate and "fallback: claude" in gate
+      and "claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}" in gate)
+check("the Claude prompt names the stand-in and offers no shell",
+      "usage limit" in pm.build_prompt(12, HEAD, OTHER, "main", "", ["a"], False, "claude")
+      and "git show" not in pm.build_prompt(12, HEAD, OTHER, "main", "", ["a"], False, "claude")
+      and "git show" in pm.build_prompt(12, HEAD, OTHER, "main", "", ["a"], False))
+args = pm.claude_args("p", "", "")
+check("the fallback reviewer runs read-only with the PM schema",
+      "Bash" in args[args.index("--disallowedTools") + 1] and json.loads(args[args.index("--json-schema") + 1]) == pm.PM_SCHEMA
+      and "--no-session-persistence" in args)
+check("Claude's structured answer is the final message",
+      json.loads(pm.claude_final('{"type":"result","is_error":false,"structured_output":{"verdict":"CLEAR"}}')) == {"verdict": "CLEAR"})
+for bad in ("", "nope", '{"is_error":true,"structured_output":{"verdict":"CLEAR"}}', '{"result":"CLEAR"}'):
+    check(f"no structured ruling from {bad[:24]!r}", pm.claude_final(bad) == "")
+check("the seal names verdict, PR and head",
+      pm.fallback_seal("CLEAR", 12, HEAD) == f"PM fallback CLEAR #12 {HEAD}"
+      and pm.FALLBACK_SEAL.search(f"pm / PM fallback CLEAR #12 {HEAD}").groups() == ("CLEAR", "12", HEAD))
+check("no seal for a non-verdict or a short head", pm.fallback_seal("APPROVE", 12, HEAD) == "" and pm.fallback_seal("CLEAR", 12, HEAD[:8]) == "")
+fb_comment = pm.ruling_comment(pm.interpret(ruling(), HEAD), 12, HEAD, OTHER, 8, "https://github.com/o/r/actions/runs/55", "claude")
+check("a fallback ruling says it is Claude, not second-vendor, and is not a Codex round",
+      pm.FALLBACK_MARK in fb_comment and "Not a second-vendor review" in fb_comment
+      and pm.codex_round([bot(fb_comment)], 9) == 1 and pm.RUN_LINK.findall(fb_comment) == [("o/r", "55")])
+
+
+def judge(final: str) -> dict:
+    saved = dict(os.environ)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "out"
+        out.write_text("")
+        os.environ.update(GITHUB_OUTPUT=str(out), HEAD_SHA=HEAD, PR_NUMBER="12", FINAL_MESSAGE=final)
+        try:
+            pm.cmd_judge()
+        finally:
+            os.environ.clear()
+            os.environ.update(saved)
+        text = out.read_text()
+        res = {k: v for k, v in (line.split("=", 1) for line in text.splitlines() if "=" in line and "<<" not in line)}
+        m = re.search(r"ruling<<(\S+)\n(.*?)\n\1", text, re.S)
+        if m:
+            res["ruling"] = m.group(2)
+        return res
+
+
+check("a verified CLEAR is sealed CLEAR", judge(ruling()).get("seal") == f"PM fallback CLEAR #12 {HEAD}")
+check("a CLEAR that lists a blocking defect is sealed CORRECT",
+      judge(ruling(blocking=[{"file": "a", "line": 1, "evidence": "x", "problem": "p", "failure": "f"}])).get("seal")
+      == f"PM fallback CORRECT #12 {HEAD}")
+check("a CLEAR with nothing verified is no ruling, sealed NONE", judge(ruling(verified=[])).get("seal") == f"PM fallback NONE #12 {HEAD}")
+check("no answer is no ruling, sealed NONE", judge("").get("seal") == f"PM fallback NONE #12 {HEAD}" and judge("").get("ruling") == "")
 
 if errors:
     print("PM REVIEW TEST FAILED")

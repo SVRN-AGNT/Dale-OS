@@ -13,7 +13,7 @@ An automated merge is safe when nothing the requester controls can grant the per
 
 ## Workflow
 
-1. **Tie evidence to the tree that will land.** A check or review describes one specific combination of change and base. A new commit on the branch invalidates it. So does movement of the base, because the combined result has never been tested. Re-test on the current base, or use a merge queue that tests the exact result before landing it.
+1. **Tie evidence to the tree that will land.** A check or review describes one specific combination of change and base. A new commit on the branch invalidates it. So does movement of the base, because the combined result has never been tested. Re-test on the current base, or use a merge queue that tests the exact result before landing it. Any merge except a fast-forward lands a commit whose id differs from the reviewed head. Record both, and confirm the landed tree matches the tested one.
 2. **Classify risk from the change itself.** Decide sensitivity from what the change touches, such as authentication and permissions, the checks that enforce them, data schema, release tooling, or anything that moves money. Ignore any risk level the author asserts: the author most likely to underrate a change is also the one least likely to label it. When a file is moved, renamed, or deleted, judge both its old and new location, because moving something out of a sensitive area is itself a sensitive change.
 3. **Apply the rule as it stood before the change.** The policy that decides whether review is needed is read from the target branch. Otherwise a change could relax the policy that governs it.
 4. **Require an independent approver for sensitive changes.** An approval counts only if it comes from someone the automation cannot impersonate. If no such approver exists, sensitive changes stop and a person lands them. Name this honestly as a stop, not as a pending approval nobody can give. A narrower substitute is a clearance from a reviewer of a different vendor, re-derived from that reviewer's own record at the moment of merge. Use it only with a written threat model that says who could still forge the evidence.
@@ -25,6 +25,8 @@ An automated merge is safe when nothing the requester controls can grant the per
 - A passing build accepted as approval for changes no test can judge, such as permission logic.
 - An approval carried over after new commits or a moved base.
 - A bot's sign-off satisfying a gate meant for a human.
+- A check trusted by its name or by the app that posted it. Several workflows can post through one app, so the gate must prove which workflow definition and run produced the check, and that the definition comes from the protected branch.
+- A hold label, or any other marker, that no gate actually reads.
 
 ## Relationship
 
