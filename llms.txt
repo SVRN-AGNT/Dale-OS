@@ -23,6 +23,8 @@
 - shipping/PLAYBOOK.md — Anthropic primary sources behind each rule
 - ci/README.md — shared CI layer
 - docs/HARNESS_MAP.md — one-page map of the whole harness, for harness engineers
+- docs/HARNESS_RETEST.md — which harness pieces a newer model no longer needs, and how to test removal
+- docs/KNOWLEDGE_VAULT.md — reference design for git-backed agent memory: raw, evidence, memory, decisions
 - docs/AGENTIC_ENGINEERING.md — task, authority and state graphs; handoff and recovery architecture
 - docs/SKILL_CATALOG.md — every skill with its failure class
 
