@@ -12,7 +12,7 @@ description: Adversarially validate financial models and forecasts before trusti
 ## Workflow
 
 1. State the model's key claim and what must be true for it to hold.
-2. Check units, signs, periods, scale and compounding boundaries before interpreting results.
+2. Check units, signs, periods, scale and compounding boundaries before interpreting results. A series' name does not say what quantity it holds. Before reading a direction, say whether the claim is about a level, a rate, or a change in a rate, say which one the series holds, and derive the claim's quantity from the series first. A value's size may raise a doubt about its scale but never settles it: take the scale from what its source states, and when it states none, treat the scale as ambiguous.
 3. Test accounting identities and probability constraints mechanically where possible.
 4. Run monotonicity/sensitivity checks: changing an input in the expected direction should not produce a perverse result without an explanation.
 5. Check scenario ordering, impossible shares/ratios, double counting, terminal-value dominance, and hidden circularity.
