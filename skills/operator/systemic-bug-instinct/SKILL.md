@@ -13,10 +13,10 @@ description: Use first, before reading, searching or editing code, whenever a de
 
 1. Verify the symptom on the current system or trace a causal path that proves it.
 2. State the root mechanism as a falsifiable chain, not a vague category. Arithmetic that reconciles is not proof: a correct formula fed a wrong input also reconciles.
-3. Before declaring a capability missing, search for it under several names, including routers and orchestrators above the failing code. A capability that exists but is not reached is a different bug from one that was never built.
+3. Before declaring a capability missing, search for it under several names, including routers and orchestrators above the failing code. A capability that exists but is not reached is a different bug from one that was never built. Also check any record the codebase keeps of unused or unwired code, such as a dead-code report or a deprecated-module list: the capability may already exist there, unreached. Before wiring it up, find out why it was left unused. Code retired on purpose stays retired, and code you wire in needs the same proof that it is reached and correct as new code (`reachability-proof`).
 4. Name the failure class: what more general mistake allowed this defect?
 5. Search sibling consumers of the same mechanism. Classify each affected, protected, or unrelated. A narrow mutation request does not waive this read-only diagnostic audit: scope can limit what you change, but it must not prevent you from checking whether the same mechanism exists elsewhere.
-6. Fix at the shared baseline when possible. If fixing one instance only, explain why the mechanism is not systemic. If authority restricts writes to one surface while the mechanism is broader, report the additional affected surfaces instead of silently treating them as out of scope.
+6. Fix at the shared baseline when possible. If fixing one instance only, explain why the mechanism is not systemic. If authority restricts writes to one surface while the mechanism is broader, report the additional affected surfaces instead of silently treating them as out of scope. If review finds a second instance of a mechanism you already fixed once, the sibling search in step 5 missed it: stop patching instances one at a time, repeat step 5, and fix at the shared baseline. If that baseline is outside the change's scope or authority, report it rather than widening the change.
 7. Add a regression test, invariant, ratchet, or durable note that would fail if the mechanism returns.
 
 ## Falsify it
