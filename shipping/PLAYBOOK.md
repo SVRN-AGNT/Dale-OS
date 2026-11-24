@@ -23,9 +23,9 @@ Sources: [Harness design for long-running application development](https://www.a
 <a id="f3"></a>
 ### F3 · Find in parallel, verify each candidate, then post
 
-> "A verification step checks candidates against actual code behavior to filter out false positives." · "The check run always completes with a neutral conclusion so it never blocks merging."
+> "A verification step checks findings against the code before they're reported." · "The check run doesn't conclude as a failure."
 
-Source: [Code Review](https://code.claude.com/docs/en/code-review), docs. The tool is a research preview on Team and Enterprise plans; it averages $15 to $25 and about 20 minutes per review. A repository-root `REVIEW.md` sets a verification bar, a cap on nits, and convergence on re-review. **In the system:** a blocking finding quotes its line at head; [`templates/REVIEW.md`](templates/REVIEW.md); re-review is blocking-only.
+Source: [Code Review](https://code.claude.com/docs/en/code-review), docs. The tool is generally available on Team and Enterprise plans and is now one of the three [Claude Ship](https://code.claude.com/docs/en/claude-ship) agents, beside PR Steward and Claude Approvals (beta, 2026-11-23). It has no flat per-review price: it is billed on tokens through usage credits, separately from the plan, and the cost scales with the review level (Quick, Standard or Deep), the change and how often reviews run ([costs](https://code.claude.com/docs/en/code-review-costs)). These docs were re-read on 2026-11-24. A repository-root `REVIEW.md` sets a verification bar, a cap on nits, and convergence on re-review. **In the system:** a blocking finding quotes its line at head; [`templates/REVIEW.md`](templates/REVIEW.md); re-review is blocking-only.
 
 <a id="f4"></a>
 ### F4 · Humans stay accountable for critical code; new AI reviewers start in shadow mode
